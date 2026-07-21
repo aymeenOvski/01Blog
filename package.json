@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "@angular/cli": "^21.2.19"
+  },
+  "devDependencies": {
+    "@dbml/cli": "^8.3.1",
+    "dbdiagram": "^0.2.0"
   }
 }

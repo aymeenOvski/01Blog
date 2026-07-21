@@ -1,0 +1,10 @@
+Table USERS {
+  id bigint [pk, increment]
+  username varchar [not null, unique]
+  email varchar [not null, unique]
+  password_hash varchar [not null]
+  role varchar [not null]
+  bio varchar
+  avatar_url varchar
+  created_at timestamp [default: `now()`]
+}
