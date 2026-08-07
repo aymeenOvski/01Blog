@@ -1,0 +1,96 @@
+<div class="container mt-5 mb-5" style="max-width: 500px;">
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-center mb-4">Create Account</h3>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <!-- Username -->
+        <div class="mb-3">
+          <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+          <input 
+            id="username" 
+            type="text" 
+            class="form-control" 
+            [class.is-invalid]="username?.touched && username?.invalid"
+            formControlName="username" 
+          />
+          <div *ngIf="username?.touched && username?.invalid" class="invalid-feedback">
+            <span *ngIf="username?.errors?.['required']">Username is required.</span>
+            <span *ngIf="username?.errors?.['minlength']">Must be at least 3 characters.</span>
+            <span *ngIf="username?.errors?.['maxlength']">Cannot exceed 50 characters.</span>
+            <span *ngIf="username?.errors?.['pattern']">Only letters, numbers, and underscores allowed.</span>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+          <input 
+            id="email" 
+            type="email" 
+            class="form-control" 
+            [class.is-invalid]="email?.touched && email?.invalid"
+            formControlName="email" 
+          />
+          <div *ngIf="email?.touched && email?.invalid" class="invalid-feedback">
+            <span *ngIf="email?.errors?.['required']">Email is required.</span>
+            <span *ngIf="email?.errors?.['email']">Enter a valid email address.</span>
+            <span *ngIf="email?.errors?.['maxlength']">Cannot exceed 100 characters.</span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+          <input 
+            id="password" 
+            type="password" 
+            class="form-control" 
+            [class.is-invalid]="password?.touched && password?.invalid"
+            formControlName="password" 
+          />
+          <div *ngIf="password?.touched && password?.invalid" class="invalid-feedback">
+            <span *ngIf="password?.errors?.['required']">Password is required.</span>
+            <span *ngIf="password?.errors?.['minlength']">Must be at least 8 characters.</span>
+            <span *ngIf="password?.errors?.['maxlength']">Cannot exceed 100 characters.</span>
+          </div>
+        </div>
+
+        <!-- Bio (Optional) -->
+        <div class="mb-3">
+          <label for="bio" class="form-label">Bio</label>
+          <textarea 
+            id="bio" 
+            class="form-control" 
+            [class.is-invalid]="bio?.touched && bio?.invalid"
+            formControlName="bio" 
+            rows="3"
+          ></textarea>
+          <div *ngIf="bio?.touched && bio?.invalid" class="invalid-feedback">
+            <span *ngIf="bio?.errors?.['maxlength']">Bio cannot exceed 255 characters.</span>
+          </div>
+        </div>
+
+        <!-- Avatar URL (Optional) -->
+        <div class="mb-3">
+          <label for="avatarUrl" class="form-label">Avatar Image URL</label>
+          <input id="avatarUrl" type="url" class="form-control" formControlName="avatarUrl" />
+        </div>
+
+        <!-- API Error -->
+        <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3" role="alert">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-success w-100" [disabled]="registerForm.invalid || loading">
+          {{ loading ? 'Registering...' : 'Register' }}
+        </button>
+      </form>
+
+      <p class="text-center mt-3 mb-0">
+        Already have an account? <a routerLink="/login" class="text-decoration-none">Sign in here</a>
+      </p>
+    </div>
+  </div>
+</div>
