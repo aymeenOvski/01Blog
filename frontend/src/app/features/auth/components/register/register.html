@@ -1,16 +1,16 @@
-<div class="container mt-5 mb-5" style="max-width: 500px;">
-  <div class="card shadow-sm">
+<div class="register-wrapper d-flex align-items-center justify-content-center min-vh-100 py-5">
+  <div class="card register-card border-0 shadow-lg p-3" style="width: 100%; max-width: 500px;">
     <div class="card-body p-4">
-      <h3 class="card-title text-center mb-4">Create Account</h3>
+      <h3 class="card-title text-center text-white mb-4">Create Account</h3>
 
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
         <!-- Username -->
         <div class="mb-3">
-          <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+          <label for="username" class="form-label text-secondary small">Username <span class="text-danger">*</span></label>
           <input 
             id="username" 
             type="text" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="username?.touched && username?.invalid"
             formControlName="username" 
           />
@@ -24,11 +24,11 @@
 
         <!-- Email -->
         <div class="mb-3">
-          <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+          <label for="email" class="form-label text-secondary small">Email <span class="text-danger">*</span></label>
           <input 
             id="email" 
             type="email" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="email?.touched && email?.invalid"
             formControlName="email" 
           />
@@ -41,11 +41,11 @@
 
         <!-- Password -->
         <div class="mb-3">
-          <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+          <label for="password" class="form-label text-secondary small">Password <span class="text-danger">*</span></label>
           <input 
             id="password" 
             type="password" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="password?.touched && password?.invalid"
             formControlName="password" 
           />
@@ -58,10 +58,10 @@
 
         <!-- Bio (Optional) -->
         <div class="mb-3">
-          <label for="bio" class="form-label">Bio</label>
+          <label for="bio" class="form-label text-secondary small">Bio</label>
           <textarea 
             id="bio" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="bio?.touched && bio?.invalid"
             formControlName="bio" 
             rows="3"
@@ -73,8 +73,13 @@
 
         <!-- Avatar URL (Optional) -->
         <div class="mb-3">
-          <label for="avatarUrl" class="form-label">Avatar Image URL</label>
-          <input id="avatarUrl" type="url" class="form-control" formControlName="avatarUrl" />
+          <label for="avatarUrl" class="form-label text-secondary small">Avatar Image URL</label>
+          <input 
+            id="avatarUrl" 
+            type="url" 
+            class="form-control custom-input" 
+            formControlName="avatarUrl" 
+          />
         </div>
 
         <!-- API Error -->
@@ -83,13 +88,13 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-success w-100" [disabled]="registerForm.invalid || loading">
+        <button type="submit" class="btn btn-custom-primary w-100 py-2.5 fw-semibold" [disabled]="registerForm.invalid || loading">
           {{ loading ? 'Registering...' : 'Register' }}
         </button>
       </form>
 
-      <p class="text-center mt-3 mb-0">
-        Already have an account? <a routerLink="/login" class="text-decoration-none">Sign in here</a>
+      <p class="text-center text-secondary mt-3 mb-0">
+        Already have an account? <a routerLink="/login" class="text-primary text-decoration-none fw-semibold ms-1">Sign in here</a>
       </p>
     </div>
   </div>

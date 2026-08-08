@@ -1,16 +1,17 @@
-<div class="container mt-5" style="max-width: 450px;">
-  <div class="card shadow-sm">
+<div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100">
+  <div class="card login-card border-0 shadow-lg p-3" style="width: 100%; max-width: 420px;">
     <div class="card-body p-4">
-      <h3 class="card-title text-center mb-4">Login</h3>
+      <!-- Header -->
+      <h3 class="card-title text-center text-white mb-4">Login</h3>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- Username -->
         <div class="mb-3">
-          <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+          <label for="username" class="form-label text-secondary small">Username <span class="text-danger">*</span></label>
           <input 
             id="username" 
             type="text" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="loginForm.get('username')?.touched && loginForm.get('username')?.invalid"
             formControlName="username" 
           />
@@ -24,11 +25,11 @@
 
         <!-- Password -->
         <div class="mb-3">
-          <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+          <label for="password" class="form-label text-secondary small">Password <span class="text-danger">*</span></label>
           <input 
             id="password" 
             type="password" 
-            class="form-control" 
+            class="form-control custom-input" 
             [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
             formControlName="password" 
           />
@@ -45,13 +46,13 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid || loading">
+        <button type="submit" class="btn btn-custom-primary w-100 py-2.5 fw-semibold" [disabled]="loginForm.invalid || loading">
           {{ loading ? 'Signing in...' : 'Sign In' }}
         </button>
       </form>
 
-      <p class="text-center mt-3 mb-0">
-        Don't have an account? <a routerLink="/register" class="text-decoration-none">Register here</a>
+      <p class="text-center text-secondary mt-3 mb-0">
+        Don't have an account? <a routerLink="/register" class="text-primary text-decoration-none fw-semibold ms-1">Register here</a>
       </p>
     </div>
   </div>
