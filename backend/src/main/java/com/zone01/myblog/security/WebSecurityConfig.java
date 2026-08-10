@@ -71,7 +71,8 @@ public class WebSecurityConfig {
             .csrf(csrf -> csrf.disable()) // Disabled for stateless REST APIs
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
+                auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
                     .anyRequest().authenticated()                 // Everything else requires a valid JWT
             );
 
