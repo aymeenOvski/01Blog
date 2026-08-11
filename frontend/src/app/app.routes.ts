@@ -19,8 +19,13 @@ export const routes: Routes = [
     canActivate: [unauthGuard]
   },
   {
-    path: 'profile',
-    loadComponent: () => import('./features/profile/components/profile').then(m => m.ProfileComponent),
+    path: 'profile/:username',
+    loadComponent: () => import('./features/profile/components/profile').then(m => m.Profile),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./features/profile/settings/settings').then(m => m.SettingsComponent),
     canActivate: [authGuard]
   },
   {

@@ -1,0 +1,9 @@
+<div class="profile-container" *ngIf="!loading && profile">
+  <h2>{{ profile.username }}'s Profile</h2>
+  <p>{{ profile.bio || 'No bio provided.' }}</p>
+
+  <!-- Cleaned Navigation for Profile Owner -->
+  <div class="profile-nav" *ngIf="isOwner">
+    <a routerLink="/settings" class="nav-btn">Edit Profile / Settings</a>
+  </div>
+</div>

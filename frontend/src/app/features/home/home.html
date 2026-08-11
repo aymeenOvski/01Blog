@@ -1,0 +1,21 @@
+<div class="home-shell">
+  <div class="home-card">
+    <p class="eyebrow">Home</p>
+    <h1>Welcome{{ username ? ', ' + username : '' }}</h1>
+    <p class="lead">Pick one of the profile actions below.</p>
+
+    <div class="actions" *ngIf="profileLink; else missingUser">
+      <!-- Navigates to /profile/username -->
+      <a [routerLink]="profileLink" class="action-link">Open Profile</a>
+      
+      <!-- Navigates directly to /settings -->
+      <a routerLink="/settings" class="action-link secondary">
+        Open Profile Settings
+      </a>
+    </div>
+
+    <ng-template #missingUser>
+      <p class="muted">No signed-in user was found. Please log in again.</p>
+    </ng-template>
+  </div>
+</div>
