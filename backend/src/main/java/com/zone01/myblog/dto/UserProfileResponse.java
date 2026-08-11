@@ -4,5 +4,6 @@ public record UserProfileResponse(
     String username,
     String bio,
     String avatarUrl,
-    boolean isOwner
+    boolean isOwner,
+    String email
 ) {}

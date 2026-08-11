@@ -4,3 +4,5 @@ node_modules
 hibernate.cfg.xml
 hibernate.properties
 subject_requirements.txt
+pg_data
+pg_server.log

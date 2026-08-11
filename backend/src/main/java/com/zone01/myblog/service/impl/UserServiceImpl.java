@@ -34,7 +34,8 @@ public class UserServiceImpl implements UserService {
                 user.getUsername(),
                 user.getBio(),
                 user.getAvatarUrl(),
-                false // Default to false for public view
+                false, // Default to false for public view
+                user.getEmail()
         );
     }
 
@@ -57,7 +58,8 @@ public class UserServiceImpl implements UserService {
                 updatedUser.getUsername(),
                 updatedUser.getBio(),
                 updatedUser.getAvatarUrl(),
-                true // Set to true because the user is updating their own profile
+                true, // Set to true because the user is updating their own profile
+                updatedUser.getEmail()
         );
     }
 
