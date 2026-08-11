@@ -50,7 +50,28 @@ export class SettingsComponent implements OnInit {
     }
 
     saveProfile(): void {
-        // update bio/avatar -> next thing
+        this.loading = true;
+        this.statusMessage = null;
+
+        this.userService.updateProfileInfo({
+            bio: this.profileData.bio,
+            avatarUrl: this.profileData.avatarUrl
+        }).subscribe({
+            next: (updatedProfile) => {
+                this.loading = false;
+                this.isError = false;
+                this.statusMessage = 'Profile updated successfully!';
+
+                // Refresh local state with updated values
+                this.profileData.bio = updatedProfile.bio || '';
+                this.profileData.avatarUrl = updatedProfile.avatarUrl || '';
+            },
+            error: (err) => {
+                this.loading = false;
+                this.isError = true;
+                this.statusMessage = err.error?.message || 'Failed to update profile.';
+            }
+        });
     }
 
     updatePassword(): void {

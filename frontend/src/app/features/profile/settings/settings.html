@@ -33,16 +33,20 @@
 
       <div class="form-group">
         <label>Username</label>
-        <input type="text" [(ngModel)]="profileData.username" class="form-input" />
+        <input type="text" [(ngModel)]="profileData.username" name="username" class="form-input" disabled />
       </div>
 
       <div class="form-group">
         <label>Bio</label>
-        <textarea rows="3" [(ngModel)]="profileData.bio" class="form-input textarea"></textarea>
+        <textarea rows="3" [(ngModel)]="profileData.bio" name="bio" class="form-input textarea"></textarea>
       </div>
 
-      <button type="button" (click)="saveProfile()" class="btn-primary">
-        Save Changes
+      <div *ngIf="statusMessage" [class]="isError ? 'message error' : 'message success'">
+        {{ statusMessage }}
+      </div>
+
+      <button type="button" (click)="saveProfile()" [disabled]="loading" class="btn-primary">
+        {{ loading ? 'Saving...' : 'Save Changes' }}
       </button>
     </div>
 
@@ -55,12 +59,23 @@
 
       <div class="form-group">
         <label>Current Password</label>
-        <input type="password" [(ngModel)]="passwordData.currentPassword" placeholder="••••••••" class="form-input" />
+        <input 
+          type="password" 
+          [(ngModel)]="passwordData.currentPassword" 
+          name="currentPassword" 
+          placeholder="••••••••" 
+          autocomplete="new-password" 
+          class="form-input" />
       </div>
 
       <div class="form-group">
         <label>New Password</label>
-        <input type="password" [(ngModel)]="passwordData.newPassword" class="form-input" />
+        <input 
+          type="password" 
+          [(ngModel)]="passwordData.newPassword" 
+          name="newPassword" 
+          autocomplete="new-password" 
+          class="form-input" />
       </div>
 
       <div *ngIf="statusMessage" [class]="isError ? 'message error' : 'message success'">

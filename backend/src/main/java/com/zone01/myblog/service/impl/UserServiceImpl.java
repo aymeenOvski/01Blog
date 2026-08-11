@@ -35,8 +35,7 @@ public class UserServiceImpl implements UserService {
                 user.getBio(),
                 user.getAvatarUrl(),
                 false, // Default to false for public view
-                user.getEmail()
-        );
+                user.getEmail());
     }
 
     @Override
@@ -59,8 +58,7 @@ public class UserServiceImpl implements UserService {
                 updatedUser.getBio(),
                 updatedUser.getAvatarUrl(),
                 true, // Set to true because the user is updating their own profile
-                updatedUser.getEmail()
-        );
+                updatedUser.getEmail());
     }
 
     @Override
@@ -87,6 +85,7 @@ public class UserServiceImpl implements UserService {
         Users savedUser = userRepository.save(user);
 
         return new UserSecurityResponse(
+                savedUser.getUsername(),
                 savedUser.getEmail(),
                 "Security preferences updated successfully");
     }
