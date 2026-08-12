@@ -1,10 +1,9 @@
 <div class="login-wrapper d-flex align-items-center justify-content-center min-vh-100">
   <div class="card login-card border-0 shadow-lg p-3" style="width: 100%; max-width: 420px;">
     <div class="card-body p-4">
-      <!-- Header -->
       <h3 class="card-title text-center text-white mb-4">Login</h3>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" autocomplete="off">
         <!-- Username -->
         <div class="mb-3">
           <label for="username" class="form-label text-secondary small">Username <span class="text-danger">*</span></label>
@@ -14,6 +13,7 @@
             class="form-control custom-input" 
             [class.is-invalid]="loginForm.get('username')?.touched && loginForm.get('username')?.invalid"
             formControlName="username" 
+            autocomplete="off"
           />
           <div *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid" class="invalid-feedback">
             <span *ngIf="loginForm.get('username')?.errors?.['required']">Username is required.</span>
@@ -32,6 +32,7 @@
             class="form-control custom-input" 
             [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
             formControlName="password" 
+            autocomplete="current-password"
           />
           <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="invalid-feedback">
             <span *ngIf="loginForm.get('password')?.errors?.['required']">Password is required.</span>

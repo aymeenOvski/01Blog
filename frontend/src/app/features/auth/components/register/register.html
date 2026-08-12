@@ -3,7 +3,7 @@
     <div class="card-body p-4">
       <h3 class="card-title text-center text-white mb-4">Create Account</h3>
 
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" autocomplete="off">
         <!-- Username -->
         <div class="mb-3">
           <label for="username" class="form-label text-secondary small">Username <span class="text-danger">*</span></label>
@@ -13,6 +13,7 @@
             class="form-control custom-input" 
             [class.is-invalid]="username?.touched && username?.invalid"
             formControlName="username" 
+            autocomplete="off"
           />
           <div *ngIf="username?.touched && username?.invalid" class="invalid-feedback">
             <span *ngIf="username?.errors?.['required']">Username is required.</span>
@@ -31,6 +32,7 @@
             class="form-control custom-input" 
             [class.is-invalid]="email?.touched && email?.invalid"
             formControlName="email" 
+            autocomplete="off"
           />
           <div *ngIf="email?.touched && email?.invalid" class="invalid-feedback">
             <span *ngIf="email?.errors?.['required']">Email is required.</span>
@@ -48,6 +50,7 @@
             class="form-control custom-input" 
             [class.is-invalid]="password?.touched && password?.invalid"
             formControlName="password" 
+            autocomplete="new-password"
           />
           <div *ngIf="password?.touched && password?.invalid" class="invalid-feedback">
             <span *ngIf="password?.errors?.['required']">Password is required.</span>
