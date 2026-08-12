@@ -56,32 +56,6 @@
           </div>
         </div>
 
-        <!-- Bio (Optional) -->
-        <div class="mb-3">
-          <label for="bio" class="form-label text-secondary small">Bio</label>
-          <textarea 
-            id="bio" 
-            class="form-control custom-input" 
-            [class.is-invalid]="bio?.touched && bio?.invalid"
-            formControlName="bio" 
-            rows="3"
-          ></textarea>
-          <div *ngIf="bio?.touched && bio?.invalid" class="invalid-feedback">
-            <span *ngIf="bio?.errors?.['maxlength']">Bio cannot exceed 255 characters.</span>
-          </div>
-        </div>
-
-        <!-- Avatar URL (Optional) -->
-        <div class="mb-3">
-          <label for="avatarUrl" class="form-label text-secondary small">Avatar Image URL</label>
-          <input 
-            id="avatarUrl" 
-            type="url" 
-            class="form-control custom-input" 
-            formControlName="avatarUrl" 
-          />
-        </div>
-
         <!-- API Error -->
         <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3" role="alert">
           {{ errorMessage }}

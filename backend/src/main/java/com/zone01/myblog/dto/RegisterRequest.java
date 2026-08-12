@@ -18,11 +18,5 @@ public record RegisterRequest(
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, max = 100, message = "Password must be between 8 and 100 characters")
-    String password,
-
-    @Size(max = 250, message = "Bio cannot exceed 250 characters")
-    String bio,
-
-    @Size(max = 500, message = "Avatar URL is too long")
-    String avatarUrl
+    String password
 ) {}

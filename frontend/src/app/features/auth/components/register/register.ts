@@ -11,7 +11,6 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './register.html',
   styleUrl: './register.css'
 })
-
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
@@ -45,16 +44,13 @@ export class RegisterComponent {
         Validators.minLength(8),
         Validators.maxLength(100)
       ]
-    ],
-    bio: ['', [Validators.maxLength(255)]],
-    avatarUrl: ['', [Validators.maxLength(255)]]
+    ]
   });
 
-  // Helper getters for clean HTML template validation
+  // Helper getters for template validation
   get username() { return this.registerForm.get('username'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
-  get bio() { return this.registerForm.get('bio'); }
 
   onSubmit(): void {
     if (this.registerForm.invalid) {

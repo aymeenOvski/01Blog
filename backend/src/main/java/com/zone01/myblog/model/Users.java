@@ -37,17 +37,18 @@ public class Users implements java.io.Serializable {
     }
 
     // Constructor for creating new users (without ID and timestamp, handled by DB)
-    public Users(String username, String email, String passwordHash, String role, String bio, String avatarUrl) {
+    public Users(String username, String email, String password, String role) {
         this.username = username;
         this.email = email;
-        this.passwordHash = passwordHash;
+        this.passwordHash = password;
         this.role = role;
-        this.bio = bio;
-        this.avatarUrl = avatarUrl;
+        this.bio = ""; 
+        this.avatarUrl = ""; 
     }
 
     // Full constructor
-    public Users(Long id, String username, String email, String passwordHash, String role, String bio, String avatarUrl, Timestamp createdAt) {
+    public Users(Long id, String username, String email, String passwordHash, String role, String bio, String avatarUrl,
+            Timestamp createdAt) {
         this.id = id;
         this.username = username;
         this.email = email;

@@ -53,9 +53,7 @@ public class AuthServiceImpl implements AuthService {
                 request.username(),
                 request.email(),
                 passwordEncoder.encode(request.password()),
-                DEFAULT_ROLE,
-                request.bio(),
-                request.avatarUrl()
+                DEFAULT_ROLE
         );
 
         Users savedUser = userRepository.save(user);
