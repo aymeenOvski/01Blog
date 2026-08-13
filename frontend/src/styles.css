@@ -1,5 +1,20 @@
 /* src/styles.css - Global Auth & Dark Theme Base */
 
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #0b1329 !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+.auth-page-wrapper,
+.profile-container {
+  min-height: calc(100vh - 72px) !important;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
 /* Global Page Layout & Typography */
 body, 
 .login-wrapper, 

@@ -1,0 +1,83 @@
+<nav class="custom-navbar px-4 py-3 d-flex align-items-center justify-content-between">
+  <!-- Brand / Logo -->
+  <a class="navbar-brand fw-bold text-white fs-4 m-0 text-decoration-none" routerLink="/">
+    01<span class="text-primary">Blog</span>
+  </a>
+
+  <!-- Right Side Actions -->
+  <div class="d-flex align-items-center position-relative" *ngIf="isLoggedIn; else guestNav">
+    
+    <!-- User Avatar Trigger -->
+    <button 
+      (click)="toggleDropdown()" 
+      class="avatar-btn border-0 bg-transparent"
+      [class.active]="isDropdownOpen"
+      aria-label="User menu"
+    >
+      <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-white">
+        {{ username.charAt(0).toUpperCase() }}
+      </div>
+    </button>
+
+    <!-- Sliding Profile Dropdown Menu -->
+    <div class="profile-dropdown" [class.show]="isDropdownOpen">
+      <!-- Header / User Info -->
+      <div class="dropdown-header-box px-3 py-2.5">
+        <p class="text-white fw-semibold mb-0 small text-truncate">{{ username }}</p>
+        <span class="text-secondary extra-small">Logged in</span>
+      </div>
+
+      <div class="dropdown-divider"></div>
+
+      <!-- Navigation Links -->
+      <div class="dropdown-body py-1">
+        <a 
+          [routerLink]="['/profile', username]" 
+          routerLinkActive="active" 
+          (click)="closeDropdown()"
+          class="dropdown-item-link d-flex align-items-center text-decoration-none"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1"/>
+          </svg>
+          <span>Profile</span>
+        </a>
+
+        <a 
+          routerLink="/settings" 
+          routerLinkActive="active" 
+          (click)="closeDropdown()"
+          class="dropdown-item-link d-flex align-items-center text-decoration-none"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z"/>
+          </svg>
+          <span>Settings</span>
+        </a>
+      </div>
+
+      <div class="dropdown-divider"></div>
+
+      <!-- Logout Action -->
+      <div class="dropdown-body py-1">
+        <button (click)="logout()" class="dropdown-item-link btn-logout-item border-0 bg-transparent d-flex align-items-center text-start">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Guest Links -->
+  <ng-template #guestNav>
+    <div class="d-flex align-items-center gap-2">
+      <a routerLink="/login" class="btn btn-outline-light btn-sm px-3 fw-semibold rounded-2">Sign In</a>
+      <a routerLink="/register" class="btn btn-primary btn-sm px-3 fw-semibold rounded-2">Register</a>
+    </div>
+  </ng-template>
+</nav>
