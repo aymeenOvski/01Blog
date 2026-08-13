@@ -31,6 +31,15 @@ export class AuthService {
         }
     }
 
+    updateSession(newUsername: string, newToken?: string): void {
+        if (newUsername) {
+            localStorage.setItem('auth_username', newUsername);
+        }
+        if (newToken) {
+            localStorage.setItem('auth_token', newToken);
+        }
+    }
+
     isLoggedIn(): boolean {
         return !!this.getToken();
     }

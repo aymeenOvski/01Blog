@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -45,8 +46,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
+        } catch (UsernameNotFoundException e) {
+            logger.error("User in JWT no longer exists in database: {}", e);
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}" + e.getMessage());
+            logger.error("Cannot set user authentication: {}", e);
         }
 
         filterChain.doFilter(request, response);

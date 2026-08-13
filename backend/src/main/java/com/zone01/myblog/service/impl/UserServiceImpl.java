@@ -6,6 +6,7 @@ import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.UserRepository;
+import com.zone01.myblog.security.jwt.JwtUtils;
 import com.zone01.myblog.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +19,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     @Override
@@ -44,21 +47,45 @@ public class UserServiceImpl implements UserService {
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+        boolean usernameChanged = false;
+
+        if (request.username() != null && !request.username().isBlank()) {
+            String newUsername = request.username().trim();
+
+            if (!newUsername.equalsIgnoreCase(user.getUsername())) {
+                if (userRepository.existsByUsername(newUsername)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Username '" + newUsername + "' is already taken.");
+                }
+                user.setUsername(newUsername);
+                usernameChanged = true;
+            }
+        }
+
         if (request.bio() != null) {
             user.setBio(request.bio());
         }
+
         if (request.avatarUrl() != null) {
             user.setAvatarUrl(request.avatarUrl());
         }
 
         Users updatedUser = userRepository.save(user);
 
+        String newToken = null;
+        if (usernameChanged) {
+            String userRole = user.getRole() != null ? user.getRole() : "ROLE_USER";
+            newToken = jwtUtils.generateTokenFromUsername(updatedUser.getUsername(), userRole);
+        }
+
         return new UserProfileResponse(
                 updatedUser.getUsername(),
                 updatedUser.getBio(),
                 updatedUser.getAvatarUrl(),
-                true, // Set to true because the user is updating their own profile
-                updatedUser.getEmail());
+                true,
+                updatedUser.getEmail(),
+                newToken
+        );
     }
 
     @Override

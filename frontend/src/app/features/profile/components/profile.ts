@@ -1,16 +1,16 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserProfileResponse } from '../models/user-profile.model';
-
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './profile.html',
   styleUrl: './profile.css'
 })

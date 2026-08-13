@@ -4,6 +4,7 @@ export interface UserProfileResponse {
   avatarUrl?: string | null;
   isOwner: boolean;
   email?: string;
+  token?: string;
 }
 
 export interface UserSecurityResponse {

@@ -43,7 +43,11 @@ export class SettingsComponent implements OnInit {
                 next: (data) => {
                     this.profileData.username = data.username;
                     this.profileData.bio = data.bio || '';
+                    this.profileData.avatarUrl = data.avatarUrl || '';
                     this.accountData.email = data.email || '';
+                },
+                error: (err) => {
+                    console.error('Failed to load user profile:', err);
                 }
             });
         }
@@ -54,6 +58,7 @@ export class SettingsComponent implements OnInit {
         this.statusMessage = null;
 
         this.userService.updateProfileInfo({
+            username: this.profileData.username,
             bio: this.profileData.bio,
             avatarUrl: this.profileData.avatarUrl
         }).subscribe({
@@ -62,9 +67,12 @@ export class SettingsComponent implements OnInit {
                 this.isError = false;
                 this.statusMessage = 'Profile updated successfully!';
 
-                // Refresh local state with updated values
+                // Refresh local component state
+                this.profileData.username = updatedProfile.username || '';
                 this.profileData.bio = updatedProfile.bio || '';
                 this.profileData.avatarUrl = updatedProfile.avatarUrl || '';
+
+                this.authService.updateSession(updatedProfile.username, updatedProfile.token);
             },
             error: (err) => {
                 this.loading = false;

@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-// ADDED: Import your custom UserDetailsImpl class
 import com.zone01.myblog.security.services.UserDetailsImpl;
 
 @Component
@@ -34,6 +33,16 @@ public class JwtUtils {
         return Jwts.builder()
                 .subject(userPrincipal.getUsername())
                 .claim("role", userPrincipal.getRole())
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateTokenFromUsername(String username, String role) {
+        return Jwts.builder()
+                .subject(username)
+                .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(getSigningKey())
