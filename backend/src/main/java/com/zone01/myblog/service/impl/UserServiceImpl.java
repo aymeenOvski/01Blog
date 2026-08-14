@@ -4,15 +4,14 @@ import com.zone01.myblog.dto.UpdateProfileInfoRequest;
 import com.zone01.myblog.dto.UpdateProfileSecurityRequest;
 import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
+import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.security.jwt.JwtUtils;
 import com.zone01.myblog.service.UserService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -31,7 +30,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserProfileResponse getUserProfile(String username) {
         Users user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         return new UserProfileResponse(
                 user.getUsername(),
@@ -45,7 +44,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserProfileResponse updateProfileInfo(String currentUsername, UpdateProfileInfoRequest request) {
         Users user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         boolean usernameChanged = false;
 
@@ -54,8 +53,7 @@ public class UserServiceImpl implements UserService {
 
             if (!newUsername.equalsIgnoreCase(user.getUsername())) {
                 if (userRepository.existsByUsername(newUsername)) {
-                    throw new ResponseStatusException(HttpStatus.CONFLICT,
-                            "Username '" + newUsername + "' is already taken.");
+                    throw BlogApiException.conflict("Username is already taken");
                 }
                 user.setUsername(newUsername);
                 usernameChanged = true;
@@ -92,10 +90,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserSecurityResponse updateProfileSecurity(String currentUsername, UpdateProfileSecurityRequest request) {
         Users user = userRepository.findByUsername(currentUsername)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPasswordHash())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid current password");
+            throw BlogApiException.unauthorized("Invalid current password");
         }
 
         if (request.newPassword() != null && !request.newPassword().isBlank()) {
@@ -104,7 +102,7 @@ public class UserServiceImpl implements UserService {
 
         if (request.email() != null && !request.email().equalsIgnoreCase(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already in use");
+                throw BlogApiException.conflict("Email is already in use");
             }
             user.setEmail(request.email());
         }

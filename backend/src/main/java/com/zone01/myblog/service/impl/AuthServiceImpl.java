@@ -3,12 +3,12 @@ package com.zone01.myblog.service.impl;
 import com.zone01.myblog.dto.AuthResponse;
 import com.zone01.myblog.dto.LoginRequest;
 import com.zone01.myblog.dto.RegisterRequest;
+import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.security.jwt.JwtUtils;
 import com.zone01.myblog.security.services.UserDetailsImpl;
 import com.zone01.myblog.service.AuthService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -42,11 +41,11 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username is already taken");
+            throw BlogApiException.conflict("Username is already taken");
         }
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already in use");
+            throw BlogApiException.conflict("Email is already in use");
         }
 
         Users user = new Users(
@@ -82,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
 
             return new AuthResponse(token, authentication.getName(), role);
         } catch (BadCredentialsException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            throw BlogApiException.unauthorized("Invalid username or password");
         }
     }
 }

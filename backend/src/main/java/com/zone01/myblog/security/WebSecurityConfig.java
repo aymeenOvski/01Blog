@@ -21,6 +21,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.zone01.myblog.security.jwt.AuthTokenFilter;
 import com.zone01.myblog.security.services.UserDetailsServiceImpl;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
@@ -68,13 +70,18 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable()) // Disabled for stateless REST APIs
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                    .requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
-                    .anyRequest().authenticated()                 // Everything else requires a valid JWT
-            );
+                .csrf(csrf -> csrf.disable()) // Disabled for stateless REST APIs
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                    "Error: Unauthorized (Bad or Missing Token)");
+                        }))
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
+                                .anyRequest().authenticated() // Everything else requires a valid JWT
+                );
 
         http.authenticationProvider(authenticationProvider());
 
