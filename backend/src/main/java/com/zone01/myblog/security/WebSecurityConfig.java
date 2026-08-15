@@ -76,10 +76,15 @@ public class WebSecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                                     "Error: Unauthorized (Bad or Missing Token)");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                                    "Error: Access Forbidden (Insufficient Permissions)");
                         }))
                 .authorizeHttpRequests(
                         auth -> auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
+                                .requestMatchers("/uploads/**").permitAll() // Allow fetching avatar images
                                 .anyRequest().authenticated() // Everything else requires a valid JWT
                 );
 

@@ -12,6 +12,8 @@ import com.zone01.myblog.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import com.zone01.myblog.service.FileStorageService;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -19,11 +21,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final FileStorageService fileStorageService;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -82,8 +86,7 @@ public class UserServiceImpl implements UserService {
                 updatedUser.getAvatarUrl(),
                 true,
                 updatedUser.getEmail(),
-                newToken
-        );
+                newToken);
     }
 
     @Override
@@ -113,5 +116,23 @@ public class UserServiceImpl implements UserService {
                 savedUser.getUsername(),
                 savedUser.getEmail(),
                 "Security preferences updated successfully");
+    }
+
+    @Override
+    @Transactional
+    public UserProfileResponse updateAvatar(String currentUsername, MultipartFile file) {
+        Users user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+        // Delete old avatar file from disk if present
+        if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {
+            fileStorageService.deleteAvatar(user.getAvatarUrl());
+        }
+
+        String avatarPath = fileStorageService.storeAvatar(file);
+        user.setAvatarUrl(avatarPath);
+        userRepository.save(user);
+
+        return new UserProfileResponse(user.getUsername(), user.getBio(), user.getAvatarUrl(), true, user.getEmail());
     }
 }

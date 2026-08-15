@@ -6,10 +6,15 @@ import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
 import com.zone01.myblog.service.UserService;
 import jakarta.validation.Valid;
+
+import java.security.Principal;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -40,5 +45,11 @@ public class UserController {
             @Valid @RequestBody UpdateProfileSecurityRequest request) {
 
         return ResponseEntity.ok(userService.updateProfileSecurity(userDetails.getUsername(), request));
+    }
+
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<UserProfileResponse> uploadAvatar(@RequestParam("file") MultipartFile file, Principal principal) {
+        UserProfileResponse updatedProfile = userService.updateAvatar(principal.getName(), file);
+        return ResponseEntity.ok(updatedProfile);
     }
 }
