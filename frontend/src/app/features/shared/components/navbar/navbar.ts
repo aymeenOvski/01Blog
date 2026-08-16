@@ -11,7 +11,7 @@ import { AuthService } from '../../../auth/services/auth.service';
   styleUrl: './navbar.css'
 })
 export class Navbar {
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private router = inject(Router);
   private elementRef = inject(ElementRef);
 
@@ -22,7 +22,11 @@ export class Navbar {
   }
 
   get username(): string {
-    return this.authService.getUsername() || 'User';
+    return this.authService.currentUser().username || 'User';
+  }
+
+  get avatarUrl(): string | null {
+    return this.authService.currentUser().avatarUrl;
   }
 
   toggleDropdown(): void {

@@ -10,12 +10,13 @@
     <!-- User Avatar Trigger -->
     <button 
       (click)="toggleDropdown()" 
-      class="avatar-btn border-0 bg-transparent"
+      class="avatar-btn border-0 bg-transparent p-0"
       [class.active]="isDropdownOpen"
       aria-label="User menu"
     >
-      <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-white">
-        {{ username.charAt(0).toUpperCase() }}
+      <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-white overflow-hidden">
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="w-100 h-100 object-fit-cover" />
+        <span *ngIf="!avatarUrl">{{ username.charAt(0).toUpperCase() }}</span>
       </div>
     </button>
 

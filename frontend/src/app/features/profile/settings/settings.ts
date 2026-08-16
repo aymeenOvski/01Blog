@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
 
@@ -14,8 +15,9 @@ import { AuthService } from '../../auth/services/auth.service';
 export class SettingsComponent implements OnInit {
     private userService = inject(UserService);
     private authService = inject(AuthService);
+    private http = inject(HttpClient);
 
-    activeTab: 'profile' | 'account' = 'account';
+    activeTab: 'profile' | 'account' = 'profile';
 
     profileData = {
         username: '',
@@ -53,6 +55,33 @@ export class SettingsComponent implements OnInit {
         }
     }
 
+    onFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            this.loading = true;
+            this.statusMessage = 'Uploading avatar...';
+
+            this.http.post<{ avatarUrl: string }>('/api/users/upload-avatar', formData)
+                .subscribe({
+                    next: (res) => {
+                        this.loading = false;
+                        this.isError = false;
+                        this.statusMessage = null;
+                        this.profileData.avatarUrl = res.avatarUrl;
+                    },
+                    error: (err) => {
+                        this.loading = false;
+                        this.isError = true;
+                        this.statusMessage = 'Failed to upload avatar image.';
+                    }
+                });
+        }
+    }
+
     saveProfile(): void {
         this.loading = true;
         this.statusMessage = null;
@@ -66,7 +95,6 @@ export class SettingsComponent implements OnInit {
                 this.loading = false;
                 this.isError = false;
                 this.statusMessage = 'Profile updated successfully!';
-
                 // Refresh local component state
                 this.profileData.username = updatedProfile.username || '';
                 this.profileData.bio = updatedProfile.bio || '';
