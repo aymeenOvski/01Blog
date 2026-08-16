@@ -1,0 +1,55 @@
+<div class="modal-backdrop" (click)="onClose()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Create Post</h3>
+      <button type="button" class="btn-close-icon" (click)="onClose()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <textarea
+        class="post-textarea"
+        rows="4"
+        placeholder="What's on your mind? Share your progress..."
+        [(ngModel)]="content"
+      ></textarea>
+
+      <!-- Media Preview Section -->
+      <div *ngIf="mediaPreviewUrl" class="media-preview-container">
+        <button type="button" class="btn-remove-media" (click)="removeMedia()">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+
+        <img *ngIf="mediaType === 'image'" [src]="mediaPreviewUrl" alt="Media preview" class="preview-media" />
+        <video *ngIf="mediaType === 'video'" [src]="mediaPreviewUrl" controls class="preview-media"></video>
+      </div>
+
+      <!-- File Attachment Bar -->
+      <div class="file-upload-bar">
+        <label for="media-file-input" class="upload-label">
+          <i class="bi bi-image me-2"></i> Add Photo/Video
+        </label>
+        <input
+          type="file"
+          id="media-file-input"
+          accept="image/*,video/*"
+          (change)="onFileSelected($event)"
+          hidden
+        />
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-cancel" (click)="onClose()">Cancel</button>
+      <button
+        type="button"
+        class="btn-submit"
+        [disabled]="!content.trim() && !selectedFile"
+        (click)="onSubmit()"
+      >
+        Publish
+      </button>
+    </div>
+  </div>
+</div>

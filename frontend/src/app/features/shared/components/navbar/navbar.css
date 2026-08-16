@@ -107,3 +107,23 @@
   color: #ef4444;
   background-color: rgba(239, 68, 68, 0.12);
 }
+
+.btn-write {
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-write:hover {
+  background-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.btn-write:active {
+  transform: scale(0.96);
+}
