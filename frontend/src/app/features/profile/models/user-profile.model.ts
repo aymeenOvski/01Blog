@@ -5,6 +5,15 @@ export interface UserProfileResponse {
   isOwner: boolean;
   email?: string;
   token?: string;
+  createdAt?: string;
+  followersCount?: number;
+  followingCount?: number;
+  isFollowing?: boolean;
+}
+
+export interface UserSummary {
+  username: string;
+  avatarUrl?: string | null;
 }
 
 export interface UserSecurityResponse {

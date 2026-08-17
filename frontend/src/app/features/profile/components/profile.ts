@@ -6,9 +6,10 @@ import { Subscription } from 'rxjs';
 
 import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
-import { UserProfileResponse } from '../models/user-profile.model';
+import { UserProfileResponse, UserSummary } from '../models/user-profile.model';
 import { PostService } from '../../posts/services/post.service';
 import { PostResponse } from '../../posts/models/post.model';
+
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -32,6 +33,10 @@ export class Profile implements OnInit, OnDestroy {
   postsLoading = false;
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
+
+  activeModalTab: 'followers' | 'following' | null = null;
+  userListLoading = false;
+  userList: UserSummary[] = [];
 
   ngOnInit(): void {
     this.routeSub = this.route.paramMap.subscribe(params => {
@@ -72,6 +77,32 @@ export class Profile implements OnInit, OnDestroy {
         this.postsLoading = false;
       }
     });
+  }
+
+  toggleFollow(): void {
+    if (!this.profile || this.isOwner) return;
+
+    const originalState = this.profile.isFollowing;
+    this.profile.isFollowing = !originalState;
+    this.profile.followersCount = (this.profile.followersCount || 0) + (originalState ? -1 : 1);
+
+    // We are going to call the follow/unfollow API later
+  }
+
+  openUserListModal(tab: 'followers' | 'following'): void {
+    if (!this.profile) return;
+    this.activeModalTab = tab;
+    this.userListLoading = true;
+    this.userList = [];
+
+    setTimeout(() => {
+      this.userListLoading = false;
+    }, 300);
+  }
+
+  closeUserListModal(): void {
+    this.activeModalTab = null;
+    this.userList = [];
   }
 
   resolveMediaUrl(mediaUrl: string | null): string {

@@ -1,12 +1,66 @@
 <div class="profile-container" *ngIf="!loading && profile">
-  <h2>{{ profile.username }}'s Profile</h2>
-  <p>{{ profile.bio || 'No bio provided.' }}</p>
+  
+  <!-- Profile Header Hero Card -->
+  <div class="profile-header-card p-4 mb-4">
+    <div class="d-flex flex-column flex-sm-row align-items-center gap-4">
+      
+      <!-- Avatar Display -->
+      <div class="profile-avatar-large">
+        <img *ngIf="profile.avatarUrl" [src]="resolveMediaUrl(profile.avatarUrl)" alt="Profile avatar" class="w-100 h-100 object-fit-cover rounded-circle" />
+        <span *ngIf="!profile.avatarUrl">{{ profile.username.charAt(0).toUpperCase() }}</span>
+      </div>
 
-  <!-- Cleaned Navigation for Profile Owner -->
-  <div class="profile-nav" *ngIf="isOwner">
-    <a routerLink="/settings" class="nav-btn">Edit Profile / Settings</a>
+      <!-- Info & Actions -->
+      <div class="flex-grow-1 text-center text-sm-start">
+        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 mb-2">
+          <div>
+            <h2 class="h4 text-white fw-bold mb-0">{{ profile.username }}</h2>
+            <small class="text-muted-custom" *ngIf="profile.createdAt">
+              Joined {{ profile.createdAt | date:'MMMM yyyy' }}
+            </small>
+          </div>
+
+          <!-- Action Button -->
+          <div>
+            <a *ngIf="isOwner" routerLink="/settings" class="btn btn-outline-custom btn-sm px-3 rounded-2 fw-semibold">
+              Edit Settings
+            </a>
+            <button 
+              *ngIf="!isOwner" 
+              (click)="toggleFollow()" 
+              class="btn btn-sm px-4 rounded-2 fw-semibold"
+              [ngClass]="profile.isFollowing ? 'btn-outline-danger' : 'btn-primary'"
+            >
+              {{ profile.isFollowing ? 'Unfollow' : 'Follow' }}
+            </button>
+          </div>
+        </div>
+
+        <p class="profile-bio text-light my-3">{{ profile.bio || 'No bio provided yet.' }}</p>
+
+        <!-- Interactive Clickable Stats Row -->
+        <div class="profile-stats-row d-flex justify-content-center justify-content-sm-start gap-4 pt-2">
+          <div class="stat-item">
+            <span class="stat-number fw-bold text-white">{{ posts.length }}</span>
+            <span class="stat-label text-muted-custom small ms-1">Posts</span>
+          </div>
+
+          <button (click)="openUserListModal('followers')" class="stat-item btn-stat">
+            <span class="stat-number fw-bold text-white">{{ profile.followersCount || 0 }}</span>
+            <span class="stat-label text-muted-custom small ms-1">Followers</span>
+          </button>
+
+          <button (click)="openUserListModal('following')" class="stat-item btn-stat">
+            <span class="stat-number fw-bold text-white">{{ profile.followingCount || 0 }}</span>
+            <span class="stat-label text-muted-custom small ms-1">Following</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
   </div>
 
+  <!-- Recent Posts Section -->
   <section class="posts-section mt-4">
     <h3 class="posts-title mb-3">Recent Posts</h3>
 
@@ -49,4 +103,35 @@
       </article>
     </div>
   </section>
+
+  <!-- Followers / Following Overlay Modal -->
+  <div class="modal-backdrop" *ngIf="activeModalTab" (click)="closeUserListModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header d-flex align-items-center justify-content-between p-3 border-bottom border-secondary">
+        <h5 class="text-white mb-0 text-capitalize">{{ activeModalTab }}</h5>
+        <button class="btn-close btn-close-white" (click)="closeUserListModal()"></button>
+      </div>
+
+      <div class="modal-body p-3">
+        <div *ngIf="userListLoading" class="text-muted-custom text-center py-4">Loading list...</div>
+        
+        <div *ngIf="!userListLoading && userList.length === 0" class="text-muted-custom text-center py-4">
+          No {{ activeModalTab }} found.
+        </div>
+
+        <div *ngIf="!userListLoading && userList.length > 0" class="user-list">
+          <div *ngFor="let user of userList" class="user-list-item d-flex align-items-center gap-3 py-2">
+            <div class="post-avatar">
+              <img *ngIf="user.avatarUrl" [src]="resolveMediaUrl(user.avatarUrl)" alt="Avatar" />
+              <span *ngIf="!user.avatarUrl">{{ user.username.charAt(0).toUpperCase() }}</span>
+            </div>
+            <a [routerLink]="['/profile', user.username]" (click)="closeUserListModal()" class="text-white text-decoration-none fw-semibold">
+              {{ user.username }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
