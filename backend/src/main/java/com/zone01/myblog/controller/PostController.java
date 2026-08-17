@@ -1,12 +1,13 @@
 package com.zone01.myblog.controller;
 
-import com.zone01.myblog.dto.CreatePostRequest;
 import com.zone01.myblog.dto.PostResponse;
+import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.service.PostService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,12 +24,17 @@ public class PostController {
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<PostResponse> createPost(
             @AuthenticationPrincipal UserDetails userDetails,
-            @ModelAttribute CreatePostRequest request) {
+            @RequestParam(value = "content", required = false) String content,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+
+        if (userDetails == null) {
+            throw BlogApiException.unauthorized("Authentication required to create post");
+        }
 
         PostResponse response = postService.createPost(
                 userDetails.getUsername(), 
-                request.content(), 
-                request.file()
+                content,
+                file
         );
         return ResponseEntity.ok(response);
     }

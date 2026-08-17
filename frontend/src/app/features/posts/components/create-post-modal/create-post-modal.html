@@ -41,14 +41,15 @@
     </div>
 
     <div class="modal-footer">
+      <p class="submit-error" *ngIf="errorMessage">{{ errorMessage }}</p>
       <button type="button" class="btn-cancel" (click)="onClose()">Cancel</button>
       <button
         type="button"
         class="btn-submit"
-        [disabled]="!content.trim() && !selectedFile"
+        [disabled]="(!content.trim() && !selectedFile) || isSubmitting"
         (click)="onSubmit()"
       >
-        Publish
+        {{ isSubmitting ? 'Publishing...' : 'Publish' }}
       </button>
     </div>
   </div>

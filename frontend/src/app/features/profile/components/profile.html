@@ -6,4 +6,47 @@
   <div class="profile-nav" *ngIf="isOwner">
     <a routerLink="/settings" class="nav-btn">Edit Profile / Settings</a>
   </div>
+
+  <section class="posts-section mt-4">
+    <h3 class="posts-title mb-3">Recent Posts</h3>
+
+    <div *ngIf="postsLoading" class="posts-state">Loading posts...</div>
+    <div *ngIf="!postsLoading && postsErrorMessage" class="posts-state error">{{ postsErrorMessage }}</div>
+    <div *ngIf="!postsLoading && !postsErrorMessage && posts.length === 0" class="posts-state">
+      No posts yet.
+    </div>
+
+    <div *ngIf="!postsLoading && !postsErrorMessage && posts.length > 0" class="posts-list">
+      <article class="post-card" *ngFor="let post of posts">
+        <header class="post-card-header">
+          <div class="post-user-block">
+            <div class="post-avatar">
+              <img *ngIf="post.userAvatarUrl" [src]="resolveMediaUrl(post.userAvatarUrl)" alt="User avatar" />
+              <span *ngIf="!post.userAvatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
+            </div>
+            <div>
+              <p class="post-username mb-0">{{ post.username }}</p>
+              <small class="post-time">{{ post.createdAt | date:'medium' }}</small>
+            </div>
+          </div>
+        </header>
+
+        <p class="post-content mb-0" *ngIf="post.content">{{ post.content }}</p>
+
+        <div class="post-media" *ngIf="post.mediaUrl">
+          <img
+            *ngIf="post.mediaType === 'image' || post.mediaType?.startsWith('image/')"
+            [src]="resolveMediaUrl(post.mediaUrl)"
+            alt="Post image"
+          />
+          <video
+            *ngIf="post.mediaType === 'video' || post.mediaType?.startsWith('video/')"
+            [src]="resolveMediaUrl(post.mediaUrl)"
+            controls
+            preload="metadata"
+          ></video>
+        </div>
+      </article>
+    </div>
+  </section>
 </div>

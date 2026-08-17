@@ -1,6 +1,7 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PostService } from '../../services/post.service';
 
 @Component({
   selector: 'app-create-post-modal',
@@ -11,11 +12,14 @@ import { FormsModule } from '@angular/forms';
 })
 export class CreatePostModalComponent {
   @Output() close = new EventEmitter<void>();
+  private postService = inject(PostService);
 
   content = '';
   selectedFile: File | null = null;
   mediaPreviewUrl: string | null = null;
   mediaType: 'image' | 'video' | null = null;
+  isSubmitting = false;
+  errorMessage: string | null = null;
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -51,14 +55,22 @@ export class CreatePostModalComponent {
   }
 
   onSubmit(): void {
-    if (!this.content.trim() && !this.selectedFile) return;
+    if ((!this.content.trim() && !this.selectedFile) || this.isSubmitting) {
+      return;
+    }
 
-    // TODO: Connect with PostService once backend endpoint is ready
-    console.log('Submitting post base:', {
-      content: this.content,
-      media: this.selectedFile
+    this.isSubmitting = true;
+    this.errorMessage = null;
+
+    this.postService.createPost(this.content.trim(), this.selectedFile).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.onClose();
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        this.errorMessage = err.error?.message || 'Failed to publish post.';
+      }
     });
-
-    this.onClose();
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
@@ -11,14 +11,33 @@ export interface UserSession {
     providedIn: 'root'
 })
 export class AuthService {
+    private http = inject(HttpClient);
     private apiUrl = 'http://localhost:8080/api/auth';
+    private userApiUrl = 'http://localhost:8080/api/users';
 
     currentUser = signal<UserSession>({
         username: this.getUsername(),
         avatarUrl: null
     });
 
-    constructor(private http: HttpClient) { }
+    constructor() {
+        if (this.isLoggedIn()) {
+            this.fetchUserProfile().subscribe();
+        }
+    }
+
+    fetchUserProfile(): Observable<any> {
+        const username = this.getUsername();
+        if (!username) return new Observable(obs => obs.complete());
+
+        return this.http.get<any>(`${this.userApiUrl}/${username}`).pipe(
+            tap((profile) => {
+                if (profile?.avatarUrl !== undefined) {
+                    this.updateSession(profile.username, null, profile.avatarUrl);
+                }
+            })
+        );
+    }
 
     register(userData: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/register`, userData).pipe(
@@ -28,7 +47,10 @@ export class AuthService {
 
     login(credentials: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-            tap((res: any) => this.saveAuthData(res))
+            tap((res: any) => {
+                this.saveAuthData(res);
+                this.fetchUserProfile().subscribe();
+            })
         );
     }
 
@@ -37,7 +59,7 @@ export class AuthService {
             localStorage.setItem('auth_token', response.token);
         }
 
-        const nextUsername = this.getUsername() ?? response?.username ?? null;
+        const nextUsername = response?.username ?? this.getUsername() ?? null;
         const nextAvatarUrl = response?.avatarUrl ?? this.currentUser().avatarUrl ?? null;
 
         this.currentUser.set({
