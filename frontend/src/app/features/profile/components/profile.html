@@ -72,7 +72,9 @@
 
     <div *ngIf="!postsLoading && !postsErrorMessage && posts.length > 0" class="posts-list">
       <article class="post-card" *ngFor="let post of posts">
-        <header class="post-card-header">
+        
+        <!-- Post Header -->
+        <header class="post-card-header d-flex align-items-center justify-content-between">
           <div class="post-user-block">
             <div class="post-avatar">
               <img *ngIf="post.userAvatarUrl" [src]="resolveMediaUrl(post.userAvatarUrl)" alt="User avatar" />
@@ -83,10 +85,73 @@
               <small class="post-time">{{ post.createdAt | date:'medium' }}</small>
             </div>
           </div>
+
+          <!-- 3-Dot Options Menu Container -->
+          <div class="dropdown post-options-dropdown">
+            <button 
+              class="btn btn-icon text-muted-custom p-1" 
+              type="button" 
+              (click)="togglePostMenu(post, $event)"
+              aria-label="Post options"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="12" cy="5" r="1"/>
+                <circle cx="12" cy="19" r="1"/>
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu items -->
+            <div class="dropdown-menu dropdown-menu-end show" *ngIf="post.showMenu">
+              
+              <!-- Owner Actions: Edit & Delete -->
+              <ng-container *ngIf="isOwner || currentUser === post.username; else visitorActions">
+                <button class="dropdown-item d-flex align-items-center gap-2" (click)="editPost(post)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                  </svg>
+                  Edit Post
+                </button>
+                <button class="dropdown-item d-flex align-items-center gap-2 text-danger" (click)="deletePost(post)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                  </svg>
+                  Delete Post
+                </button>
+              </ng-container>
+
+              <!-- Visitor Action: Repost -->
+              <ng-template #visitorActions>
+                <button class="dropdown-item d-flex align-items-center gap-2" (click)="repost(post)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>
+                  </svg>
+                  Repost
+                </button>
+              </ng-template>
+
+            </div>
+          </div>
         </header>
 
-        <p class="post-content mb-0" *ngIf="post.content">{{ post.content }}</p>
+        <!-- Regular Content View vs. Edit Mode -->
+        <div *ngIf="!post.isEditing" class="post-body">
+          <p class="post-content mb-0" *ngIf="post.content">{{ post.content }}</p>
+        </div>
 
+        <div *ngIf="post.isEditing" class="post-edit-container my-2">
+          <textarea 
+            class="form-control form-control-sm comment-input mb-2" 
+            [(ngModel)]="post.editingContent" 
+            rows="3"
+          ></textarea>
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-secondary btn-sm" (click)="cancelEdit(post)">Cancel</button>
+            <button class="btn btn-primary btn-sm" (click)="saveEdit(post)">Save</button>
+          </div>
+        </div>
+
+        <!-- Post Media -->
         <div class="post-media" *ngIf="post.mediaUrl">
           <img
             *ngIf="post.mediaType === 'image' || post.mediaType?.startsWith('image/')"
@@ -100,6 +165,68 @@
             preload="metadata"
           ></video>
         </div>
+
+        <!-- Post Actions (Likes & Comments Bar) -->
+        <div class="post-actions d-flex align-items-center gap-3 pt-3 mt-2 border-top border-secondary-subtle">
+          <button 
+            (click)="toggleLike(post)" 
+            class="btn-action d-flex align-items-center gap-1"
+            [class.liked]="post.isLiked"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" [attr.fill]="post.isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            </svg>
+            <span>{{ post.likesCount || 0 }}</span>
+          </button>
+
+          <button (click)="toggleComments(post)" class="btn-action d-flex align-items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>{{ post.commentsCount || (post.comments ? post.comments.length : 0) }}</span>
+          </button>
+        </div>
+
+        <!-- Collapsible Comments Section -->
+        <div class="comments-section mt-3" *ngIf="post.showComments">
+          
+          <!-- Comment Input Form -->
+          <form (ngSubmit)="addComment(post)" class="d-flex align-items-start gap-2 mb-3">
+            <textarea 
+              class="form-control form-control-sm comment-input" 
+              placeholder="Write a comment... (Enter to post, Shift+Enter for new line)" 
+              [(ngModel)]="post.newCommentText" 
+              name="commentText"
+              rows="1"
+              (keydown.enter)="onCommentKeyDown($event, post)"
+              [disabled]="!!post.isSubmittingComment"
+            ></textarea>
+            <button 
+              type="submit" 
+              class="btn btn-primary btn-sm px-3" 
+              [disabled]="!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment"
+            >
+              Post
+            </button>
+          </form>
+
+          <!-- Comment List Thread -->
+          <div class="comments-list d-flex flex-column gap-2" *ngIf="post.comments && post.comments.length > 0">
+            <div class="comment-item p-2 rounded" *ngFor="let comment of post.comments">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fw-bold text-white small">{{ comment.username }}</span>
+                <span class="text-muted-custom small">{{ comment.createdAt | date:'shortTime' }}</span>
+              </div>
+              <p class="comment-text text-light mb-0 small" style="white-space: pre-wrap;">{{ comment.content }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="!post.comments || post.comments.length === 0" class="text-muted-custom small text-center py-2">
+            No comments yet. Be the first to comment!
+          </div>
+
+        </div>
+
       </article>
     </div>
   </section>

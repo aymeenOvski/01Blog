@@ -1,14 +1,15 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
+
 import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserProfileResponse, UserSummary } from '../models/user-profile.model';
 import { PostService } from '../../posts/services/post.service';
-import { PostResponse } from '../../posts/models/post.model';
+import { PostResponse, CommentResponse } from '../../posts/models/post.model';
 
 @Component({
   selector: 'app-profile',
@@ -18,6 +19,7 @@ import { PostResponse } from '../../posts/models/post.model';
   styleUrl: './profile.css'
 })
 export class Profile implements OnInit, OnDestroy {
+  private elementRef = inject(ElementRef);
   private userService = inject(UserService);
   private authService = inject(AuthService);
   private postService = inject(PostService);
@@ -68,7 +70,12 @@ export class Profile implements OnInit, OnDestroy {
 
     this.postService.getUserPosts(normalizedUsername).subscribe({
       next: (posts) => {
-        this.posts = posts;
+        this.posts = posts.map(post => ({
+          ...post,
+          showMenu: false,
+          isEditing: false,
+          editingContent: ''
+        }));
         this.postsLoading = false;
       },
       error: (err) => {
@@ -86,7 +93,7 @@ export class Profile implements OnInit, OnDestroy {
     this.profile.isFollowing = !originalState;
     this.profile.followersCount = (this.profile.followersCount || 0) + (originalState ? -1 : 1);
 
-    // We are going to call the follow/unfollow API later
+    // TODO: We are going to call the follow/unfollow API later
   }
 
   openUserListModal(tab: 'followers' | 'following'): void {
@@ -105,6 +112,58 @@ export class Profile implements OnInit, OnDestroy {
     this.userList = [];
   }
 
+  /* Optimistic Like Handler */
+  toggleLike(post: PostResponse): void {
+    const originalState = post.isLiked ?? false;
+    const currentCount = post.likesCount ?? 0;
+
+    post.isLiked = !originalState;
+    post.likesCount = currentCount + (originalState ? -1 : 1);
+
+    // TODO: Connect to backend API later
+  }
+
+  /* Collapsible Comments Toggle */
+  toggleComments(post: PostResponse): void {
+    post.showComments = !post.showComments;
+    
+    if (post.showComments && !post.comments) {
+      post.comments = [];
+      // TODO: Fetch comments from backend API later
+    }
+  }
+
+  /* Optimistic Comment Submission */
+  addComment(post: PostResponse): void {
+    if (!post.newCommentText || !post.newCommentText.trim()) return;
+
+    const commentText = post.newCommentText.trim();
+    post.isSubmittingComment = true;
+
+    const newComment: CommentResponse = {
+      username: this.currentUser || 'me',
+      content: commentText,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!post.comments) post.comments = [];
+    post.comments.push(newComment);
+    post.commentsCount = (post.commentsCount || 0) + 1;
+    post.newCommentText = '';
+    post.isSubmittingComment = false;
+
+    // TODO: Connect to backend API later
+  }
+
+  onCommentKeyDown(event: Event, post: PostResponse): void {
+    const keyboardEvent = event as KeyboardEvent;
+    
+    if (keyboardEvent.key === 'Enter' && !keyboardEvent.shiftKey) {
+      keyboardEvent.preventDefault();
+      this.addComment(post);
+    }
+  }
+
   resolveMediaUrl(mediaUrl: string | null): string {
     if (!mediaUrl) {
       return '';
@@ -117,7 +176,63 @@ export class Profile implements OnInit, OnDestroy {
     return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
   }
 
+  togglePostMenu(post: PostResponse, event: Event): void {
+    event.stopPropagation();
+    // Close any other active options menus
+    this.posts.forEach(p => {
+      if (p !== post) p.showMenu = false;
+    });
+    post.showMenu = !post.showMenu;
+  }
+
+  editPost(post: PostResponse): void {
+    post.showMenu = false;
+    post.isEditing = true;
+    post.editingContent = post.content;
+  }
+
+  cancelEdit(post: PostResponse): void {
+    post.isEditing = false;
+    post.editingContent = '';
+  }
+
+  saveEdit(post: PostResponse): void {
+    if (!post.editingContent || !post.editingContent.trim()) return;
+
+    post.content = post.editingContent.trim();
+    post.isEditing = false;
+
+    // TODO: Connect to postService.updatePost(...) API later
+  }
+
+  deletePost(post: PostResponse): void {
+    post.showMenu = false;
+    if (confirm('Are you sure you want to delete this post?')) {
+      this.posts = this.posts.filter(p => p.id !== post.id);
+
+      // TODO: Connect to postService.deletePost(...) API later
+    }
+  }
+
+  repost(post: PostResponse): void {
+    post.showMenu = false;
+    alert(`Reposted "${post.username}"'s post!`);
+
+    // TODO: Connect to postService.repost(...) API later
+  }
+
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
   }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const clickedInside = this.elementRef.nativeElement.contains(event.target);
+    const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');
+
+    if (!isMenuButton) {
+      this.posts.forEach(p => p.showMenu = false);
+    }
+  }
+
 }

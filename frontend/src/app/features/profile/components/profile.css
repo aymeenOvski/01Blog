@@ -220,6 +220,126 @@
     word-break: break-word;
 }
 
+.post-actions .btn-action {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.post-actions .btn-action:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.post-actions .btn-action svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Liked state styling */
+.post-actions .btn-action.liked {
+  color: #f43f5e !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+  background: rgba(244, 63, 94, 0.1) !important;
+}
+
+.post-actions .btn-action.liked svg {
+  fill: #f43f5e !important;
+  stroke: #f43f5e !important;
+}
+
+.comments-section {
+  background: rgba(0, 0, 0, 0.25) !important;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comments-section .comment-input {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+}
+
+.comments-section .comment-input::placeholder {
+  color: #64748b !important;
+}
+
+.comments-section .comment-input:focus {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+  outline: none;
+}
+
+.comment-item {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 8px;
+}
+
+.comment-text,
+.post-content {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+.profile-container {
+  padding-bottom: 3rem !important;
+}
+
+.post-edit-container textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px;
+  resize: vertical;
+}
+
+.post-edit-container textarea:focus {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25) !important;
+}
+
+.post-options-dropdown .dropdown-menu {
+  background-color: #1e293b !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.post-options-dropdown .dropdown-item {
+  color: #cbd5e1 !important;
+}
+
+.post-options-dropdown .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+.post-options-dropdown .dropdown-item.text-danger {
+  color: #f87171 !important;
+}
+
+.post-options-dropdown .dropdown-item.text-danger:hover {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
 @media (max-width: 768px) {
     .profile-container {
         padding: 0 0.75rem;
