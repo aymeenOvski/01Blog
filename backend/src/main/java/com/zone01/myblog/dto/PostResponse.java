@@ -9,5 +9,8 @@ public record PostResponse(
     String content,
     String mediaUrl,
     String mediaType,
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    long likesCount,
+    boolean isLiked,
+    long commentsCount
 ) {}

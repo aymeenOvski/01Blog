@@ -38,7 +38,6 @@ export class CreatePostModalComponent {
       const reader = new FileReader();
       reader.onload = () => {
         this.mediaPreviewUrl = reader.result as string;
-        console.log('Media preview URL: %s', this.mediaPreviewUrl);
       };
       reader.readAsDataURL(file);
     }

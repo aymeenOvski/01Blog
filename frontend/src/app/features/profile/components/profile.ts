@@ -114,50 +114,70 @@ export class Profile implements OnInit, OnDestroy {
 
   /* Optimistic Like Handler */
   toggleLike(post: PostResponse): void {
+    if (post.isSubmittingLike) return; 
+    post.isSubmittingLike = true;
+
     const originalState = post.isLiked ?? false;
     const currentCount = post.likesCount ?? 0;
 
     post.isLiked = !originalState;
-    post.likesCount = currentCount + (originalState ? -1 : 1);
+    post.likesCount = Math.max(0, currentCount + (originalState ? -1 : 1));
 
-    // TODO: Connect to backend API later
+    this.postService.toggleLike(post.id).subscribe({
+      next: (isLiked) => {
+        post.isLiked = isLiked;
+        post.isSubmittingLike = false;
+      },
+      error: () => {
+        post.isLiked = originalState;
+        post.likesCount = currentCount;
+        post.isSubmittingLike = false;
+      }
+    });
   }
 
   /* Collapsible Comments Toggle */
   toggleComments(post: PostResponse): void {
     post.showComments = !post.showComments;
-    
+
     if (post.showComments && !post.comments) {
       post.comments = [];
-      // TODO: Fetch comments from backend API later
+      this.postService.getComments(post.id).subscribe({
+        next: (comments) => {
+          post.comments = comments;
+        },
+        error: (err) => {
+          console.error('Failed to load comments', err);
+        }
+      });
     }
   }
 
   /* Optimistic Comment Submission */
   addComment(post: PostResponse): void {
-    if (!post.newCommentText || !post.newCommentText.trim()) return;
+    if (!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment) return;
 
     const commentText = post.newCommentText.trim();
     post.isSubmittingComment = true;
 
-    const newComment: CommentResponse = {
-      username: this.currentUser || 'me',
-      content: commentText,
-      createdAt: new Date().toISOString()
-    };
-
-    if (!post.comments) post.comments = [];
-    post.comments.push(newComment);
-    post.commentsCount = (post.commentsCount || 0) + 1;
-    post.newCommentText = '';
-    post.isSubmittingComment = false;
-
-    // TODO: Connect to backend API later
+    this.postService.addComment(post.id, { content: commentText }).subscribe({
+      next: (newComment) => {
+        if (!post.comments) post.comments = [];
+        post.comments.push(newComment);
+        post.commentsCount = (post.commentsCount || 0) + 1;
+        post.newCommentText = '';
+        post.isSubmittingComment = false;
+      },
+      error: (err) => {
+        console.error('Failed to add comment', err);
+        post.isSubmittingComment = false;
+      }
+    });
   }
 
   onCommentKeyDown(event: Event, post: PostResponse): void {
     const keyboardEvent = event as KeyboardEvent;
-    
+
     if (keyboardEvent.key === 'Enter' && !keyboardEvent.shiftKey) {
       keyboardEvent.preventDefault();
       this.addComment(post);
@@ -199,18 +219,32 @@ export class Profile implements OnInit, OnDestroy {
   saveEdit(post: PostResponse): void {
     if (!post.editingContent || !post.editingContent.trim()) return;
 
-    post.content = post.editingContent.trim();
-    post.isEditing = false;
+    const updatedText = post.editingContent.trim();
 
-    // TODO: Connect to postService.updatePost(...) API later
+    this.postService.updatePost(post.id, { content: updatedText }).subscribe({
+      next: (updatedPost) => {
+        post.content = updatedPost.content;
+        post.isEditing = false;
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update post');
+      }
+    });
   }
 
   deletePost(post: PostResponse): void {
     post.showMenu = false;
     if (confirm('Are you sure you want to delete this post?')) {
+      const originalPosts = [...this.posts];
+      
       this.posts = this.posts.filter(p => p.id !== post.id);
 
-      // TODO: Connect to postService.deletePost(...) API later
+      this.postService.deletePost(post.id).subscribe({
+        error: (err) => {
+          this.posts = originalPosts;
+          alert(err.error?.message || 'Failed to delete post');
+        }
+      });
     }
   }
 
@@ -234,5 +268,6 @@ export class Profile implements OnInit, OnDestroy {
       this.posts.forEach(p => p.showMenu = false);
     }
   }
+
 
 }

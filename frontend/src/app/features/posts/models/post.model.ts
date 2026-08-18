@@ -1,29 +1,37 @@
 export interface CommentResponse {
-  id?: number;
+  id: number;
   username: string;
-  userAvatarUrl?: string | null;
   content: string;
   createdAt: string;
+}
+
+export interface CommentRequest {
+  content: string;
+}
+
+export interface PostUpdateRequest {
+  content: string;
 }
 
 export interface PostResponse {
   id: number;
   username: string;
-  userAvatarUrl?: string | null;
+  avatarUrl?: string;
   content: string;
   mediaUrl?: string | null;
   mediaType?: string | null;
   createdAt: string;
-
-  showMenu?: boolean;
-  isEditing?: boolean;
-  editingContent?: string;
-
+  
+  // UI and State properties
   likesCount?: number;
   isLiked?: boolean;
+  isSubmittingLike?: boolean;
   commentsCount?: number;
   comments?: CommentResponse[];
   showComments?: boolean;
   newCommentText?: string;
   isSubmittingComment?: boolean;
+  showMenu?: boolean;
+  isEditing?: boolean;
+  editingContent?: string;
 }

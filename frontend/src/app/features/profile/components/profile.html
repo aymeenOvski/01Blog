@@ -77,8 +77,8 @@
         <header class="post-card-header d-flex align-items-center justify-content-between">
           <div class="post-user-block">
             <div class="post-avatar">
-              <img *ngIf="post.userAvatarUrl" [src]="resolveMediaUrl(post.userAvatarUrl)" alt="User avatar" />
-              <span *ngIf="!post.userAvatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
+              <img *ngIf="post.avatarUrl" [src]="resolveMediaUrl(post.avatarUrl)" [alt]="post.username" />
+              <span *ngIf="!post.avatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
             </div>
             <div>
               <p class="post-username mb-0">{{ post.username }}</p>
