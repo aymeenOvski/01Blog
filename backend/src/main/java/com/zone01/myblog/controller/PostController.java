@@ -38,15 +38,21 @@ public class PostController {
         }
 
         PostResponse response = postService.createPost(
-                userDetails.getUsername(), 
+                userDetails.getUsername(),
                 content,
                 file);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/user/{username}")
-    public ResponseEntity<List<PostResponse>> getUserPosts(@PathVariable String username) {
-        return ResponseEntity.ok(postService.getUserPosts(username));
+    @GetMapping("/user/{targetUsername}")
+    public ResponseEntity<List<PostResponse>> getUserPosts(
+            @PathVariable String targetUsername,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String currentUsername = (userDetails != null) ? userDetails.getUsername() : null;
+
+        List<PostResponse> posts = postService.getUserPosts(targetUsername, currentUsername);
+        return ResponseEntity.ok(posts);
     }
 
     @PutMapping("/{id}")

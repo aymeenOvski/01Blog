@@ -15,12 +15,13 @@ import com.zone01.myblog.repository.PostRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.PostService;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImpl implements PostService {
@@ -70,28 +71,30 @@ public class PostServiceImpl implements PostService {
 
         Post post = new Post(author, content, mediaUrl, mediaType);
         Post saved = postRepository.save(post);
-        return mapToResponse(saved, username);
+        return new PostResponse(
+                saved.getId(),
+                author.getUsername(),
+                author.getAvatarUrl(),
+                saved.getContent(),
+                saved.getMediaUrl(),
+                saved.getMediaType(),
+                saved.getCreatedAt(),
+                0L,
+                false,
+                0L
+        );
     }
+
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<PostResponse> getAllPosts(String currentUsername) {
+    //     return postRepository.findAllPostsWithCounts(currentUsername);
+    // }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse> getAllPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc()
-                .stream()
-                .map(post -> mapToResponse(post, null))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<PostResponse> getUserPosts(String username) {
-        Users author = userRepository.findByUsername(username)
-                .orElseThrow(() -> BlogApiException.notFound("User not found"));
-
-        return postRepository.findByAuthorOrderByCreatedAtDesc(author)
-                .stream()
-                .map(post -> mapToResponse(post, username))
-                .collect(Collectors.toList());
+    public List<PostResponse> getUserPosts(String targetUsername, String currentUsername) {
+        return postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
     }
 
     @Override
@@ -105,8 +108,9 @@ public class PostServiceImpl implements PostService {
         }
 
         post.setContent(request.content());
-        Post updated = postRepository.save(post);
-        return mapToResponse(updated, currentUsername);
+        postRepository.save(post);
+        
+        return postRepository.findPostByIdWithCounts(postId , currentUsername).orElseThrow(() -> BlogApiException.notFound("Post not found"));
     }
 
     @Override
@@ -125,19 +129,30 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public boolean toggleLike(Long postId, String currentUsername) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+        // Check if like exists
         var existingLike = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
         if (existingLike.isPresent()) {
             postLikeRepository.delete(existingLike.get());
             return false;
-        } else {
-            PostLike like = new PostLike(post, user);
+        }
+
+        // Verify post exists before inserting
+        if (!postRepository.existsById(postId)) {
+            throw BlogApiException.notFound("Post not found");
+        }
+
+        // Use proxy references to avoid fetching whole entities into memory
+        Post postRef = postRepository.getReferenceById(postId);
+        PostLike like = new PostLike(postRef, user);
+
+        try {
             postLikeRepository.save(like);
+            return true;
+        } catch (DataIntegrityViolationException e) {
             return true;
         }
     }
@@ -145,11 +160,15 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public CommentResponse addComment(Long postId, CommentRequest request, String currentUsername) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
+        if (!postRepository.existsById(postId)) {
+            throw BlogApiException.notFound("Post not found");
+        }
+
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+        // Proxy reference to avoid fetching the entire Post entity
+        Post post = postRepository.getReferenceById(postId);
         Comment comment = new Comment(request.content(), post, user);
 
         Comment saved = commentRepository.save(comment);
@@ -162,30 +181,5 @@ public class PostServiceImpl implements PostService {
         return commentRepository.findByPostIdOrderByCreatedAtAsc(postId).stream()
                 .map(c -> new CommentResponse(c.getId(), c.getUser().getUsername(), c.getContent(), c.getCreatedAt()))
                 .toList();
-    }
-
-    private PostResponse mapToResponse(Post post, String currentUsername) {
-        long likesCount = postLikeRepository.countByPostId(post.getId());
-
-        boolean isLiked = currentUsername != null &&
-                postLikeRepository.findByPostIdAndUserId(
-                        post.getId(),
-                        userRepository.findByUsername(currentUsername).map(Users::getId).orElse(-1L)
-                ).isPresent();
-
-        long commentsCount = commentRepository.countByPostId(post.getId());
-
-        return new PostResponse(
-                post.getId(),
-                post.getAuthor().getUsername(),
-                post.getAuthor().getAvatarUrl(),
-                post.getContent(),
-                post.getMediaUrl(),
-                post.getMediaType(),
-                post.getCreatedAt(),
-                likesCount,
-                isLiked,
-                commentsCount
-        );
     }
 }

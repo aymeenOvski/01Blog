@@ -10,8 +10,9 @@ import java.util.List;
 
 public interface PostService {
     PostResponse createPost(String username, String content, MultipartFile mediaFile);
-    List<PostResponse> getAllPosts();
-    List<PostResponse> getUserPosts(String username);
+    // List<PostResponse> getAllPosts(String currentUsername);
+    
+    List<PostResponse> getUserPosts(String targetUsername, String currentUsername);
 
     PostResponse updatePost(Long postId, PostUpdateRequest request, String currentUsername);
     void deletePost(Long postId, String currentUsername);
