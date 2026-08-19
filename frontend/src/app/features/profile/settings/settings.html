@@ -22,7 +22,13 @@
           <img *ngIf="profileData.avatarUrl" [src]="profileData.avatarUrl" alt="Avatar" />
         </div>
 
-        <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none" accept="image/*" />
+        <input 
+          type="file" 
+          #fileInput 
+          (change)="onFileSelected($event)" 
+          style="display: none" 
+          accept="image/jpeg,image/png,image/webp" 
+        />
 
         <button type="button" class="btn-avatar" (click)="fileInput.click()">
           Change Avatar
@@ -31,19 +37,41 @@
 
       <div class="form-group">
         <label>Username</label>
-        <input type="text" [(ngModel)]="profileData.username" name="username" class="form-input" />
+        <input 
+          type="text" 
+          [(ngModel)]="profileData.username" 
+          name="username" 
+          minlength="3"
+          maxlength="50"
+          pattern="^[a-zA-Z0-9_]+$"
+          class="form-input" 
+        />
       </div>
 
       <div class="form-group">
         <label>Bio</label>
-        <textarea rows="3" [(ngModel)]="profileData.bio" name="bio" class="form-input textarea"></textarea>
+        <textarea 
+          rows="3" 
+          [(ngModel)]="profileData.bio" 
+          name="bio" 
+          maxlength="250"
+          class="form-input textarea"
+        ></textarea>
+        <div class="text-end text-muted small mt-1">
+          <span>{{ profileData.bio ? profileData.bio.length : 0 }}/250</span>
+        </div>
       </div>
 
       <div *ngIf="statusMessage" [class]="isError ? 'message error' : 'message success'">
         {{ statusMessage }}
       </div>
 
-      <button type="button" (click)="saveProfile()" [disabled]="loading" class="btn-primary">
+      <button 
+        type="button" 
+        (click)="saveProfile()" 
+        [disabled]="loading || !profileData.username || profileData.username.trim().length < 3 || profileData.username.length > 50" 
+        class="btn-primary"
+      >
         {{ loading ? 'Saving...' : 'Save Changes' }}
       </button>
     </div>
@@ -57,21 +85,39 @@
 
       <div class="form-group">
         <label>Current Password</label>
-        <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" placeholder="••••••••"
-          autocomplete="new-password" class="form-input" />
+        <input 
+          type="password" 
+          [(ngModel)]="passwordData.currentPassword" 
+          name="currentPassword" 
+          placeholder="••••••••"
+          autocomplete="new-password" 
+          class="form-input" 
+        />
       </div>
 
       <div class="form-group">
         <label>New Password</label>
-        <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" autocomplete="new-password"
-          class="form-input" />
+        <input 
+          type="password" 
+          [(ngModel)]="passwordData.newPassword" 
+          name="newPassword" 
+          minlength="8"
+          maxlength="100"
+          autocomplete="new-password" 
+          class="form-input" 
+        />
       </div>
 
       <div *ngIf="statusMessage" [class]="isError ? 'message error' : 'message success'">
         {{ statusMessage }}
       </div>
 
-      <button type="button" (click)="updatePassword()" [disabled]="loading" class="btn-primary btn-purple">
+      <button 
+        type="button" 
+        (click)="updatePassword()" 
+        [disabled]="loading || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword.length < 8" 
+        class="btn-primary btn-purple"
+      >
         {{ loading ? 'Updating...' : 'Update Password' }}
       </button>
     </div>

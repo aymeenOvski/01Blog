@@ -5,4 +5,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface FileStorageService {
     String storeAvatar(MultipartFile file);
     void deleteAvatar(String fileUrl);
+    String storePostMedia(MultipartFile file);
 }

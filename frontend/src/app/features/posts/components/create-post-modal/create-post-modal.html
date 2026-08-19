@@ -8,12 +8,18 @@
     </div>
 
     <div class="modal-body">
+      <!-- Placeholder dynamically indicates that text is optional if media is attached -->
       <textarea
         class="post-textarea"
         rows="4"
-        placeholder="What's on your mind? Share your progress..."
+        maxlength="2000"
+        [placeholder]="selectedFile ? 'Add a caption... (optional)' : 'What\'s on your mind? Share your progress...'"
         [(ngModel)]="content"
       ></textarea>
+
+      <div class="d-flex justify-content-end text-muted small mt-1">
+        <span>{{ content ? content.length : 0 }}/2000</span>
+      </div>
 
       <!-- Media Preview Section -->
       <div *ngIf="mediaPreviewUrl" class="media-preview-container">
@@ -33,7 +39,7 @@
         <input
           type="file"
           id="media-file-input"
-          accept="image/*,video/*"
+          accept="image/jpeg,image/png,image/gif,image/webp ,video/webm,video/quicktime"
           (change)="onFileSelected($event)"
           hidden
         />
@@ -43,10 +49,11 @@
     <div class="modal-footer">
       <p class="submit-error" *ngIf="errorMessage">{{ errorMessage }}</p>
       <button type="button" class="btn-cancel" (click)="onClose()">Cancel</button>
+      
       <button
         type="button"
         class="btn-submit"
-        [disabled]="(!content.trim() && !selectedFile) || isSubmitting"
+        [disabled]="(!content.trim() && !selectedFile) || (content && content.length > 2000) || isSubmitting"
         (click)="onSubmit()"
       >
         {{ isSubmitting ? 'Publishing...' : 'Publish' }}

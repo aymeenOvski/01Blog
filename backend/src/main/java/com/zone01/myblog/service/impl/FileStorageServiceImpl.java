@@ -23,10 +23,11 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private final Path fileStorageLocation;
 
-    public FileStorageServiceImpl(@Value("${file.upload-dir:uploads/avatars}") String uploadDir) {
+    public FileStorageServiceImpl(@Value("${file.upload-dir:uploads}") String uploadDir) {
         this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
-            Files.createDirectories(this.fileStorageLocation);
+            Files.createDirectories(this.fileStorageLocation.resolve("avatars"));
+            Files.createDirectories(this.fileStorageLocation.resolve("posts"));
         } catch (IOException ex) {
             throw BlogApiException.badRequest("Could not create directory for file uploads.");
         }
@@ -34,13 +35,17 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     @Override
     public String storeAvatar(MultipartFile file) {
+        return storeFile(file, "avatars");
+    }
+
+    @Override
+    public String storePostMedia(MultipartFile file) {
+        return storeFile(file, "posts");
+    }
+
+    private String storeFile(MultipartFile file, String subFolder) {
         if (file == null || file.isEmpty()) {
             throw BlogApiException.badRequest("Please select a file to upload.");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw BlogApiException.badRequest("Only image files (PNG, JPG, JPEG, WEBP) are allowed.");
         }
 
         String originalFilename = file.getOriginalFilename();
@@ -51,11 +56,13 @@ public class FileStorageServiceImpl implements FileStorageService {
         String fileName = UUID.randomUUID().toString() + extension;
 
         try {
-            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Path targetFolder = this.fileStorageLocation.resolve(subFolder);
+            Path targetLocation = targetFolder.resolve(fileName);
+
             try (InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, targetLocation, StandardCopyOption.REPLACE_EXISTING);
             }
-            return baseUrl + "/uploads/avatars/" + fileName;
+            return baseUrl + "/uploads/" + subFolder + "/" + fileName;
         } catch (IOException ex) {
             throw BlogApiException.badRequest("Failed to store file on server.");
         }
@@ -69,7 +76,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         try {
             String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Path filePath = this.fileStorageLocation.resolve("avatars").resolve(fileName).normalize();
 
             if (filePath.startsWith(this.fileStorageLocation)) {
                 Files.deleteIfExists(filePath);

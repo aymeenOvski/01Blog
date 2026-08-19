@@ -8,7 +8,6 @@ import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.service.PostService;
 
 import jakarta.validation.Valid;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,10 +36,7 @@ public class PostController {
             throw BlogApiException.unauthorized("Authentication required to create post");
         }
 
-        PostResponse response = postService.createPost(
-                userDetails.getUsername(),
-                content,
-                file);
+        PostResponse response = postService.createPost(userDetails.getUsername(), content, file);
         return ResponseEntity.ok(response);
     }
 
@@ -50,9 +46,7 @@ public class PostController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         String currentUsername = (userDetails != null) ? userDetails.getUsername() : null;
-
-        List<PostResponse> posts = postService.getUserPosts(targetUsername, currentUsername);
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(postService.getUserPosts(targetUsername, currentUsername));
     }
 
     @PutMapping("/{id}")

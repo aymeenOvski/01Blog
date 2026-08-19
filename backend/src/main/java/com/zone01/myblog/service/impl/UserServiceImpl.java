@@ -8,12 +8,19 @@ import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.security.jwt.JwtUtils;
+import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.UserService;
+
+import org.apache.tika.Tika;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.zone01.myblog.service.FileStorageService;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,6 +29,11 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+
+    private final Tika tika = new Tika();
+    private static final List<String> ALLOWED_AVATAR_TYPES = Arrays.asList(
+        "image/jpeg", "image/png", "image/gif", "image/webp"
+    );
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, FileStorageService fileStorageService) {
         this.userRepository = userRepository;
@@ -123,6 +135,19 @@ public class UserServiceImpl implements UserService {
     public UserProfileResponse updateAvatar(String currentUsername, MultipartFile file) {
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+        if (file == null || file.isEmpty()) {
+            throw BlogApiException.badRequest("Please select a file to upload.");
+        }
+
+        try (InputStream inputStream = file.getInputStream()) {
+            String detectedType = tika.detect(inputStream);
+            if (detectedType == null || !ALLOWED_AVATAR_TYPES.contains(detectedType.toLowerCase())) {
+                throw BlogApiException.badRequest("Invalid avatar format. Allowed formats: JPEG, PNG, GIF, WEBP");
+            }
+        } catch (IOException e) {
+            throw BlogApiException.badRequest("Failed to inspect uploaded file format");
+        }
 
         // Delete old avatar file from disk if present
         if (user.getAvatarUrl() != null && !user.getAvatarUrl().isBlank()) {

@@ -16,11 +16,15 @@ import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.PostService;
 
+import org.apache.tika.Tika;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -31,6 +35,12 @@ public class PostServiceImpl implements PostService {
     private final FileStorageService fileStorageService;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+
+    private final Tika tika = new Tika();
+    private static final List<String> ALLOWED_MEDIA_TYPES = Arrays.asList(
+        "image/jpeg", "image/png", "image/gif", "image/webp",
+        "video/mp4", "video/webm", "video/quicktime"
+    );
 
     public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, PostLikeRepository postLikeRepository,
@@ -48,29 +58,31 @@ public class PostServiceImpl implements PostService {
         Users author = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-        if ((content == null || content.trim().isEmpty()) && (mediaFile == null || mediaFile.isEmpty())) {
-            throw BlogApiException.badRequest("Post content or media file must be provided");
-        }
+        String trimmedContent = (content != null) ? content.trim() : null;
+        
+        validatePostPayload(trimmedContent, mediaFile);
 
         String mediaUrl = null;
         String mediaType = null;
 
+        // Validate file bytes and store media
         if (mediaFile != null && !mediaFile.isEmpty()) {
-            String contentType = mediaFile.getContentType();
-            if (contentType != null) {
-                if (contentType.startsWith("image/")) {
-                    mediaType = "image";
-                } else if (contentType.startsWith("video/")) {
-                    mediaType = "video";
-                } else {
-                    throw BlogApiException.badRequest("Unsupported media format");
-                }
+            String detectedContentType = detectMimeType(mediaFile);
+            
+            if (detectedContentType.startsWith("image/")) {
+                mediaType = "image";
+            } else if (detectedContentType.startsWith("video/")) {
+                mediaType = "video";
+            } else {
+                throw BlogApiException.badRequest("Unsupported media format");
             }
-            mediaUrl = fileStorageService.storeAvatar(mediaFile);
+
+            mediaUrl = fileStorageService.storePostMedia(mediaFile);
         }
 
-        Post post = new Post(author, content, mediaUrl, mediaType);
+        Post post = new Post(author, trimmedContent, mediaUrl, mediaType);
         Post saved = postRepository.save(post);
+
         return new PostResponse(
                 saved.getId(),
                 author.getUsername(),
@@ -85,11 +97,30 @@ public class PostServiceImpl implements PostService {
         );
     }
 
-    // @Override
-    // @Transactional(readOnly = true)
-    // public List<PostResponse> getAllPosts(String currentUsername) {
-    //     return postRepository.findAllPostsWithCounts(currentUsername);
-    // }
+    private void validatePostPayload(String content, MultipartFile file) {
+        boolean hasContent = content != null && !content.isEmpty();
+        boolean hasFile = file != null && !file.isEmpty();
+
+        if (!hasContent && !hasFile) {
+            throw BlogApiException.badRequest("Post must contain text content or a file attachment");
+        }
+
+        if (hasContent && content.length() > 2000) {
+            throw BlogApiException.badRequest("Post content exceeds maximum length of 2000 characters");
+        }
+    }
+
+    private String detectMimeType(MultipartFile file) {
+        try (InputStream inputStream = file.getInputStream()) {
+            String detectedType = tika.detect(inputStream);
+            if (detectedType == null || !ALLOWED_MEDIA_TYPES.contains(detectedType.toLowerCase())) {
+                throw BlogApiException.badRequest("Invalid file format. Detected: " + detectedType + ". Allowed formats: JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV");
+            }
+            return detectedType.toLowerCase();
+        } catch (IOException e) {
+            throw BlogApiException.badRequest("Failed to inspect uploaded file format");
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -110,7 +141,8 @@ public class PostServiceImpl implements PostService {
         post.setContent(request.content());
         postRepository.save(post);
         
-        return postRepository.findPostByIdWithCounts(postId , currentUsername).orElseThrow(() -> BlogApiException.notFound("Post not found"));
+        return postRepository.findPostByIdWithCounts(postId, currentUsername)
+                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
     }
 
     @Override
@@ -132,7 +164,6 @@ public class PostServiceImpl implements PostService {
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-        // Check if like exists
         var existingLike = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
         if (existingLike.isPresent()) {
@@ -140,12 +171,10 @@ public class PostServiceImpl implements PostService {
             return false;
         }
 
-        // Verify post exists before inserting
         if (!postRepository.existsById(postId)) {
             throw BlogApiException.notFound("Post not found");
         }
 
-        // Use proxy references to avoid fetching whole entities into memory
         Post postRef = postRepository.getReferenceById(postId);
         PostLike like = new PostLike(postRef, user);
 
@@ -167,7 +196,6 @@ public class PostServiceImpl implements PostService {
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-        // Proxy reference to avoid fetching the entire Post entity
         Post post = postRepository.getReferenceById(postId);
         Comment comment = new Comment(request.content(), post, user);
 

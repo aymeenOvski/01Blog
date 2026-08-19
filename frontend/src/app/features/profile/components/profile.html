@@ -103,7 +103,7 @@
 
             <!-- Dropdown Menu items -->
             <div class="dropdown-menu dropdown-menu-end show" *ngIf="post.showMenu">
-              
+
               <!-- Owner Actions: Edit & Delete -->
               <ng-container *ngIf="isOwner || currentUser === post.username; else visitorActions">
                 <button class="dropdown-item d-flex align-items-center gap-2" (click)="editPost(post)">
@@ -129,7 +129,6 @@
                   Repost
                 </button>
               </ng-template>
-
             </div>
           </div>
         </header>
@@ -143,11 +142,21 @@
           <textarea 
             class="form-control form-control-sm comment-input mb-2" 
             [(ngModel)]="post.editingContent" 
+            maxlength="2000"
             rows="3"
           ></textarea>
-          <div class="d-flex justify-content-end gap-2">
-            <button class="btn btn-secondary btn-sm" (click)="cancelEdit(post)">Cancel</button>
-            <button class="btn btn-primary btn-sm" (click)="saveEdit(post)">Save</button>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ post.editingContent ? post.editingContent.length : 0 }}/2000</small>
+            <div class="d-flex gap-2">
+              <button class="btn btn-secondary btn-sm" (click)="cancelEdit(post)">Cancel</button>
+              <button 
+                class="btn btn-primary btn-sm" 
+                [disabled]="!post.editingContent || !post.editingContent.trim()"
+                (click)="saveEdit(post)"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
 
@@ -166,7 +175,7 @@
           ></video>
         </div>
 
-        <!-- Post Actions (Likes & Comments Bar) -->
+        <!-- Post Actions -->
         <div class="post-actions d-flex align-items-center gap-3 pt-3 mt-2 border-top border-secondary-subtle">
           <button 
             (click)="toggleLike(post)" 
@@ -189,13 +198,12 @@
 
         <!-- Collapsible Comments Section -->
         <div class="comments-section mt-3" *ngIf="post.showComments">
-          
-          <!-- Comment Input Form -->
           <form (ngSubmit)="addComment(post)" class="d-flex align-items-start gap-2 mb-3">
             <textarea 
               class="form-control form-control-sm comment-input" 
               placeholder="Write a comment... (Enter to post, Shift+Enter for new line)" 
               [(ngModel)]="post.newCommentText" 
+              maxlength="1000"
               name="commentText"
               rows="1"
               (keydown.enter)="onCommentKeyDown($event, post)"
@@ -204,7 +212,7 @@
             <button 
               type="submit" 
               class="btn btn-primary btn-sm px-3" 
-              [disabled]="!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment"
+              [disabled]="!post.newCommentText || !post.newCommentText.trim() || post.newCommentText.length > 1000 || post.isSubmittingComment"
             >
               Post
             </button>
@@ -224,7 +232,6 @@
           <div *ngIf="!post.comments || post.comments.length === 0" class="text-muted-custom small text-center py-2">
             No comments yet. Be the first to comment!
           </div>
-
         </div>
 
       </article>
