@@ -30,13 +30,13 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(value = "content", required = false) String content,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestParam(value = "files", required = false) List<MultipartFile> files) {
 
         if (userDetails == null) {
             throw BlogApiException.unauthorized("Authentication required to create post");
         }
 
-        PostResponse response = postService.createPost(userDetails.getUsername(), content, file);
+        PostResponse response = postService.createPost(userDetails.getUsername(), content, files);
         return ResponseEntity.ok(response);
     }
 

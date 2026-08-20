@@ -1,7 +1,13 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Output, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PostService } from '../../services/post.service';
+
+export interface MediaPreview {
+  file: File;
+  url: string;
+  type: 'image' | 'video';
+}
 
 @Component({
   selector: 'app-create-post-modal',
@@ -13,11 +19,11 @@ import { PostService } from '../../services/post.service';
 export class CreatePostModalComponent {
   @Output() close = new EventEmitter<void>();
   private postService = inject(PostService);
+  private ngZone = inject(NgZone);
 
   content = '';
-  selectedFile: File | null = null;
-  mediaPreviewUrl: string | null = null;
-  mediaType: 'image' | 'video' | null = null;
+
+  mediaPreviews: MediaPreview[] = [];
   isSubmitting = false;
   errorMessage: string | null = null;
 
@@ -28,47 +34,61 @@ export class CreatePostModalComponent {
 
   get isValidPost(): boolean {
     const hasText = !!this.content && this.content.trim().length > 0 && this.content.length <= 2000;
-    const hasMedia = !!this.selectedFile;
+    const hasMedia = this.mediaPreviews.length > 0;
     return (hasText || hasMedia) && (this.content ? this.content.length <= 2000 : true) && !this.isSubmitting;
   }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      this.selectedFile = file;
-      const maxSizeBytes = 5 * 1024 * 1024;
+    if (!input.files || input.files.length === 0) return;
 
+    const files = Array.from(input.files);
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    if (this.mediaPreviews.length + files.length > 5) {
+      this.errorMessage = 'You can upload a maximum of 5 media items per post.';
+      input.value = '';
+      return;
+    }
+
+    for (const file of files) {
       if (file.size > maxSizeBytes) {
-        this.errorMessage = 'File size exceeds the 5MB limit.';
-        this.removeMedia();
+        this.errorMessage = `File "${file.name}" exceeds the 5MB limit.`;
+        input.value = '';
         return;
       }
 
-      if (file.type.startsWith('image/')) {
-        this.mediaType = 'image';
-      } else if (file.type.startsWith('video/')) {
-        this.mediaType = 'video';
-      } else {
-        this.mediaType = null;
-      }
-
+      const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
       const reader = new FileReader();
+
       reader.onload = () => {
-        this.mediaPreviewUrl = reader.result as string;
+        this.ngZone.run(() => {
+          this.mediaPreviews.push({
+            file,
+            url: reader.result as string,
+            type: mediaType
+          });
+        });
       };
       reader.readAsDataURL(file);
     }
+
+    this.errorMessage = null;
+    input.value = '';
   }
 
-  removeMedia(): void {
-    this.selectedFile = null;
-    this.mediaPreviewUrl = null;
-    this.mediaType = null;
+  removeMedia(index?: number): void {
+    if (index !== undefined) {
+      this.mediaPreviews.splice(index, 1);
+    } else {
+      this.mediaPreviews = [];
+    }
 
-    const fileInput = document.getElementById('media-file-input') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
+    if (this.mediaPreviews.length === 0) {
+      const fileInput = document.getElementById('media-file-input') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     }
   }
 
@@ -79,14 +99,16 @@ export class CreatePostModalComponent {
   }
 
   onSubmit(): void {
-    if ((!this.content.trim() && !this.selectedFile) || this.isSubmitting) {
+    if ((!this.content.trim() && this.mediaPreviews.length === 0) || this.isSubmitting) {
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = null;
 
-    this.postService.createPost(this.content.trim(), this.selectedFile).subscribe({
+    const filesToUpload = this.mediaPreviews.map(p => p.file);
+
+    this.postService.createPost(this.content.trim(), filesToUpload).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.onClose();

@@ -18,8 +18,7 @@ export interface PostResponse {
   username: string;
   avatarUrl?: string;
   content: string;
-  mediaUrl?: string | null;
-  mediaType?: string | null;
+  mediaUrls?: string[];
   createdAt: string;
   
   // UI and State properties

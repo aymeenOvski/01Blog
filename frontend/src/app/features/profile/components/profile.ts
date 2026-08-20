@@ -196,6 +196,11 @@ export class Profile implements OnInit, OnDestroy {
     return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
   }
 
+  isVideoUrl(url: string): boolean {
+    const lower = url.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.includes('/video/');
+  }
+
   togglePostMenu(post: PostResponse, event: Event): void {
     event.stopPropagation();
     // Close any other active options menus

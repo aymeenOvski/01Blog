@@ -1,16 +1,18 @@
 package com.zone01.myblog.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostResponse(
     Long id,
     String username,
     String avatarUrl,
     String content,
-    String mediaUrl,
-    String mediaType,
+    List<String> mediaUrls,
     LocalDateTime createdAt,
-    long likesCount,
-    boolean isLiked,
-    long commentsCount
+    @JsonProperty("likesCount") Long likeCount,
+    @JsonProperty("isLiked") Boolean likedByCurrentUser,
+    @JsonProperty("commentsCount") Long commentCount
 ) {}

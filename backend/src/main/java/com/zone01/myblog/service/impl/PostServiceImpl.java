@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,33 +55,32 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponse createPost(String username, String content, MultipartFile mediaFile) {
+    public PostResponse createPost(String username, String content, List<MultipartFile> mediaFiles) {
         Users author = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         String trimmedContent = (content != null) ? content.trim() : null;
         
-        validatePostPayload(trimmedContent, mediaFile);
+        validatePostPayload(trimmedContent, mediaFiles);
 
-        String mediaUrl = null;
-        String mediaType = null;
+        List<String> mediaUrls = new ArrayList<>();
 
-        // Validate file bytes and store media
-        if (mediaFile != null && !mediaFile.isEmpty()) {
-            String detectedContentType = detectMimeType(mediaFile);
-            
-            if (detectedContentType.startsWith("image/")) {
-                mediaType = "image";
-            } else if (detectedContentType.startsWith("video/")) {
-                mediaType = "video";
-            } else {
-                throw BlogApiException.badRequest("Unsupported media format");
+        if (mediaFiles != null && !mediaFiles.isEmpty()) {
+            for (MultipartFile file : mediaFiles) {
+                if (file != null && !file.isEmpty()) {
+                    String detectedContentType = detectMimeType(file);
+                    
+                    if (!detectedContentType.startsWith("image/") && !detectedContentType.startsWith("video/")) {
+                        throw BlogApiException.badRequest("Unsupported media format");
+                    }
+
+                    String mediaUrl = fileStorageService.storePostMedia(file);
+                    mediaUrls.add(mediaUrl);
+                }
             }
-
-            mediaUrl = fileStorageService.storePostMedia(mediaFile);
         }
 
-        Post post = new Post(author, trimmedContent, mediaUrl, mediaType);
+        Post post = new Post(author, trimmedContent, mediaUrls);
         Post saved = postRepository.save(post);
 
         return new PostResponse(
@@ -88,8 +88,7 @@ public class PostServiceImpl implements PostService {
                 author.getUsername(),
                 author.getAvatarUrl(),
                 saved.getContent(),
-                saved.getMediaUrl(),
-                saved.getMediaType(),
+                saved.getMediaUrls(),
                 saved.getCreatedAt(),
                 0L,
                 false,
@@ -97,16 +96,20 @@ public class PostServiceImpl implements PostService {
         );
     }
 
-    private void validatePostPayload(String content, MultipartFile file) {
+    private void validatePostPayload(String content, List<MultipartFile> files) {
         boolean hasContent = content != null && !content.isEmpty();
-        boolean hasFile = file != null && !file.isEmpty();
+        boolean hasFiles = files != null && !files.isEmpty() && files.stream().anyMatch(f -> !f.isEmpty());
 
-        if (!hasContent && !hasFile) {
-            throw BlogApiException.badRequest("Post must contain text content or a file attachment");
+        if (!hasContent && !hasFiles) {
+            throw BlogApiException.badRequest("Post must contain text content or at least one file attachment");
         }
 
         if (hasContent && content.length() > 2000) {
             throw BlogApiException.badRequest("Post content exceeds maximum length of 2000 characters");
+        }
+
+        if (files != null && files.size() > 5) {
+            throw BlogApiException.badRequest("Cannot upload more than 5 media files per post");
         }
     }
 
@@ -125,7 +128,8 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public List<PostResponse> getUserPosts(String targetUsername, String currentUsername) {
-        return postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
+        List<Object[]> results = postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
+        return results.stream().map(this::mapToPostResponse).toList();
     }
 
     @Override
@@ -140,9 +144,40 @@ public class PostServiceImpl implements PostService {
 
         post.setContent(request.content());
         postRepository.save(post);
-        
-        return postRepository.findPostByIdWithCounts(postId, currentUsername)
-                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
+
+        Users currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+        return new PostResponse(
+                post.getId(),
+                post.getAuthor().getUsername(),
+                post.getAuthor().getAvatarUrl(),
+                post.getContent(),
+                post.getMediaUrls(),
+                post.getCreatedAt(),
+                postLikeRepository.countByPostId(postId),
+                postLikeRepository.existsByPostIdAndUserId(postId, currentUser.getId()),
+                commentRepository.countByPostId(postId)
+        );
+    }
+
+    private PostResponse mapToPostResponse(Object[] row) {
+        Post post = (Post) row[0];
+        Long likeCount = (Long) row[1];
+        Boolean isLiked = (Boolean) row[2];
+        Long commentCount = (Long) row[3];
+
+        return new PostResponse(
+                post.getId(),
+                post.getAuthor().getUsername(),
+                post.getAuthor().getAvatarUrl(),
+                post.getContent(),
+                post.getMediaUrls(),
+                post.getCreatedAt(),
+                likeCount,
+                isLiked,
+                commentCount
+        );
     }
 
     @Override

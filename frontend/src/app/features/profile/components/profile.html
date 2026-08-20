@@ -161,18 +161,21 @@
         </div>
 
         <!-- Post Media -->
-        <div class="post-media" *ngIf="post.mediaUrl">
-          <img
-            *ngIf="post.mediaType === 'image' || post.mediaType?.startsWith('image/')"
-            [src]="resolveMediaUrl(post.mediaUrl)"
-            alt="Post image"
-          />
-          <video
-            *ngIf="post.mediaType === 'video' || post.mediaType?.startsWith('video/')"
-            [src]="resolveMediaUrl(post.mediaUrl)"
-            controls
-            preload="metadata"
-          ></video>
+        <div class="post-media-grid" *ngIf="post.mediaUrls && post.mediaUrls.length > 0" [class.grid-single]="post.mediaUrls.length === 1" [class.grid-double]="post.mediaUrls.length === 2" [class.grid-multi]="post.mediaUrls.length >= 3">
+          <div class="post-media-item" *ngFor="let url of post.mediaUrls">
+            <img
+              *ngIf="!isVideoUrl(url)"
+              [src]="resolveMediaUrl(url)"
+              alt="Post image"
+              loading="lazy"
+            />
+            <video
+              *ngIf="isVideoUrl(url)"
+              [src]="resolveMediaUrl(url)"
+              controls
+              preload="metadata"
+            ></video>
+          </div>
         </div>
 
         <!-- Post Actions -->

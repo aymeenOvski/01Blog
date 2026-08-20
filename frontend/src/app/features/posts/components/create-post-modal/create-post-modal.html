@@ -8,12 +8,11 @@
     </div>
 
     <div class="modal-body">
-      <!-- Placeholder dynamically indicates that text is optional if media is attached -->
       <textarea
         class="post-textarea"
         rows="4"
         maxlength="2000"
-        [placeholder]="selectedFile ? 'Add a caption... (optional)' : 'What\'s on your mind? Share your progress...'"
+        [placeholder]="mediaPreviews.length > 0 ? 'Add a caption... (optional)' : 'What\'s on your mind? Share your progress...'"
         [(ngModel)]="content"
       ></textarea>
 
@@ -21,25 +20,26 @@
         <span>{{ content ? content.length : 0 }}/2000</span>
       </div>
 
-      <!-- Media Preview Section -->
-      <div *ngIf="mediaPreviewUrl" class="media-preview-container">
-        <button type="button" class="btn-remove-media" (click)="removeMedia()">
-          <i class="bi bi-x-circle-fill"></i>
-        </button>
+      <div *ngIf="mediaPreviews.length > 0" class="media-preview-container">
+        <div *ngFor="let item of mediaPreviews; let i = index" class="position-relative d-inline-block">
+          <button type="button" class="btn-remove-media" (click)="removeMedia(i)">
+            <i class="bi bi-x-circle-fill"></i>
+          </button>
 
-        <img *ngIf="mediaType === 'image'" [src]="mediaPreviewUrl" alt="Media preview" class="preview-media" />
-        <video *ngIf="mediaType === 'video'" [src]="mediaPreviewUrl" controls class="preview-media"></video>
+          <img *ngIf="item.type === 'image'" [src]="item.url" alt="Media preview" class="preview-media" />
+          <video *ngIf="item.type === 'video'" [src]="item.url" controls class="preview-media"></video>
+        </div>
       </div>
 
-      <!-- File Attachment Bar -->
-      <div class="file-upload-bar">
+      <div class="file-upload-bar" *ngIf="mediaPreviews.length < 5">
         <label for="media-file-input" class="upload-label">
-          <i class="bi bi-image me-2"></i> Add Photo/Video
+          <i class="bi bi-image me-2"></i> Add Photos/Videos ({{ mediaPreviews.length }}/5)
         </label>
         <input
           type="file"
           id="media-file-input"
-          accept="image/jpeg,image/png,image/gif,image/webp ,video/webm,video/quicktime"
+          multiple
+          accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
           (change)="onFileSelected($event)"
           hidden
         />
