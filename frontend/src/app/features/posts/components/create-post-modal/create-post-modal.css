@@ -160,3 +160,7 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.modal-body .text-muted {
+  color: #a3b8cc !important;
+}

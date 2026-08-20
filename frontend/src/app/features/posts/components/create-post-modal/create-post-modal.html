@@ -53,7 +53,7 @@
       <button
         type="button"
         class="btn-submit"
-        [disabled]="(!content.trim() && !selectedFile) || (content && content.length > 2000) || isSubmitting"
+        [disabled]="!isValidPost"
         (click)="onSubmit()"
       >
         {{ isSubmitting ? 'Publishing...' : 'Publish' }}

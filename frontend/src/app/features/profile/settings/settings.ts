@@ -38,6 +38,23 @@ export class SettingsComponent implements OnInit {
     statusMessage: string | null = null;
     isError = false;
 
+    get bioLength(): number {
+        return this.profileData.bio ? this.profileData.bio.length : 0;
+    }
+
+    get isProfileValid(): boolean {
+        const username = this.profileData.username ? this.profileData.username.trim() : '';
+        const isValidUsername = username.length >= 3 && username.length <= 50;
+        const isValidBio = this.bioLength <= 250;
+        return isValidUsername && isValidBio && !this.loading;
+    }
+
+    get isPasswordValid(): boolean {
+        const hasCurrentPassword = !!this.passwordData.currentPassword && this.passwordData.currentPassword.length > 0;
+        const hasValidNewPassword = !!this.passwordData.newPassword && this.passwordData.newPassword.length >= 8 && this.passwordData.newPassword.length <= 100;
+        return hasCurrentPassword && hasValidNewPassword && !this.loading;
+    }
+
     ngOnInit(): void {
         const username = this.authService.getUsername();
         if (username) {
@@ -83,6 +100,8 @@ export class SettingsComponent implements OnInit {
     }
 
     saveProfile(): void {
+        if (!this.isProfileValid) return;
+
         this.loading = true;
         this.statusMessage = null;
 
@@ -95,7 +114,6 @@ export class SettingsComponent implements OnInit {
                 this.loading = false;
                 this.isError = false;
                 this.statusMessage = 'Profile updated successfully!';
-                // Refresh local component state
                 this.profileData.username = updatedProfile.username || '';
                 this.profileData.bio = updatedProfile.bio || '';
                 this.profileData.avatarUrl = updatedProfile.avatarUrl || '';
@@ -111,11 +129,7 @@ export class SettingsComponent implements OnInit {
     }
 
     updatePassword(): void {
-        if (!this.passwordData.currentPassword || !this.passwordData.newPassword) {
-            this.statusMessage = 'Please fill in both password fields.';
-            this.isError = true;
-            return;
-        }
+        if (!this.isPasswordValid) return;
 
         this.loading = true;
         this.statusMessage = null;

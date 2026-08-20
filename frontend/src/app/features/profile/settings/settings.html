@@ -57,8 +57,8 @@
           maxlength="250"
           class="form-input textarea"
         ></textarea>
-        <div class="text-end text-muted small mt-1">
-          <span>{{ profileData.bio ? profileData.bio.length : 0 }}/250</span>
+        <div class="text-end text-secondary small mt-1">
+          <span>{{ bioLength }}/250</span>
         </div>
       </div>
 
@@ -69,7 +69,7 @@
       <button 
         type="button" 
         (click)="saveProfile()" 
-        [disabled]="loading || !profileData.username || profileData.username.trim().length < 3 || profileData.username.length > 50" 
+        [disabled]="!isProfileValid" 
         class="btn-primary"
       >
         {{ loading ? 'Saving...' : 'Save Changes' }}
@@ -115,7 +115,7 @@
       <button 
         type="button" 
         (click)="updatePassword()" 
-        [disabled]="loading || !passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword.length < 8" 
+        [disabled]="!isPasswordValid" 
         class="btn-primary btn-purple"
       >
         {{ loading ? 'Updating...' : 'Update Password' }}
