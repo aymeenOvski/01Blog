@@ -49,12 +49,10 @@ export class Home implements OnInit, OnDestroy {
   actionError: string | null = null;
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
+  mobilePanel: 'suggested' | 'settings' | null = null;
+
   constructor() {
     this.username = this.authService.getUsername() || 'User';
-  }
-
-  get avatarUrl(): string | null {
-    return this.authService.currentUser().avatarUrl;
   }
 
   ngOnInit(): void {
@@ -106,6 +104,10 @@ export class Home implements OnInit, OnDestroy {
 
   trackByUsername(index: number, user: UserSummary): string {
     return user.username;
+  }
+
+  toggleMobilePanel(panel: 'suggested' | 'settings'): void {
+    this.mobilePanel = this.mobilePanel === panel ? null : panel;
   }
 
   followSuggested(user: UserSummary): void {
