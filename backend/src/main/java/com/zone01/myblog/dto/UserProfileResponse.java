@@ -6,9 +6,16 @@ public record UserProfileResponse(
     String avatarUrl,
     boolean isOwner,
     String email,
-    String token
+    String token,
+    long followersCount,
+    long followingCount,
+    boolean isFollowing
 ) {
     public UserProfileResponse(String username, String bio, String avatarUrl, boolean isOwner, String email) {
-        this(username, bio, avatarUrl, isOwner, email, null);
+        this(username, bio, avatarUrl, isOwner, email, null, 0, 0, false);
+    }
+
+    public UserProfileResponse(String username, String bio, String avatarUrl, boolean isOwner, String email, String token) {
+        this(username, bio, avatarUrl, isOwner, email, token, 0, 0, false);
     }
 }

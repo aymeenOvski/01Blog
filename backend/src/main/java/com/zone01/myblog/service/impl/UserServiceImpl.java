@@ -6,6 +6,7 @@ import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Users;
+import com.zone01.myblog.repository.FollowRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.security.jwt.JwtUtils;
 import com.zone01.myblog.service.FileStorageService;
@@ -29,31 +30,45 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+    private final FollowRepository followRepository;
 
     private final Tika tika = new Tika();
     private static final List<String> ALLOWED_AVATAR_TYPES = Arrays.asList(
         "image/jpeg", "image/png", "image/gif", "image/webp"
     );
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, FileStorageService fileStorageService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, FileStorageService fileStorageService, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.fileStorageService = fileStorageService;
+        this.followRepository = followRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserProfileResponse getUserProfile(String username) {
+    public UserProfileResponse getUserProfile(String username, String currentUsername) {
         Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+        boolean isOwner = currentUsername != null && currentUsername.equals(user.getUsername());
+        boolean isFollowing = false;
+        if (!isOwner && currentUsername != null) {
+            Users viewer = userRepository.findByUsername(currentUsername).orElse(null);
+            isFollowing = viewer != null
+                    && followRepository.existsByFollowerIdAndFollowedId(viewer.getId(), user.getId());
+        }
 
         return new UserProfileResponse(
                 user.getUsername(),
                 user.getBio(),
                 user.getAvatarUrl(),
-                false, // Default to false for public view
-                user.getEmail());
+                isOwner,
+                user.getEmail(),
+                null,
+                followRepository.countByFollowedId(user.getId()),
+                followRepository.countByFollowerId(user.getId()),
+                isFollowing);
     }
 
     @Override

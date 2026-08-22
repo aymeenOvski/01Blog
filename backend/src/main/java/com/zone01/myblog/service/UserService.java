@@ -8,7 +8,7 @@ import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
 
 public interface UserService {
-    UserProfileResponse getUserProfile(String username);
+    UserProfileResponse getUserProfile(String username, String currentUsername);
     UserProfileResponse updateProfileInfo(String currentUsername, UpdateProfileInfoRequest request);
     UserSecurityResponse updateProfileSecurity(String currentUsername, UpdateProfileSecurityRequest request);
     UserProfileResponse updateAvatar(String currentUsername, MultipartFile file);
