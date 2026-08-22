@@ -133,6 +133,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PostResponse> getFeedPosts(String currentUsername) {
+        return postRepository.findFeedPostsWithCounts(currentUsername).stream()
+                .map(this::mapToPostResponse)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request, String currentUsername) {
         Post post = postRepository.findById(postId)

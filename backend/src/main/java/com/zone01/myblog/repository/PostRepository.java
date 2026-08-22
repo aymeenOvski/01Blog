@@ -37,6 +37,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 LEFT JOIN PostLike l ON l.post = p
                 LEFT JOIN l.user lu
                 LEFT JOIN Comment c ON c.post = p
+                WHERE p.author.id IN (
+                    SELECT f.followed.id FROM Follow f WHERE f.follower.username = :currentUsername
+                )
+                GROUP BY p
+                ORDER BY p.createdAt DESC
+            """)
+    List<Object[]> findFeedPostsWithCounts(@Param("currentUsername") String currentUsername);
+
+    @Query("""
+                SELECT p, COUNT(DISTINCT l.id),
+                    CASE WHEN COUNT(DISTINCT CASE WHEN lu.username = :currentUsername THEN l.id END) > 0 THEN true ELSE false END,
+                    COUNT(DISTINCT c.id)
+                FROM Post p
+                LEFT JOIN PostLike l ON l.post = p
+                LEFT JOIN l.user lu
+                LEFT JOIN Comment c ON c.post = p
                 WHERE p.id = :postId
                 GROUP BY p
             """)

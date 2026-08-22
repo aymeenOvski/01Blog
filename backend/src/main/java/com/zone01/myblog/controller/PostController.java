@@ -40,6 +40,17 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/feed")
+    public ResponseEntity<List<PostResponse>> getFeed(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            throw BlogApiException.unauthorized("Authentication required to load feed");
+        }
+
+        return ResponseEntity.ok(postService.getFeedPosts(userDetails.getUsername()));
+    }
+
     @GetMapping("/user/{targetUsername}")
     public ResponseEntity<List<PostResponse>> getUserPosts(
             @PathVariable String targetUsername,
