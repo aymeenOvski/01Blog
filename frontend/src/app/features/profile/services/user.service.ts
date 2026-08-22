@@ -5,7 +5,8 @@ import {
   UserProfileResponse,
   UserSecurityResponse,
   UpdateProfileInfoRequest,
-  UpdateProfileSecurityRequest
+  UpdateProfileSecurityRequest,
+  UserSummary
 } from '../models/user-profile.model';
 import { AuthService } from '../../auth/services/auth.service';
 
@@ -18,7 +19,7 @@ export class UserService {
   private apiUrl = 'http://localhost:8080/api/users';
 
   getUserProfile(username: string): Observable<UserProfileResponse> {
-    return this.http.get<UserProfileResponse>(`${this.apiUrl}/${username}`).pipe(
+    return this.http.get<UserProfileResponse>(`${this.apiUrl}/${encodeURIComponent(username)}`).pipe(
       tap((res) => {
         if (username === this.authService.getUsername()) {
           this.authService.updateSession(res.username, undefined, res.avatarUrl);
@@ -37,5 +38,21 @@ export class UserService {
 
   updateProfileSecurity(request: UpdateProfileSecurityRequest): Observable<UserSecurityResponse> {
     return this.http.put<UserSecurityResponse>(`${this.apiUrl}/profile/security`, request);
+  }
+
+  toggleFollow(username: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.apiUrl}/${encodeURIComponent(username)}/follow`, {});
+  }
+
+  getFollowing(username: string): Observable<UserSummary[]> {
+    return this.http.get<UserSummary[]>(`${this.apiUrl}/${encodeURIComponent(username)}/following`);
+  }
+
+  getFollowers(username: string): Observable<UserSummary[]> {
+    return this.http.get<UserSummary[]>(`${this.apiUrl}/${encodeURIComponent(username)}/followers`);
+  }
+
+  getSuggestedUsers(): Observable<UserSummary[]> {
+    return this.http.get<UserSummary[]>(`${this.apiUrl}/suggested`);
   }
 }

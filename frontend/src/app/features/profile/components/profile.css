@@ -333,7 +333,7 @@
   color: #f8fafc !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   border-radius: 8px;
-  resize: vertical;
+  resize: none;
 }
 
 .post-edit-container textarea:focus {

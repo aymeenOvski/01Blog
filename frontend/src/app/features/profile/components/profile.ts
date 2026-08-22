@@ -93,7 +93,16 @@ export class Profile implements OnInit, OnDestroy {
     this.profile.isFollowing = !originalState;
     this.profile.followersCount = (this.profile.followersCount || 0) + (originalState ? -1 : 1);
 
-    // TODO: We are going to call the follow/unfollow API later
+    this.userService.toggleFollow(this.profile.username).subscribe({
+      next: (isFollowing) => {
+        this.profile!.isFollowing = isFollowing;
+        this.profile!.followersCount = (this.profile!.followersCount || 0) + (isFollowing ? 1 : -1);
+      },
+      error: () => {
+        this.profile!.isFollowing = originalState;
+        this.profile!.followersCount = (this.profile!.followersCount || 0) + (originalState ? 1 : -1);
+      }
+    });
   }
 
   openUserListModal(tab: 'followers' | 'following'): void {
@@ -102,9 +111,20 @@ export class Profile implements OnInit, OnDestroy {
     this.userListLoading = true;
     this.userList = [];
 
-    setTimeout(() => {
-      this.userListLoading = false;
-    }, 300);
+    const request = tab === 'followers'
+      ? this.userService.getFollowers(this.profile.username)
+      : this.userService.getFollowing(this.profile.username);
+
+    request.subscribe({
+      next: (users) => {
+        this.userList = users;
+        this.userListLoading = false;
+      },
+      error: () => {
+        this.userList = [];
+        this.userListLoading = false;
+      }
+    });
   }
 
   closeUserListModal(): void {

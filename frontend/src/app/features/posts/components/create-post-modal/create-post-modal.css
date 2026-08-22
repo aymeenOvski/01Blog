@@ -63,7 +63,7 @@
   color: #f8fafc;
   padding: 0.85rem;
   font-family: inherit;
-  resize: vertical;
+  resize: none;
   outline: none;
 }
 

@@ -1,7 +1,205 @@
-<div class="container py-5">
-  <div class="login-card p-4 p-md-5 mx-auto" style="max-width: 650px;">
-    <p class="text-primary fw-semibold mb-1 small text-uppercase tracking-wide">Home</p>
-    <h1 class="text-white fw-bold mb-3">Welcome{{ username ? ', ' + username : '' }}</h1>
-    <p class="text-secondary mb-0">Your dashboard is ready. Explore articles or check out your profile settings using the top navigation bar.</p>
+<div class="dashboard-shell">
+  <div class="dashboard-grid">
+
+    <!-- ===================== LEFT: Suggested users ===================== -->
+    <aside class="dash-card suggested-card" aria-label="Suggested users to follow">
+      <header class="card-header">
+        <div class="header-icon header-icon--emerald">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16">
+            <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.829zM3.794 1.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0V3.5h-.5a.5.5 0 0 1 0-1h.5V2a.5.5 0 0 1 .5-.5M10.207 2a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 .5-.5M2.794 15.207a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0v-.5h-.5a.5.5 0 0 1 0-1h.5v-.5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Who to Follow</h2>
+          <span class="count-pill count-pill--emerald" *ngIf="!isLoadingSuggested">{{ suggestedUsers.length }} {{ suggestedUsers.length === 1 ? 'suggestion' : 'suggestions' }}</span>
+        </div>
+        <button type="button" class="refresh-btn" (click)="loadSuggested()" aria-label="Refresh suggestions" title="Refresh">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="action-error" *ngIf="actionError" role="alert">{{ actionError }}</div>
+
+      <div class="suggested-list" *ngIf="!isLoadingSuggested && suggestedUsers.length > 0">
+        <div class="suggested-row" *ngFor="let user of suggestedUsers; trackBy: trackByUsername">
+          <a [routerLink]="['/profile', user.username]" class="row-link">
+            <span class="row-avatar row-avatar--emerald">
+              <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" [alt]="user.username" />
+              <span *ngIf="!user.avatarUrl" class="avatar-initial">{{ user.username.charAt(0).toUpperCase() }}</span>
+            </span>
+            <span class="row-info">
+              <span class="row-name">{{ user.username }}</span>
+              <span class="row-sub">View profile</span>
+            </span>
+          </a>
+          <button
+            type="button"
+            class="follow-btn"
+            [class.is-pending]="isFollowPending(user.username)"
+            [disabled]="isFollowPending(user.username)"
+            (click)="followSuggested(user)"
+          >
+            <span *ngIf="!isFollowPending(user.username)">Follow</span>
+            <span *ngIf="isFollowPending(user.username)" class="btn-spinner btn-spinner--dark"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="list-state" *ngIf="isLoadingSuggested">
+        <span class="spinner"></span>
+        <p>Loading...</p>
+      </div>
+
+      <div class="list-state" *ngIf="!isLoadingSuggested && suggestedError">
+        <p class="state-error">{{ suggestedError }}</p>
+        <button type="button" class="retry-btn retry-btn--emerald" (click)="loadSuggested()">Try again</button>
+      </div>
+
+      <div class="list-state" *ngIf="!isLoadingSuggested && !suggestedError && suggestedUsers.length === 0">
+        <div class="empty-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check2-circle" viewBox="0 0 16 16">
+            <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0"/>
+            <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
+          </svg>
+        </div>
+        <p>No suggestions right now.<br/>You are following everyone!</p>
+      </div>
+    </aside>
+
+    <!-- ===================== CENTER: Post composer ===================== -->
+    <section class="dash-card composer-card" aria-label="Create a post">
+      <div class="composer-top">
+        <span class="composer-avatar">
+          <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Your avatar" />
+          <span *ngIf="!avatarUrl" class="avatar-initial">{{ username.charAt(0).toUpperCase() }}</span>
+        </span>
+        <div class="composer-heading">
+          <p class="eyebrow">Dashboard</p>
+          <h1 class="composer-title">What's on your mind, {{ username }}?</h1>
+        </div>
+      </div>
+
+      <div class="success-banner" *ngIf="postSuccess" role="status">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+        Your post has been published!
+      </div>
+
+      <textarea
+        [(ngModel)]="content"
+        name="content"
+        class="composer-textarea"
+        rows="5"
+        placeholder="Share your story, ideas or moments..."
+        maxlength="2200"
+        [disabled]="isSubmitting"
+      ></textarea>
+
+      <div class="media-grid" *ngIf="mediaPreviews.length > 0">
+        <div class="media-thumb" *ngFor="let preview of mediaPreviews; let i = index">
+          <img *ngIf="preview.type === 'image'" [src]="preview.url" alt="Media preview" />
+          <video *ngIf="preview.type === 'video'" [src]="preview.url" muted></video>
+          <button type="button" class="remove-media" (click)="removeMedia(i)" aria-label="Remove media">&times;</button>
+        </div>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage" role="alert">{{ errorMessage }}</div>
+
+      <footer class="composer-footer">
+        <input
+          #mediaInput
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          hidden
+          (change)="onFileSelected($event)"
+        />
+        <button type="button" class="attach-btn" (click)="triggerFileSelect()" [disabled]="isSubmitting" title="Attach images or videos">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
+            <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+            <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3h10a2 2 0 0 1 2 2zM2 4a1 1 0 0 0-1 1v4.208l2.271-2.271a1 1 0 0 1 1.414 0l2.293 2.293 2.293-2.293a1 1 0 0 1 1.414 0L14 10.586V5a1 1 0 0 0-1-1zm0 8h10a1 1 0 0 0 .993-.883L9.5 8.5l-2 2-2.293-2.293L2 11.086zm10.5-1.914L10.893 8.5l1.607-1.607z"/>
+          </svg>
+          <span>Media</span>
+        </button>
+
+        <span class="char-counter" [class.near-limit]="isNearLimit && !isOverLimit" [class.over-limit]="isOverLimit">
+          {{ contentLength }} / {{ maxContentLength }}
+        </span>
+
+        <button type="button" class="publish-btn" (click)="onSubmit()" [disabled]="!isValidPost">
+          <span *ngIf="!isSubmitting">Publish</span>
+          <span *ngIf="isSubmitting" class="btn-spinner"></span>
+        </button>
+      </footer>
+    </section>
+
+    <!-- ===================== RIGHT: Quick actions / settings ===================== -->
+    <aside class="dash-card settings-card" aria-label="Account shortcuts">
+      <header class="card-header">
+        <div class="header-icon header-icon--violet">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
+            <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="card-title">Quick Actions</h2>
+          <span class="card-subtitle">Manage your account</span>
+        </div>
+      </header>
+
+      <nav class="actions-list">
+        <a [routerLink]="['/profile', username]" class="action-tile action-tile--sky">
+          <span class="tile-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1"/>
+            </svg>
+          </span>
+          <span class="tile-text">
+            <span class="tile-label">Profile</span>
+            <span class="tile-hint">View your public page</span>
+          </span>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          </svg>
+        </a>
+
+        <a routerLink="/settings" class="action-tile action-tile--amber">
+          <span class="tile-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z"/>
+            </svg>
+          </span>
+          <span class="tile-text">
+            <span class="tile-label">Settings</span>
+            <span class="tile-hint">Preferences &amp; security</span>
+          </span>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          </svg>
+        </a>
+
+        <button type="button" class="action-tile action-tile--red" (click)="logout()">
+          <span class="tile-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+            </svg>
+          </span>
+          <span class="tile-text">
+            <span class="tile-label">Logout</span>
+            <span class="tile-hint">End this session</span>
+          </span>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          </svg>
+        </button>
+      </nav>
+    </aside>
+
   </div>
 </div>
