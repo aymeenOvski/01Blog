@@ -95,8 +95,10 @@ export class Profile implements OnInit, OnDestroy {
 
     this.userService.toggleFollow(this.profile.username).subscribe({
       next: (isFollowing) => {
-        this.profile!.isFollowing = isFollowing;
-        this.profile!.followersCount = (this.profile!.followersCount || 0) + (isFollowing ? 1 : -1);
+        if (this.profile && isFollowing !== this.profile.isFollowing) {
+          this.profile.followersCount = (this.profile.followersCount || 0) + (isFollowing ? 1 : -1);
+          this.profile.isFollowing = isFollowing;
+        }
       },
       error: () => {
         this.profile!.isFollowing = originalState;
