@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, EMPTY, tap, catchError } from 'rxjs';
 
 export interface UserSession {
     username: string | null;
@@ -28,14 +28,15 @@ export class AuthService {
 
     fetchUserProfile(): Observable<any> {
         const username = this.getUsername();
-        if (!username) return new Observable(obs => obs.complete());
+        if (!username) return EMPTY;
 
         return this.http.get<any>(`${this.userApiUrl}/${username}`).pipe(
             tap((profile) => {
                 if (profile?.avatarUrl !== undefined) {
                     this.updateSession(profile.username, null, profile.avatarUrl);
                 }
-            })
+            }),
+            catchError(() => EMPTY)
         );
     }
 

@@ -89,6 +89,7 @@ export class SettingsComponent implements OnInit {
                         this.isError = false;
                         this.statusMessage = null;
                         this.profileData.avatarUrl = res.avatarUrl;
+                        this.authService.updateSession(undefined, undefined, res.avatarUrl);
                     },
                     error: (err) => {
                         this.loading = false;
@@ -118,7 +119,7 @@ export class SettingsComponent implements OnInit {
                 this.profileData.bio = updatedProfile.bio || '';
                 this.profileData.avatarUrl = updatedProfile.avatarUrl || '';
 
-                this.authService.updateSession(updatedProfile.username, updatedProfile.token);
+                this.authService.updateSession(updatedProfile.username, updatedProfile.token, updatedProfile.avatarUrl);
             },
             error: (err) => {
                 this.loading = false;
