@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth/services/auth.service';
 import { PostService } from '../posts/services/post.service';
 import { UserService } from '../profile/services/user.service';
 import { UserSummary } from '../profile/models/user-profile.model';
+import { PostResponse } from '../posts/models/post.model';
 
 export interface DashboardMediaPreview {
   file: File;
@@ -49,6 +50,10 @@ export class Home implements OnInit, OnDestroy {
   actionError: string | null = null;
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
+  feedPosts: PostResponse[] = [];
+  isLoadingFeed = true;
+  feedError: string | null = null;
+
   mobilePanel: 'suggested' | 'settings' | null = null;
 
   constructor() {
@@ -57,6 +62,7 @@ export class Home implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSuggested();
+    this.loadFeed();
   }
 
   ngOnDestroy(): void {
@@ -102,8 +108,31 @@ export class Home implements OnInit, OnDestroy {
     return this.followPending.has(username);
   }
 
+  loadFeed(): void {
+    this.isLoadingFeed = true;
+    this.feedError = null;
+
+    this.postService.getFeed().subscribe({
+      next: (posts) => {
+        this.feedPosts = posts.map(post => ({
+          ...post,
+          showMenu: false
+        }));
+        this.isLoadingFeed = false;
+      },
+      error: () => {
+        this.feedError = 'Could not load your feed right now.';
+        this.isLoadingFeed = false;
+      }
+    });
+  }
+
   trackByUsername(index: number, user: UserSummary): string {
     return user.username;
+  }
+
+  trackByPostId(index: number, post: PostResponse): number {
+    return post.id;
   }
 
   toggleMobilePanel(panel: 'suggested' | 'settings'): void {
@@ -188,12 +217,126 @@ export class Home implements OnInit, OnDestroy {
         this.postSuccess = true;
         if (this.successTimeout) clearTimeout(this.successTimeout);
         this.successTimeout = setTimeout(() => (this.postSuccess = false), 3000);
+        this.loadFeed();
       },
       error: (err) => {
         this.isSubmitting = false;
         this.errorMessage = err.error?.message || 'Failed to publish post.';
       }
     });
+  }
+
+  resolveMediaUrl(mediaUrl: string | null): string {
+    if (!mediaUrl) {
+      return '';
+    }
+
+    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
+      return mediaUrl;
+    }
+
+    return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
+  }
+
+  isVideoUrl(url: string): boolean {
+    const lower = url.toLowerCase();
+    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.includes('/video/');
+  }
+
+  togglePostMenu(post: PostResponse, event: Event): void {
+    event.stopPropagation();
+    this.feedPosts.forEach(p => {
+      if (p !== post) p.showMenu = false;
+    });
+    post.showMenu = !post.showMenu;
+  }
+
+  repost(post: PostResponse): void {
+    post.showMenu = false;
+    alert(`Reposted "${post.username}"'s post!`);
+
+    // TODO: Connect to postService.repost(...) API later
+  }
+
+  /* Optimistic Like Handler */
+  toggleLike(post: PostResponse): void {
+    if (post.isSubmittingLike) return;
+    post.isSubmittingLike = true;
+
+    const originalState = post.isLiked ?? false;
+    const currentCount = post.likesCount ?? 0;
+
+    post.isLiked = !originalState;
+    post.likesCount = Math.max(0, currentCount + (originalState ? -1 : 1));
+
+    this.postService.toggleLike(post.id).subscribe({
+      next: (isLiked) => {
+        post.isLiked = isLiked;
+        post.isSubmittingLike = false;
+      },
+      error: () => {
+        post.isLiked = originalState;
+        post.likesCount = currentCount;
+        post.isSubmittingLike = false;
+      }
+    });
+  }
+
+  /* Collapsible Comments Toggle */
+  toggleComments(post: PostResponse): void {
+    post.showComments = !post.showComments;
+
+    if (post.showComments && !post.comments) {
+      post.comments = [];
+      this.postService.getComments(post.id).subscribe({
+        next: (comments) => {
+          post.comments = comments;
+        },
+        error: (err) => {
+          console.error('Failed to load comments', err);
+        }
+      });
+    }
+  }
+
+  /* Optimistic Comment Submission */
+  addComment(post: PostResponse): void {
+    if (!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment) return;
+
+    const commentText = post.newCommentText.trim();
+    post.isSubmittingComment = true;
+
+    this.postService.addComment(post.id, { content: commentText }).subscribe({
+      next: (newComment) => {
+        if (!post.comments) post.comments = [];
+        post.comments.push(newComment);
+        post.commentsCount = (post.commentsCount || 0) + 1;
+        post.newCommentText = '';
+        post.isSubmittingComment = false;
+      },
+      error: (err) => {
+        console.error('Failed to add comment', err);
+        post.isSubmittingComment = false;
+      }
+    });
+  }
+
+  onCommentKeyDown(event: Event, post: PostResponse): void {
+    const keyboardEvent = event as KeyboardEvent;
+
+    if (keyboardEvent.key === 'Enter' && !keyboardEvent.shiftKey) {
+      keyboardEvent.preventDefault();
+      this.addComment(post);
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');
+
+    if (!isMenuButton) {
+      this.feedPosts.forEach(p => p.showMenu = false);
+    }
   }
 
   logout(): void {

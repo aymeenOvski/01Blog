@@ -28,6 +28,10 @@ export class PostService {
     return this.http.get<PostResponse[]>(`${this.apiUrl}/user/${encodeURIComponent(username)}`);
   }
 
+  getFeed(): Observable<PostResponse[]> {
+    return this.http.get<PostResponse[]>(`${this.apiUrl}/feed`);
+  }
+
   updatePost(id: number, request: PostUpdateRequest): Observable<PostResponse> {
     return this.http.put<PostResponse>(`${this.apiUrl}/${id}`, request);
   }
