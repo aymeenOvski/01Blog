@@ -127,3 +127,47 @@
 .btn-write:active {
   transform: scale(0.96);
 }
+
+.notification-btn {
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.75rem;
+  width: 310px;
+  background-color: #1a1d20;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  display: none;
+  z-index: 1050;
+}
+
+.notification-dropdown.show {
+  display: block;
+}
+
+.unread-bg {
+  background-color: rgba(13, 110, 253, 0.12);
+}
+
+.unread-bg:hover {
+  background-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+.unread-dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
