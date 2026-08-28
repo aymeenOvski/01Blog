@@ -85,6 +85,7 @@ public class WebSecurityConfig {
                         auth -> auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll() // Public endpoints (login/register)
                                 .requestMatchers("/uploads/**").permitAll() // Allow fetching avatar images
+                                .requestMatchers("/ws/**").permitAll() // Allow WebSocket connections
                                 .anyRequest().authenticated() // Everything else requires a valid JWT
                 );
 

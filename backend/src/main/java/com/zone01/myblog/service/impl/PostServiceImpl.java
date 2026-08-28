@@ -13,6 +13,8 @@ import com.zone01.myblog.repository.CommentRepository;
 import com.zone01.myblog.repository.PostLikeRepository;
 import com.zone01.myblog.repository.PostRepository;
 import com.zone01.myblog.repository.UserRepository;
+import com.zone01.myblog.repository.NotificationRepository;
+import com.zone01.myblog.repository.FollowRepository;
 import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.PostService;
 
@@ -36,6 +38,8 @@ public class PostServiceImpl implements PostService {
     private final FileStorageService fileStorageService;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final NotificationRepository notificationRepository;
+    private final FollowRepository followRepository;
 
     private final Tika tika = new Tika();
     private static final List<String> ALLOWED_MEDIA_TYPES = Arrays.asList(
@@ -45,12 +49,15 @@ public class PostServiceImpl implements PostService {
 
     public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, PostLikeRepository postLikeRepository,
-            CommentRepository commentRepository) {
+            CommentRepository commentRepository, NotificationRepository notificationRepository,
+            FollowRepository followRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
+        this.notificationRepository = notificationRepository;
+        this.followRepository = followRepository;
     }
 
     @Override
@@ -82,6 +89,18 @@ public class PostServiceImpl implements PostService {
 
         Post post = new Post(author, trimmedContent, mediaUrls);
         Post saved = postRepository.save(post);
+
+        List<Users> followers = followRepository.findFollowerUsers(author.getId());
+        for (Users follower : followers) {
+            notificationRepository.save(new com.zone01.myblog.model.Notification(
+                    follower,
+                    author,
+                    "POST",
+                    author.getUsername() + " published a new post.",
+                    saved.getId()
+            ));
+        }
+
 
         return new PostResponse(
                 saved.getId(),

@@ -2,8 +2,8 @@ package com.zone01.myblog.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList; // ADDED: Required for initializing empty collection
-import java.util.List;      // ADDED: List support for multiple media URLs
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
