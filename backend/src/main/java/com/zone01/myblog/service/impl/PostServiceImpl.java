@@ -10,12 +10,14 @@ import com.zone01.myblog.model.Comment;
 import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.PostLike;
 import com.zone01.myblog.model.Notification;
+import com.zone01.myblog.model.NotificationTicket;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.CommentRepository;
 import com.zone01.myblog.repository.PostLikeRepository;
 import com.zone01.myblog.repository.PostRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.repository.NotificationRepository;
+import com.zone01.myblog.repository.NotificationTicketRepository;
 import com.zone01.myblog.repository.FollowRepository;
 import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.PostService;
@@ -44,6 +46,7 @@ public class PostServiceImpl implements PostService {
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationTicketRepository notificationTicketRepository;
 
     private final Tika tika = new Tika();
     private static final List<String> ALLOWED_MEDIA_TYPES = Arrays.asList(
@@ -53,6 +56,7 @@ public class PostServiceImpl implements PostService {
     public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, PostLikeRepository postLikeRepository,
             CommentRepository commentRepository, NotificationRepository notificationRepository,
+            NotificationTicketRepository notificationTicketRepository,
             SimpMessagingTemplate messagingTemplate, FollowRepository followRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
@@ -60,6 +64,7 @@ public class PostServiceImpl implements PostService {
         this.postLikeRepository = postLikeRepository;
         this.commentRepository = commentRepository;
         this.notificationRepository = notificationRepository;
+        this.notificationTicketRepository = notificationTicketRepository;
         this.followRepository = followRepository;
         this.messagingTemplate = messagingTemplate;
     }
@@ -247,18 +252,26 @@ public class PostServiceImpl implements PostService {
         try {
             postLikeRepository.save(like);
 
+            // Don't notify self & check if the user already used their notification ticket
             if (!post.getAuthor().getId().equals(user.getId())) {
-                Notification notif = notificationRepository.save(new Notification(
-                        post.getAuthor(),
-                        user,
-                        "LIKE",
-                        user.getUsername() + " liked your post.",
-                        post.getId()));
+                boolean ticketUsed = notificationTicketRepository.existsByUserIdAndPostIdAndType(
+                        user.getId(), post.getId(), "LIKE");
 
-                messagingTemplate.convertAndSendToUser(
-                        post.getAuthor().getUsername(),
-                        "/queue/notifications",
-                        NotificationResponse.fromEntity(notif));
+                if (!ticketUsed) {
+                    notificationTicketRepository.save(new NotificationTicket(user.getId(), post.getId(), "LIKE"));
+
+                    Notification notif = notificationRepository.save(new Notification(
+                            post.getAuthor(),
+                            user,
+                            "LIKE",
+                            user.getUsername() + " liked your post.",
+                            post.getId()));
+
+                    messagingTemplate.convertAndSendToUser(
+                            post.getAuthor().getUsername(),
+                            "/queue/notifications",
+                            NotificationResponse.fromEntity(notif));
+                }
             }
 
             return true;
@@ -280,17 +293,24 @@ public class PostServiceImpl implements PostService {
         Comment saved = commentRepository.save(comment);
 
         if (!post.getAuthor().getId().equals(user.getId())) {
-            Notification notif = notificationRepository.save(new Notification(
-                    post.getAuthor(),
-                    user,
-                    "COMMENT",
-                    user.getUsername() + " commented on your post.",
-                    post.getId()));
+            boolean ticketUsed = notificationTicketRepository.existsByUserIdAndPostIdAndType(
+                    user.getId(), post.getId(), "COMMENT");
 
-            messagingTemplate.convertAndSendToUser(
-                    post.getAuthor().getUsername(),
-                    "/queue/notifications",
-                    NotificationResponse.fromEntity(notif));
+            if (!ticketUsed) {
+                notificationTicketRepository.save(new NotificationTicket(user.getId(), post.getId(), "COMMENT"));
+
+                Notification notif = notificationRepository.save(new Notification(
+                        post.getAuthor(),
+                        user,
+                        "COMMENT",
+                        user.getUsername() + " commented on your post.",
+                        post.getId()));
+
+                messagingTemplate.convertAndSendToUser(
+                        post.getAuthor().getUsername(),
+                        "/queue/notifications",
+                        NotificationResponse.fromEntity(notif));
+            }
         }
 
         return new CommentResponse(saved.getId(), user.getUsername(), saved.getContent(), saved.getCreatedAt());
