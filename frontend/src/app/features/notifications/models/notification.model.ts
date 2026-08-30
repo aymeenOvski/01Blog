@@ -2,9 +2,9 @@ export interface NotificationResponse {
   id: number;
   actorUsername: string;
   actorAvatarUrl?: string;
-  type: 'FOLLOW' | 'POST';
+  type: 'POST' | 'LIKE' | 'COMMENT' | 'FOLLOW';
   message: string;
-  targetId?: number;
+  targetId: number | null;
   isRead: boolean;
   createdAt: string;
 }

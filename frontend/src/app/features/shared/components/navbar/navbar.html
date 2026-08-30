@@ -6,32 +6,31 @@
 
   <!-- Right Side Actions -->
   <div class="d-flex align-items-center gap-3 position-relative" *ngIf="isLoggedIn; else guestNav">
-    
+
     <!-- Create Post Button -->
     <button type="button" class="btn btn-write d-flex align-items-center gap-2" (click)="openCreatePost()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg"
+        viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
       </svg>
       <span>Write</span>
     </button>
 
     <!-- Notification Bell -->
     <div class="position-relative">
-      <button 
-        type="button" 
+      <button type="button"
         class="notification-btn border-0 bg-transparent text-white p-2 rounded-circle position-relative d-flex align-items-center justify-content-center"
-        (click)="toggleNotifications()"
-        aria-label="Notifications"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
-          <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/>
+        (click)="toggleNotifications()" aria-label="Notifications">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bell"
+          viewBox="0 0 16 16">
+          <path
+            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z" />
         </svg>
 
-        <span 
-          *ngIf="notificationService.unreadCount() > 0" 
+        <span *ngIf="notificationService.unreadCount() > 0"
           class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-danger border border-dark p-1"
-          style="font-size: 0.65rem;"
-        >
+          style="font-size: 0.65rem;">
           {{ notificationService.unreadCount() > 99 ? '99+' : notificationService.unreadCount() }}
         </span>
       </button>
@@ -47,26 +46,55 @@
 
         <div class="notification-list overflow-auto" style="max-height: 320px;">
           <ng-container *ngIf="notificationService.notifications().length > 0; else noNotifications">
-            <a 
-              *ngFor="let notif of notificationService.notifications()"
-              (click)="onNotificationClick(notif)"
-              class="dropdown-item-link notif-item d-flex align-items-start gap-2 px-3 py-2 text-decoration-none border-bottom border-secondary border-opacity-10 cursor-pointer"
-              [class.unread-bg]="!notif.isRead"
-            >
-              <img 
-                [src]="notif.actorAvatarUrl || 'assets/default-avatar.png'" 
-                class="rounded-circle mt-1 object-fit-cover" 
-                width="32" 
-                height="32" 
-                alt="actor avatar"
-              />
+            <a *ngFor="let notif of notificationService.notifications()" (click)="onNotificationClick(notif)"
+              class="dropdown-item-link notif-item d-flex align-items-center gap-2 px-3 py-2 text-decoration-none border-bottom border-secondary border-opacity-10 cursor-pointer"
+              [class.unread-bg]="!notif.isRead">
+              
+              <!-- Actor Avatar / Fallback Initial Circle -->
+              <ng-container *ngIf="notif.actorAvatarUrl; else fallbackNotifAvatar">
+                <img [src]="notif.actorAvatarUrl" class="rounded-circle object-fit-cover flex-shrink-0"
+                  width="32" height="32" alt="actor avatar" />
+              </ng-container>
+
+              <ng-template #fallbackNotifAvatar>
+                <div class="avatar-circle rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                  style="width: 32px; height: 32px; font-size: 0.85rem;">
+                  {{ (notif.actorUsername || 'U').charAt(0).toUpperCase() }}
+                </div>
+              </ng-template>
 
               <div class="flex-grow-1 text-wrap text-break">
                 <p class="mb-0 small text-light" [class.fw-bold]="!notif.isRead">{{ notif.message }}</p>
                 <span class="text-secondary extra-small">{{ notif.createdAt | date:'short' }}</span>
               </div>
 
-              <span *ngIf="!notif.isRead" class="unread-dot bg-primary rounded-circle mt-2"></span>
+              <!-- Notification Type Indicator -->
+              <div class="ms-1 d-flex align-items-center">
+                <!-- Heart Icon for LIKE -->
+                <svg *ngIf="notif.type === 'LIKE'" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                  fill="#dc3545" class="bi bi-heart-fill" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd"
+                    d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
+                </svg>
+
+                <!-- Chat Icon for COMMENT -->
+                <svg *ngIf="notif.type === 'COMMENT'" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                  fill="#0d6efd" class="bi bi-chat-dots-fill" viewBox="0 0 16 16">
+                  <path
+                    d="M16 8c0 3.866-3.582 7-8 7a9 9 0 0 1-2.347-.306c-.584.296-1.925.864-4.181 1.234-.2.032-.352-.176-.273-.362.354-.836.674-1.95.77-2.966C.744 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7M5 8a1 1 0 1 0-2 0 1 1 0 0 0 2 0m4 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+                </svg>
+
+                <!-- Post Icon for POST -->
+                <svg *ngIf="notif.type === 'POST'" xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                  fill="#198754" class="bi bi-card-heading" viewBox="0 0 16 16">
+                  <path
+                    d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z" />
+                  <path
+                    d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8m0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5" />
+                </svg>
+              </div>
+
+              <span *ngIf="!notif.isRead" class="unread-dot bg-primary rounded-circle ms-1"></span>
             </a>
           </ng-container>
 
@@ -80,12 +108,8 @@
     </div>
 
     <!-- User Avatar Trigger -->
-    <button 
-      (click)="toggleDropdown()" 
-      class="avatar-btn border-0 bg-transparent p-0"
-      [class.active]="isProfileDropDownOpen"
-      aria-label="User menu"
-    >
+    <button (click)="toggleDropdown()" class="avatar-btn border-0 bg-transparent p-0"
+      [class.active]="isProfileDropDownOpen" aria-label="User menu">
       <div class="avatar-circle d-flex align-items-center justify-content-center fw-bold text-white overflow-hidden">
         <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="w-100 h-100 object-fit-cover" />
         <span *ngIf="!avatarUrl">{{ username.charAt(0).toUpperCase() }}</span>
@@ -104,27 +128,24 @@
 
       <!-- Navigation Links -->
       <div class="dropdown-body py-1">
-        <a 
-          [routerLink]="['/profile', username]" 
-          routerLinkActive="active" 
-          (click)="closeDropdown()"
-          class="dropdown-item-link d-flex align-items-center text-decoration-none"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
-            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1"/>
+        <a [routerLink]="['/profile', username]" routerLinkActive="active" (click)="closeDropdown()"
+          class="dropdown-item-link d-flex align-items-center text-decoration-none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person"
+            viewBox="0 0 16 16">
+            <path
+              d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1" />
           </svg>
           <span>Profile</span>
         </a>
 
-        <a 
-          routerLink="/settings" 
-          routerLinkActive="active" 
-          (click)="closeDropdown()"
-          class="dropdown-item-link d-flex align-items-center text-decoration-none"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z"/>
+        <a routerLink="/settings" routerLinkActive="active" (click)="closeDropdown()"
+          class="dropdown-item-link d-flex align-items-center text-decoration-none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear"
+            viewBox="0 0 16 16">
+            <path
+              d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+            <path
+              d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z" />
           </svg>
           <span>Settings</span>
         </a>
@@ -134,10 +155,14 @@
 
       <!-- Logout Action -->
       <div class="dropdown-body py-1">
-        <button (click)="logout()" class="dropdown-item-link btn-logout-item border-0 bg-transparent d-flex align-items-center text-start w-100">
-          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+        <button (click)="logout()"
+          class="dropdown-item-link btn-logout-item border-0 bg-transparent d-flex align-items-center text-start w-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor"
+            class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+            <path fill-rule="evenodd"
+              d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
           </svg>
           <span>Sign Out</span>
         </button>

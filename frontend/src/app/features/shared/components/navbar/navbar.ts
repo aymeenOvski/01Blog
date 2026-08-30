@@ -83,7 +83,10 @@ export class Navbar implements OnInit {
 
     if (notification.type === 'FOLLOW') {
       this.router.navigate(['/profile', notification.actorUsername]);
-    } else if (notification.type === 'POST' && notification.targetId) {
+    } else if (
+      (notification.type === 'POST' || notification.type === 'LIKE' || notification.type === 'COMMENT') &&
+      notification.targetId
+    ) {
       this.router.navigate(['/posts', notification.targetId]);
     }
   }

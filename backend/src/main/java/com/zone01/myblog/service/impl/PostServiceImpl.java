@@ -2,12 +2,14 @@ package com.zone01.myblog.service.impl;
 
 import com.zone01.myblog.dto.CommentRequest;
 import com.zone01.myblog.dto.CommentResponse;
+import com.zone01.myblog.dto.NotificationResponse;
 import com.zone01.myblog.dto.PostResponse;
 import com.zone01.myblog.dto.PostUpdateRequest;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Comment;
 import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.PostLike;
+import com.zone01.myblog.model.Notification;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.CommentRepository;
 import com.zone01.myblog.repository.PostLikeRepository;
@@ -17,6 +19,7 @@ import com.zone01.myblog.repository.NotificationRepository;
 import com.zone01.myblog.repository.FollowRepository;
 import com.zone01.myblog.service.FileStorageService;
 import com.zone01.myblog.service.PostService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import org.apache.tika.Tika;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -40,17 +43,17 @@ public class PostServiceImpl implements PostService {
     private final CommentRepository commentRepository;
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private final Tika tika = new Tika();
     private static final List<String> ALLOWED_MEDIA_TYPES = Arrays.asList(
-        "image/jpeg", "image/png", "image/gif", "image/webp",
-        "video/mp4", "video/webm", "video/quicktime"
-    );
+            "image/jpeg", "image/png", "image/gif", "image/webp",
+            "video/mp4", "video/webm", "video/quicktime");
 
     public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
             FileStorageService fileStorageService, PostLikeRepository postLikeRepository,
             CommentRepository commentRepository, NotificationRepository notificationRepository,
-            FollowRepository followRepository) {
+            SimpMessagingTemplate messagingTemplate, FollowRepository followRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
@@ -58,6 +61,7 @@ public class PostServiceImpl implements PostService {
         this.commentRepository = commentRepository;
         this.notificationRepository = notificationRepository;
         this.followRepository = followRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -67,7 +71,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         String trimmedContent = (content != null) ? content.trim() : null;
-        
+
         validatePostPayload(trimmedContent, mediaFiles);
 
         List<String> mediaUrls = new ArrayList<>();
@@ -76,7 +80,7 @@ public class PostServiceImpl implements PostService {
             for (MultipartFile file : mediaFiles) {
                 if (file != null && !file.isEmpty()) {
                     String detectedContentType = detectMimeType(file);
-                    
+
                     if (!detectedContentType.startsWith("image/") && !detectedContentType.startsWith("video/")) {
                         throw BlogApiException.badRequest("Unsupported media format");
                     }
@@ -92,15 +96,19 @@ public class PostServiceImpl implements PostService {
 
         List<Users> followers = followRepository.findFollowerUsers(author.getId());
         for (Users follower : followers) {
-            notificationRepository.save(new com.zone01.myblog.model.Notification(
+            Notification notif = notificationRepository.save(new Notification(
                     follower,
                     author,
                     "POST",
                     author.getUsername() + " published a new post.",
-                    saved.getId()
-            ));
-        }
+                    saved.getId()));
 
+            NotificationResponse dto = NotificationResponse.fromEntity(notif);
+            messagingTemplate.convertAndSendToUser(
+                    follower.getUsername(),
+                    "/queue/notifications",
+                    dto);
+        }
 
         return new PostResponse(
                 saved.getId(),
@@ -111,8 +119,7 @@ public class PostServiceImpl implements PostService {
                 saved.getCreatedAt(),
                 0L,
                 false,
-                0L
-        );
+                0L);
     }
 
     private void validatePostPayload(String content, List<MultipartFile> files) {
@@ -136,7 +143,8 @@ public class PostServiceImpl implements PostService {
         try (InputStream inputStream = file.getInputStream()) {
             String detectedType = tika.detect(inputStream);
             if (detectedType == null || !ALLOWED_MEDIA_TYPES.contains(detectedType.toLowerCase())) {
-                throw BlogApiException.badRequest("Invalid file format. Detected: " + detectedType + ". Allowed formats: JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV");
+                throw BlogApiException.badRequest("Invalid file format. Detected: " + detectedType
+                        + ". Allowed formats: JPEG, PNG, GIF, WEBP, MP4, WEBM, MOV");
             }
             return detectedType.toLowerCase();
         } catch (IOException e) {
@@ -184,8 +192,7 @@ public class PostServiceImpl implements PostService {
                 post.getCreatedAt(),
                 postLikeRepository.countByPostId(postId),
                 postLikeRepository.existsByPostIdAndUserId(postId, currentUser.getId()),
-                commentRepository.countByPostId(postId)
-        );
+                commentRepository.countByPostId(postId));
     }
 
     private PostResponse mapToPostResponse(Object[] row) {
@@ -203,8 +210,7 @@ public class PostServiceImpl implements PostService {
                 post.getCreatedAt(),
                 likeCount,
                 isLiked,
-                commentCount
-        );
+                commentCount);
     }
 
     @Override
@@ -226,6 +232,9 @@ public class PostServiceImpl implements PostService {
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+        Post post = postRepository.findByIdWithAuthor(postId)
+                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
+
         var existingLike = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
         if (existingLike.isPresent()) {
@@ -233,15 +242,25 @@ public class PostServiceImpl implements PostService {
             return false;
         }
 
-        if (!postRepository.existsById(postId)) {
-            throw BlogApiException.notFound("Post not found");
-        }
-
-        Post postRef = postRepository.getReferenceById(postId);
-        PostLike like = new PostLike(postRef, user);
+        PostLike like = new PostLike(post, user);
 
         try {
             postLikeRepository.save(like);
+
+            if (!post.getAuthor().getId().equals(user.getId())) {
+                Notification notif = notificationRepository.save(new Notification(
+                        post.getAuthor(),
+                        user,
+                        "LIKE",
+                        user.getUsername() + " liked your post.",
+                        post.getId()));
+
+                messagingTemplate.convertAndSendToUser(
+                        post.getAuthor().getUsername(),
+                        "/queue/notifications",
+                        NotificationResponse.fromEntity(notif));
+            }
+
             return true;
         } catch (DataIntegrityViolationException e) {
             return true;
@@ -251,17 +270,29 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public CommentResponse addComment(Long postId, CommentRequest request, String currentUsername) {
-        if (!postRepository.existsById(postId)) {
-            throw BlogApiException.notFound("Post not found");
-        }
+        Post post = postRepository.findByIdWithAuthor(postId)
+                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
 
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-        Post post = postRepository.getReferenceById(postId);
         Comment comment = new Comment(request.content(), post, user);
-
         Comment saved = commentRepository.save(comment);
+
+        if (!post.getAuthor().getId().equals(user.getId())) {
+            Notification notif = notificationRepository.save(new Notification(
+                    post.getAuthor(),
+                    user,
+                    "COMMENT",
+                    user.getUsername() + " commented on your post.",
+                    post.getId()));
+
+            messagingTemplate.convertAndSendToUser(
+                    post.getAuthor().getUsername(),
+                    "/queue/notifications",
+                    NotificationResponse.fromEntity(notif));
+        }
+
         return new CommentResponse(saved.getId(), user.getUsername(), saved.getContent(), saved.getCreatedAt());
     }
 
