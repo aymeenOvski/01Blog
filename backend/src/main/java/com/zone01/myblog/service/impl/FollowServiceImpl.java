@@ -3,8 +3,10 @@ package com.zone01.myblog.service.impl;
 import com.zone01.myblog.dto.UserSummaryResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Follow;
+import com.zone01.myblog.model.NotificationTicket;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.FollowRepository;
+import com.zone01.myblog.repository.NotificationTicketRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.service.FollowService;
 import com.zone01.myblog.service.NotificationService;
@@ -23,12 +25,15 @@ public class FollowServiceImpl implements FollowService {
         private final FollowRepository followRepository;
         private final UserRepository userRepository;
         private final NotificationService notificationService;
+        private final NotificationTicketRepository notificationTicketRepository;
 
         public FollowServiceImpl(FollowRepository followRepository, UserRepository userRepository,
-                        NotificationService notificationService) {
+                        NotificationService notificationService,
+                        NotificationTicketRepository notificationTicketRepository) {
                 this.followRepository = followRepository;
                 this.userRepository = userRepository;
                 this.notificationService = notificationService;
+                this.notificationTicketRepository = notificationTicketRepository;
         }
 
         @Override
@@ -49,8 +54,21 @@ public class FollowServiceImpl implements FollowService {
                                         return false;
                                 })
                                 .orElseGet(() -> {
-                                        notificationService.sendNotification(targetUser, currentUser, "FOLLOW",
-                                                        currentUser.getUsername() + " started following you.", null);
+                                        // Check if a follow notification ticket was already consumed
+                                        boolean ticketUsed = notificationTicketRepository
+                                                        .existsByUserIdAndTargetUserIdAndType(
+                                                                        currentUser.getId(), targetUser.getId(),
+                                                                        "FOLLOW");
+
+                                        if (!ticketUsed) {
+                                                notificationTicketRepository.save(
+                                                                NotificationTicket.forFollow(currentUser.getId(),
+                                                                                targetUser.getId()));
+                                                notificationService.sendNotification(targetUser, currentUser, "FOLLOW",
+                                                                currentUser.getUsername() + " started following you.",
+                                                                null);
+                                        }
+
                                         followRepository.save(new Follow(currentUser, targetUser));
                                         return true;
                                 });

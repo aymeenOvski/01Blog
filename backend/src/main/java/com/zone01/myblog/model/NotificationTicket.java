@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "notification_tickets", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"user_id", "post_id", "type"})
-})
+@Table(name = "notification_tickets")
 public class NotificationTicket {
 
     @Id
@@ -16,8 +14,11 @@ public class NotificationTicket {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "post_id", nullable = false)
+    @Column(name = "post_id")
     private Long postId;
+
+    @Column(name = "target_user_id")
+    private Long targetUserId;
 
     @Column(nullable = false, length = 20)
     private String type;
@@ -33,9 +34,18 @@ public class NotificationTicket {
         this.type = type;
     }
 
+    public static NotificationTicket forFollow(Long userId, Long targetUserId) {
+        NotificationTicket ticket = new NotificationTicket();
+        ticket.userId = userId;
+        ticket.targetUserId = targetUserId;
+        ticket.type = "FOLLOW";
+        return ticket;
+    }
+
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public Long getPostId() { return postId; }
+    public Long getTargetUserId() { return targetUserId; }
     public String getType() { return type; }
     public Instant getCreatedAt() { return createdAt; }
 }
