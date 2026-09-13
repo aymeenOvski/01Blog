@@ -2,11 +2,14 @@ package com.zone01.myblog.service.impl;
 
 import com.zone01.myblog.dto.AdminStatsResponse;
 import com.zone01.myblog.dto.ReportResponse;
+import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.Report;
+import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.PostRepository;
 import com.zone01.myblog.repository.ReportRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.service.AdminService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +22,11 @@ public class AdminServiceImpl implements AdminService {
     private final PostRepository postRepository;
     private final ReportRepository reportRepository;
 
-    public AdminServiceImpl(UserRepository userRepository, PostRepository postRepository, ReportRepository reportRepository) {
+    public AdminServiceImpl(
+            UserRepository userRepository,
+            PostRepository postRepository,
+            ReportRepository reportRepository) {
+
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.reportRepository = reportRepository;
@@ -27,37 +34,77 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminStatsResponse getStats() {
+
         long users = userRepository.count();
         long posts = postRepository.count();
         long reports = reportRepository.countByStatus("PENDING");
+
         return new AdminStatsResponse(users, posts, reports);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReportResponse> getPendingReports() {
-        return reportRepository.findByStatusOrderByCreatedAtDesc("PENDING").stream()
-            .map(r -> new ReportResponse(
-                r.getId(),
-                r.getReporter().getUsername(),
-                r.getTargetUser().getUsername(),
-                r.getReason(),
-                r.getStatus(),
-                r.getCreatedAt()
-            )).toList();
+
+        return reportRepository
+                .findByStatusOrderByCreatedAtDesc("PENDING")
+                .stream()
+                .map(this::toReportResponse)
+                .toList();
+    }
+
+    private ReportResponse toReportResponse(Report report) {
+
+        if (report.getTargetPost() != null) {
+
+            Post post = report.getTargetPost();
+
+            return new ReportResponse(
+                    report.getId(),
+                    "POST",
+                    null,
+                    post.getId(),
+                    report.getReporter().getUsername(),
+                    post.getAuthor().getUsername(),
+                    report.getReason(),
+                    report.getStatus(),
+                    report.getCreatedAt());
+        }
+
+        Users user = report.getTargetUser();
+
+        return new ReportResponse(
+                report.getId(),
+                "USER",
+                user.getId(),
+                null,
+                report.getReporter().getUsername(),
+                user.getUsername(),
+                report.getReason(),
+                report.getStatus(),
+                report.getCreatedAt());
     }
 
     @Override
     @Transactional
     public void resolveReport(Long reportId, String action) {
-        Report report = reportRepository.findById(reportId)
-            .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+
+        Report report = reportRepository
+                .findById(reportId)
+                .orElseThrow(() -> new IllegalArgumentException("Report not found"));
 
         if ("DISMISS".equalsIgnoreCase(action)) {
+
             report.setStatus("DISMISSED");
+
         } else if ("RESOLVE".equalsIgnoreCase(action)) {
+
             report.setStatus("RESOLVED");
+
         } else {
-            throw new IllegalArgumentException("Invalid action: " + action);
+
+            throw new IllegalArgumentException(
+                    "Invalid action: " + action);
         }
 
         reportRepository.save(report);
@@ -66,12 +113,14 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
+
         userRepository.deleteById(userId);
     }
 
     @Override
     @Transactional
     public void deletePost(Long postId) {
+
         postRepository.deleteById(postId);
     }
 }

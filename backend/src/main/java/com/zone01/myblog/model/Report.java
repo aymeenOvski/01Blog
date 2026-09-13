@@ -14,9 +14,13 @@ public class Report {
     @JoinColumn(name = "reporter_id", nullable = false)
     private Users reporter;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "target_user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_user_id")
     private Users targetUser;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_post_id")
+    private Post targetPost;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
@@ -33,6 +37,16 @@ public class Report {
     public Report(Users reporter, Users targetUser, String reason) {
         this.reporter = reporter;
         this.targetUser = targetUser;
+        this.targetPost = null;
+        this.reason = reason;
+        this.status = "PENDING";
+        this.createdAt = Instant.now();
+    }
+
+    public Report(Users reporter, Post targetPost, String reason) {
+        this.reporter = reporter;
+        this.targetUser = null;
+        this.targetPost = targetPost;
         this.reason = reason;
         this.status = "PENDING";
         this.createdAt = Instant.now();
@@ -80,5 +94,13 @@ public class Report {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Post getTargetPost() {
+        return targetPost;
+    }
+
+    public void setTargetPost(Post targetPost) {
+        this.targetPost = targetPost;
     }
 }

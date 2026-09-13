@@ -3,6 +3,7 @@ package com.zone01.myblog.controller;
 import com.zone01.myblog.dto.AdminStatsResponse;
 import com.zone01.myblog.dto.ReportResponse;
 import com.zone01.myblog.service.AdminService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +32,12 @@ public class AdminController {
     }
 
     @PatchMapping("/reports/{id}")
-    public ResponseEntity<Void> resolveReport(@PathVariable Long id, @RequestParam String action) {
+    public ResponseEntity<Void> resolveReport(
+            @PathVariable Long id,
+            @RequestParam String action) {
+
         adminService.resolveReport(id, action);
+
         return ResponseEntity.noContent().build();
     }
 
