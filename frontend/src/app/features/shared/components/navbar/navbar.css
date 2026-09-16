@@ -171,3 +171,48 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+.admin-nav-button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background-color: transparent;
+
+  color: #94a3b8;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.admin-nav-button:hover {
+  color: #ffffff;
+
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.admin-nav-button.active {
+  color: #38bdf8;
+
+  background-color: rgba(56, 189, 248, 0.12);
+}
+
+.admin-nav-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

@@ -1,0 +1,1514 @@
+<div class="admin-page">
+
+  <!-- ============================================================ -->
+  <!-- HEADER -->
+  <!-- ============================================================ -->
+
+  <header class="admin-header">
+
+    <div class="header-content">
+
+      <span class="section-eyebrow">
+        01 . ADMIN
+      </span>
+
+      <div class="header-title-row">
+
+        <div>
+          <h1>
+            Command Center
+          </h1>
+
+          <p>
+            Monitor community activity and manage moderation events.
+          </p>
+        </div>
+
+        <span class="admin-status">
+          <span class="status-dot"></span>
+          System online
+        </span>
+
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="refresh-button"
+      [disabled]="isRefreshing"
+      (click)="refresh()">
+
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        [class.refreshing]="isRefreshing">
+
+        <path d="M20 11a8.1 8.1 0 0 0-15.5-2" />
+        <path d="M4 5v4h4" />
+        <path d="M4 13a8.1 8.1 0 0 0 15.5 2" />
+        <path d="M20 19v-4h-4" />
+
+      </svg>
+
+      <span>
+        {{ isRefreshing ? 'Refreshing' : 'Refresh' }}
+      </span>
+
+    </button>
+
+  </header>
+
+
+  <!-- ============================================================ -->
+  <!-- METRICS -->
+  <!-- ============================================================ -->
+
+  <section class="metrics-panel">
+
+    <div class="metric-card">
+
+      <div class="metric-icon metric-icon-users">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+
+        </svg>
+      </div>
+
+      <div class="metric-content">
+
+        <span>Total users</span>
+
+        <strong *ngIf="!isLoadingStats && stats">
+          {{ stats.totalUsers }}
+        </strong>
+
+        <span
+          class="metric-skeleton"
+          *ngIf="isLoadingStats">
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="metric-card">
+
+      <div class="metric-icon metric-icon-posts">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="8" y1="13" x2="16" y2="13" />
+          <line x1="8" y1="17" x2="13" y2="17" />
+
+        </svg>
+      </div>
+
+      <div class="metric-content">
+
+        <span>Total posts</span>
+
+        <strong *ngIf="!isLoadingStats && stats">
+          {{ stats.totalPosts }}
+        </strong>
+
+        <span
+          class="metric-skeleton"
+          *ngIf="isLoadingStats">
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div
+      class="metric-card"
+      [class.metric-card-attention]="pendingReportsCount > 0">
+
+      <div class="metric-icon metric-icon-reports">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+
+        </svg>
+      </div>
+
+      <div class="metric-content">
+
+        <span>Pending reports</span>
+
+        <strong *ngIf="!isLoadingStats">
+          {{ pendingReportsCount }}
+        </strong>
+
+        <span
+          class="metric-skeleton"
+          *ngIf="isLoadingStats">
+        </span>
+
+      </div>
+
+      <span
+        class="attention-label"
+        *ngIf="pendingReportsCount > 0">
+
+        Needs attention
+
+      </span>
+
+    </div>
+
+
+    <div class="metric-card">
+
+      <div class="metric-icon metric-icon-banned">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <circle cx="12" cy="12" r="9" />
+          <path d="m5.6 5.6 12.8 12.8" />
+
+        </svg>
+      </div>
+
+      <div class="metric-content">
+
+        <span>Banned users</span>
+
+        <strong *ngIf="!isLoadingStats && stats">
+          {{ stats.bannedUsers }}
+        </strong>
+
+        <span
+          class="metric-skeleton"
+          *ngIf="isLoadingStats">
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="metric-card">
+
+      <div class="metric-icon metric-icon-hidden">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M3 6h18" />
+          <path d="M8 6V4h8v2" />
+          <path d="M19 6v14H5V6" />
+          <path d="M10 11v5" />
+          <path d="M14 11v5" />
+
+        </svg>
+      </div>
+
+      <div class="metric-content">
+
+        <span>Hidden posts</span>
+
+        <strong *ngIf="!isLoadingStats && stats">
+          {{ stats.hiddenPosts }}
+        </strong>
+
+        <span
+          class="metric-skeleton"
+          *ngIf="isLoadingStats">
+        </span>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ============================================================ -->
+  <!-- ERRORS -->
+  <!-- ============================================================ -->
+
+  <div
+    class="error-banner"
+    *ngIf="statsError">
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <span>
+      {{ statsError }}
+    </span>
+
+    <button
+      type="button"
+      (click)="loadStats()">
+
+      Retry
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="error-banner"
+    *ngIf="reportsError">
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <span>
+      {{ reportsError }}
+    </span>
+
+    <button
+      type="button"
+      (click)="loadReports()">
+
+      Retry
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="error-banner"
+    *ngIf="bannedUsersError">
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <span>
+      {{ bannedUsersError }}
+    </span>
+
+    <button
+      type="button"
+      (click)="loadBannedUsers()">
+
+      Retry
+
+    </button>
+
+  </div>
+
+
+  <div
+    class="error-banner"
+    *ngIf="hiddenPostsError">
+
+    <div class="error-icon">
+      !
+    </div>
+
+    <span>
+      {{ hiddenPostsError }}
+    </span>
+
+    <button
+      type="button"
+      (click)="loadHiddenPosts()">
+
+      Retry
+
+    </button>
+
+  </div>
+
+
+  <!-- ============================================================ -->
+  <!-- NAVIGATION -->
+  <!-- ============================================================ -->
+
+  <nav
+    class="admin-tabs"
+    aria-label="Admin sections">
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab === 'overview'"
+      (click)="setActiveTab('overview')">
+
+      <span class="tab-label">
+        Overview
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab === 'user-reports'"
+      (click)="setActiveTab('user-reports')">
+
+      <span class="tab-label">
+        User Reports
+      </span>
+
+      <span
+        class="tab-count"
+        *ngIf="userReportsCount > 0">
+
+        {{ userReportsCount }}
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab === 'post-reports'"
+      (click)="setActiveTab('post-reports')">
+
+      <span class="tab-label">
+        Post Reports
+      </span>
+
+      <span
+        class="tab-count"
+        *ngIf="postReportsCount > 0">
+
+        {{ postReportsCount }}
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab === 'banned-users'"
+      (click)="setActiveTab('banned-users')">
+
+      <span class="tab-label">
+        Banned Users
+      </span>
+
+      <span
+        class="tab-count"
+        *ngIf="bannedUsers.length > 0">
+
+        {{ bannedUsers.length }}
+
+      </span>
+
+    </button>
+
+
+    <button
+      type="button"
+      class="admin-tab"
+      [class.active]="activeTab === 'hidden-posts'"
+      (click)="setActiveTab('hidden-posts')">
+
+      <span class="tab-label">
+        Hidden Posts
+      </span>
+
+      <span
+        class="tab-count"
+        *ngIf="hiddenPosts.length > 0">
+
+        {{ hiddenPosts.length }}
+
+      </span>
+
+    </button>
+
+  </nav>
+
+
+  <!-- ============================================================ -->
+  <!-- REPORT CONTENT -->
+  <!-- ============================================================ -->
+
+  <ng-container
+    *ngIf="
+      activeTab === 'overview' ||
+      activeTab === 'user-reports' ||
+      activeTab === 'post-reports'
+    ">
+
+    <section class="content-header">
+
+      <div>
+
+        <span class="content-eyebrow">
+          {{
+            activeTab === 'overview'
+              ? 'PLATFORM'
+              : activeTab === 'user-reports'
+                ? 'USER MODERATION'
+                : 'CONTENT MODERATION'
+          }}
+        </span>
+
+        <h2>
+          {{
+            activeTab === 'overview'
+              ? 'Needs your attention'
+              : activeTab === 'user-reports'
+                ? 'Reported users'
+                : 'Reported posts'
+          }}
+        </h2>
+
+        <p>
+          {{
+            activeTab === 'overview'
+              ? 'Review the latest pending reports across the platform.'
+              : activeTab === 'user-reports'
+                ? 'Review reports submitted against community accounts.'
+                : 'Review posts that have been flagged by the community.'
+          }}
+        </p>
+
+      </div>
+
+      <span class="result-count">
+
+        {{ currentResultCount }}
+
+        {{ currentResultLabel }}
+
+      </span>
+
+    </section>
+
+
+    <div
+      class="reports-loading"
+      *ngIf="isLoadingReports">
+
+      <div class="loading-spinner"></div>
+
+      <span>
+        Loading moderation queue...
+      </span>
+
+    </div>
+
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !isLoadingReports &&
+        !reportsError &&
+        currentResultCount === 0
+      ">
+
+      <div class="empty-icon">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M20 6 9 17l-5-5" />
+
+        </svg>
+
+      </div>
+
+      <h3>
+        {{
+          activeTab === 'overview'
+            ? 'Nothing needs attention'
+            : 'No pending reports'
+        }}
+      </h3>
+
+      <p>
+        {{
+          activeTab === 'overview'
+            ? 'The moderation queue is currently clear.'
+            : 'There are currently no reports in this category.'
+        }}
+      </p>
+
+    </div>
+
+
+    <section
+      class="reports-list"
+      *ngIf="
+        !isLoadingReports &&
+        !reportsError &&
+        currentResultCount > 0
+      ">
+
+      <ng-container
+        *ngFor="let report of reports">
+
+        <article
+          class="report-card"
+          *ngIf="
+            activeTab === 'overview' ||
+            (activeTab === 'user-reports' && report.type === 'USER') ||
+            (activeTab === 'post-reports' && report.type === 'POST')
+          ">
+
+          <div class="report-main">
+
+            <div class="report-target">
+
+              <div class="target-avatar">
+                {{ report.targetUsername.charAt(0).toUpperCase() }}
+              </div>
+
+              <div class="target-info">
+
+                <div class="target-line">
+
+                  <span class="target-kind">
+                    {{
+                      report.type === 'USER'
+                        ? 'USER REPORT'
+                        : 'POST REPORT'
+                    }}
+                  </span>
+
+                  <span class="status-dot status-dot-pending"></span>
+
+                  <span class="target-status">
+                    {{ report.status }}
+                  </span>
+
+                </div>
+
+                <strong class="target-name">
+                  @{{ report.targetUsername }}
+                </strong>
+
+              </div>
+
+            </div>
+
+            <time
+              class="report-time"
+              [attr.datetime]="report.createdAt">
+
+              {{ formatDate(report.createdAt) }}
+
+            </time>
+
+          </div>
+
+
+          <div class="report-reporter">
+
+            <span>
+              Reported by
+            </span>
+
+            <strong>
+              @{{ report.reporterUsername }}
+            </strong>
+
+          </div>
+
+
+          <div class="reason-container">
+
+            <span class="reason-label">
+              Report description
+            </span>
+
+            <p>
+              {{ report.reason }}
+            </p>
+
+          </div>
+
+
+          <div class="report-footer">
+
+            <span class="target-reference">
+
+              {{
+                report.type === 'USER'
+                  ? 'Account moderation'
+                  : 'Content moderation'
+              }}
+
+            </span>
+
+
+            <div class="report-actions">
+
+              <button
+                type="button"
+                class="report-action dismiss-action"
+                [disabled]="isProcessingReport(report.id)"
+                (click)="dismissReport(report)">
+
+                <span
+                  class="action-spinner"
+                  *ngIf="isProcessingReport(report.id)">
+                </span>
+
+                <svg
+                  *ngIf="!isProcessingReport(report.id)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+
+                </svg>
+
+                {{
+                  isProcessingReport(report.id)
+                    ? 'Processing'
+                    : 'Dismiss'
+                }}
+
+              </button>
+
+
+              <button
+                *ngIf="report.type === 'USER'"
+                type="button"
+                class="report-action moderate-action"
+                [disabled]="
+                  isProcessingReport(report.id) ||
+                  isProcessingUser(report.targetUserId ?? -1)
+                "
+                (click)="banReportedUser(report)">
+
+                <span
+                  class="action-spinner"
+                  *ngIf="
+                    report.targetUserId !== null &&
+                    isProcessingUser(report.targetUserId)
+                  ">
+                </span>
+
+                <svg
+                  *ngIf="
+                    report.targetUserId === null ||
+                    !isProcessingUser(report.targetUserId)
+                  "
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m5.6 5.6 12.8 12.8" />
+
+                </svg>
+
+                {{
+                  report.targetUserId !== null &&
+                  isProcessingUser(report.targetUserId)
+                    ? 'Banning'
+                    : 'Ban user'
+                }}
+
+              </button>
+
+
+              <button
+                *ngIf="report.type === 'POST'"
+                type="button"
+                class="report-action moderate-action"
+                [disabled]="
+                  isProcessingReport(report.id) ||
+                  isProcessingPost(report.targetPostId ?? -1)
+                "
+                (click)="hideReportedPost(report)">
+
+                <span
+                  class="action-spinner"
+                  *ngIf="
+                    report.targetPostId !== null &&
+                    isProcessingPost(report.targetPostId)
+                  ">
+                </span>
+
+                <svg
+                  *ngIf="
+                    report.targetPostId === null ||
+                    !isProcessingPost(report.targetPostId)
+                  "
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+
+                  <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
+                  <line x1="4" y1="4" x2="20" y2="20" />
+
+                </svg>
+
+                {{
+                  report.targetPostId !== null &&
+                  isProcessingPost(report.targetPostId)
+                    ? 'Hiding'
+                    : 'Hide post'
+                }}
+
+              </button>
+
+
+              <button
+                *ngIf="report.type === 'USER'"
+                type="button"
+                class="report-action delete-action"
+                [disabled]="
+                  isProcessingReport(report.id) ||
+                  isDeletingUser(report.targetUserId ?? -1)
+                "
+                (click)="askDeleteReportedUser(report)">
+
+                Delete user
+
+              </button>
+
+
+              <button
+                *ngIf="report.type === 'POST'"
+                type="button"
+                class="report-action delete-action"
+                [disabled]="
+                  isProcessingReport(report.id) ||
+                  isDeletingPost(report.targetPostId ?? -1)
+                "
+                (click)="askDeleteReportedPost(report)">
+
+                Delete post
+
+              </button>
+
+
+              <button
+                type="button"
+                class="report-action resolve-action"
+                [disabled]="isProcessingReport(report.id)"
+                (click)="resolveReport(report)">
+
+                <svg
+                  *ngIf="!isProcessingReport(report.id)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+
+                  <path d="M20 6 9 17l-5-5" />
+
+                </svg>
+
+                <span
+                  class="action-spinner"
+                  *ngIf="isProcessingReport(report.id)">
+                </span>
+
+                {{
+                  isProcessingReport(report.id)
+                    ? 'Processing'
+                    : 'Resolve'
+                }}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      </ng-container>
+
+    </section>
+
+  </ng-container>
+
+
+  <!-- ============================================================ -->
+  <!-- BANNED USERS -->
+  <!-- ============================================================ -->
+
+  <ng-container
+    *ngIf="activeTab === 'banned-users'">
+
+    <section class="content-header">
+
+      <div>
+
+        <span class="content-eyebrow">
+          USER MODERATION
+        </span>
+
+        <h2>
+          Banned users
+        </h2>
+
+        <p>
+          Accounts currently blocked from accessing the platform.
+        </p>
+
+      </div>
+
+      <span class="result-count">
+        {{ bannedUsers.length }}
+        {{ bannedUsers.length === 1 ? 'banned user' : 'banned users' }}
+      </span>
+
+    </section>
+
+
+    <div
+      class="reports-loading"
+      *ngIf="isLoadingBannedUsers">
+
+      <div class="loading-spinner"></div>
+
+      <span>
+        Loading banned users...
+      </span>
+
+    </div>
+
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !isLoadingBannedUsers &&
+        !bannedUsersError &&
+        bannedUsers.length === 0
+      ">
+
+      <div class="empty-icon">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M20 6 9 17l-5-5" />
+
+        </svg>
+
+      </div>
+
+      <h3>
+        No banned users
+      </h3>
+
+      <p>
+        There are currently no accounts under a ban.
+      </p>
+
+    </div>
+
+
+    <section
+      class="moderation-list"
+      *ngIf="
+        !isLoadingBannedUsers &&
+        !bannedUsersError &&
+        bannedUsers.length > 0
+      ">
+
+      <article
+        class="moderation-card"
+        *ngFor="let user of bannedUsers">
+
+        <div class="moderation-main">
+
+          <div class="moderation-identity">
+
+            <div class="moderation-avatar">
+
+              {{
+                user.username.charAt(0).toUpperCase()
+              }}
+
+            </div>
+
+            <div class="moderation-info">
+
+              <div class="moderation-meta">
+
+                <span class="status-badge danger-badge">
+                  BANNED
+                </span>
+
+                <span class="moderation-date">
+                  {{ formatDate(user.createdAt) }}
+                </span>
+
+              </div>
+
+              <strong>
+                @{{ user.username }}
+              </strong>
+
+              <span>
+                {{ user.email }}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div class="moderation-actions">
+
+            <button
+              type="button"
+              class="report-action resolve-action"
+              [disabled]="
+                isProcessingUser(user.id)
+              "
+              (click)="unbanUser(user)">
+
+              <span
+                class="action-spinner"
+                *ngIf="isProcessingUser(user.id)">
+              </span>
+
+              <svg
+                *ngIf="!isProcessingUser(user.id)"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+
+              </svg>
+
+              {{
+                isProcessingUser(user.id)
+                  ? 'Unbanning'
+                  : 'Unban'
+              }}
+
+            </button>
+
+            <button
+              type="button"
+              class="report-action delete-action"
+              [disabled]="
+                isProcessingUser(user.id) ||
+                isDeletingUser(user.id)
+              "
+              (click)="askDeleteBannedUser(user)">
+
+              Delete user
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </ng-container>
+
+
+  <!-- ============================================================ -->
+  <!-- HIDDEN POSTS -->
+  <!-- ============================================================ -->
+
+  <ng-container
+    *ngIf="activeTab === 'hidden-posts'">
+
+    <section class="content-header">
+
+      <div>
+
+        <span class="content-eyebrow">
+          CONTENT MODERATION
+        </span>
+
+        <h2>
+          Hidden posts
+        </h2>
+
+        <p>
+          Posts currently hidden from normal users.
+        </p>
+
+      </div>
+
+      <span class="result-count">
+        {{ hiddenPosts.length }}
+        {{ hiddenPosts.length === 1 ? 'hidden post' : 'hidden posts' }}
+      </span>
+
+    </section>
+
+
+    <div
+      class="reports-loading"
+      *ngIf="isLoadingHiddenPosts">
+
+      <div class="loading-spinner"></div>
+
+      <span>
+        Loading hidden posts...
+      </span>
+
+    </div>
+
+
+    <div
+      class="empty-state"
+      *ngIf="
+        !isLoadingHiddenPosts &&
+        !hiddenPostsError &&
+        hiddenPosts.length === 0
+      ">
+
+      <div class="empty-icon">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M20 6 9 17l-5-5" />
+
+        </svg>
+
+      </div>
+
+      <h3>
+        No hidden posts
+      </h3>
+
+      <p>
+        There are currently no posts hidden from the community.
+      </p>
+
+    </div>
+
+
+    <section
+      class="moderation-list"
+      *ngIf="
+        !isLoadingHiddenPosts &&
+        !hiddenPostsError &&
+        hiddenPosts.length > 0
+      ">
+
+      <article
+        class="moderation-card"
+        *ngFor="let post of hiddenPosts">
+
+        <div class="post-card-header">
+
+          <div class="moderation-identity">
+
+            <div class="moderation-avatar">
+              {{ post.username.charAt(0).toUpperCase() }}
+            </div>
+
+            <div class="moderation-info">
+
+              <div class="moderation-meta">
+
+                <span class="status-badge warning-badge">
+                  HIDDEN
+                </span>
+
+                <span class="moderation-date">
+                  {{ formatDate(post.createdAt) }}
+                </span>
+
+              </div>
+
+              <strong>
+                @{{ post.username }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="hidden-post-content">
+
+          {{
+            post.content || 'Content unavailable in this moderation response.'
+          }}
+
+        </div>
+
+
+        <div class="moderation-footer">
+
+          <span class="target-reference">
+            Content moderation
+          </span>
+
+          <div class="moderation-actions">
+
+            <button
+              type="button"
+              class="report-action resolve-action"
+              [disabled]="isProcessingPost(post.id)"
+              (click)="unhidePost(post)">
+
+              <span
+                class="action-spinner"
+                *ngIf="isProcessingPost(post.id)">
+              </span>
+
+              <svg
+                *ngIf="!isProcessingPost(post.id)"
+                xmlns="http://www.w3.org/2000/svg"
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
+                <circle cx="12" cy="12" r="3" />
+
+              </svg>
+
+              {{
+                isProcessingPost(post.id)
+                  ? 'Unhiding'
+                  : 'Unhide'
+              }}
+
+            </button>
+
+            <button
+              type="button"
+              class="report-action delete-action"
+              [disabled]="
+                isProcessingPost(post.id) ||
+                isDeletingPost(post.id)
+              "
+              (click)="askDeleteHiddenPost(post)">
+
+              Delete post
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+
+  </ng-container>
+
+
+  <!-- ============================================================ -->
+  <!-- TOAST -->
+  <!-- ============================================================ -->
+
+  <div
+    class="toast"
+    *ngIf="toastMessage"
+    [class.toast-success]="toastType === 'success'"
+    [class.toast-error]="toastType === 'error'">
+
+    <div class="toast-icon">
+
+      <svg
+        *ngIf="toastType === 'success'"
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round">
+
+        <path d="M20 6 9 17l-5-5" />
+
+      </svg>
+
+      <svg
+        *ngIf="toastType === 'error'"
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round">
+
+        <circle cx="12" cy="12" r="9" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+
+      </svg>
+
+    </div>
+
+    <span class="toast-message">
+      {{ toastMessage }}
+    </span>
+
+    <button
+      type="button"
+      class="toast-close"
+      aria-label="Close notification"
+      (click)="dismissToast()">
+
+      ×
+
+    </button>
+
+  </div>
+
+
+  <!-- ============================================================ -->
+  <!-- CONFIRMATION MODAL -->
+  <!-- ============================================================ -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="confirmation"
+    (click)="closeConfirmation()">
+
+    <div
+      class="confirmation-modal"
+      (click)="$event.stopPropagation()">
+
+      <button
+        type="button"
+        class="modal-close"
+        aria-label="Close"
+        (click)="closeConfirmation()">
+
+        ×
+
+      </button>
+
+
+      <div class="danger-icon">
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="21"
+          height="21"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+
+        </svg>
+
+      </div>
+
+
+      <h2>
+        {{
+          confirmation.type === 'delete-user'
+            ? 'Delete this user?'
+            : 'Delete this post?'
+        }}
+      </h2>
+
+
+      <p class="confirmation-text">
+
+        <ng-container
+          *ngIf="confirmation.type === 'delete-user'">
+
+          You are about to permanently remove
+
+          <strong>
+            @{{ confirmation.username }}
+          </strong>
+
+          and their associated data.
+
+        </ng-container>
+
+
+        <ng-container
+          *ngIf="confirmation.type === 'delete-post'">
+
+          You are about to permanently remove the post by
+
+          <strong>
+            @{{ confirmation.username }}
+          </strong>.
+
+        </ng-container>
+
+      </p>
+
+
+      <p class="confirmation-warning">
+        This action cannot be undone.
+      </p>
+
+
+      <div class="confirmation-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="closeConfirmation()">
+
+          Cancel
+
+        </button>
+
+        <button
+          type="button"
+          class="confirm-delete-button"
+          (click)="confirmAction()">
+
+          {{
+            confirmation.type === 'delete-user'
+              ? 'Delete user'
+              : 'Delete post'
+          }}
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

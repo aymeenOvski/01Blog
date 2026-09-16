@@ -49,15 +49,16 @@
             <a *ngFor="let notif of notificationService.notifications()" (click)="onNotificationClick(notif)"
               class="dropdown-item-link notif-item d-flex align-items-center gap-2 px-3 py-2 text-decoration-none border-bottom border-secondary border-opacity-10 cursor-pointer"
               [class.unread-bg]="!notif.isRead">
-              
+
               <!-- Actor Avatar / Fallback Initial Circle -->
               <ng-container *ngIf="notif.actorAvatarUrl; else fallbackNotifAvatar">
-                <img [src]="notif.actorAvatarUrl" class="rounded-circle object-fit-cover flex-shrink-0"
-                  width="32" height="32" alt="actor avatar" />
+                <img [src]="notif.actorAvatarUrl" class="rounded-circle object-fit-cover flex-shrink-0" width="32"
+                  height="32" alt="actor avatar" />
               </ng-container>
 
               <ng-template #fallbackNotifAvatar>
-                <div class="avatar-circle rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                <div
+                  class="avatar-circle rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
                   style="width: 32px; height: 32px; font-size: 0.85rem;">
                   {{ (notif.actorUsername || 'U').charAt(0).toUpperCase() }}
                 </div>
@@ -106,6 +107,24 @@
         </div>
       </div>
     </div>
+
+    <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" class="navbar-icon-button admin-nav-button"
+      aria-label="Open admin dashboard" title="Admin Dashboard">
+
+      <!-- Shield / dashboard icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M8 8h8" />
+        <path d="M8 12h3" />
+        <path d="M8 16h2" />
+        <path d="M14 12h2" />
+        <path d="M14 16h2" />
+
+      </svg>
+
+    </a>
 
     <!-- User Avatar Trigger -->
     <button (click)="toggleDropdown()" class="avatar-btn border-0 bg-transparent p-0"
