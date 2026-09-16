@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.authentication.DisabledException;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -82,6 +84,8 @@ public class AuthServiceImpl implements AuthService {
             return new AuthResponse(token, authentication.getName(), role);
         } catch (BadCredentialsException ex) {
             throw BlogApiException.unauthorized("Invalid username or password");
+        } catch (DisabledException ex) {
+            throw BlogApiException.forbidden("Account is disabled");
         }
     }
 }

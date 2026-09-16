@@ -29,6 +29,9 @@ public class Users implements java.io.Serializable {
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Column(nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private Timestamp createdAt;
 
@@ -42,8 +45,9 @@ public class Users implements java.io.Serializable {
         this.email = email;
         this.passwordHash = password;
         this.role = role;
-        this.bio = ""; 
-        this.avatarUrl = ""; 
+        this.bio = "";
+        this.avatarUrl = "";
+        this.status = "ACTIVE";
     }
 
     // Full constructor
@@ -56,6 +60,7 @@ public class Users implements java.io.Serializable {
         this.role = role;
         this.bio = bio;
         this.avatarUrl = avatarUrl;
+        this.status = "ACTIVE";
         this.createdAt = createdAt;
     }
 
@@ -114,6 +119,18 @@ public class Users implements java.io.Serializable {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isBanned() {
+        return "BANNED".equalsIgnoreCase(status);
     }
 
     public Timestamp getCreatedAt() {

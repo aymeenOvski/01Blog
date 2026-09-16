@@ -16,17 +16,25 @@ public class UserDetailsImpl implements UserDetails {
     private String username;
     private String email;
     private String role;
+    private String status;
 
     @JsonIgnore
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String email, String role, String password,
-                           Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(
+            Long id,
+            String username,
+            String email,
+            String role,
+            String status,
+            String password,
+            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
+        this.status = status;
         this.role = role;
         this.password = password;
         this.authorities = authorities;
@@ -43,9 +51,9 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUsername(),
                 user.getEmail(),
                 role,
+                user.getStatus(),
                 user.getPasswordHash(),
-                authorities
-        );
+                authorities);
     }
 
     @Override
@@ -92,6 +100,6 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return !"BANNED".equalsIgnoreCase(status);
     }
 }

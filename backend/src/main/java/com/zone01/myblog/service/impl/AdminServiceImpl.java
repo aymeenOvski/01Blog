@@ -1,6 +1,8 @@
 package com.zone01.myblog.service.impl;
 
+import com.zone01.myblog.dto.AdminPostResponse;
 import com.zone01.myblog.dto.AdminStatsResponse;
+import com.zone01.myblog.dto.AdminUserResponse;
 import com.zone01.myblog.dto.ReportResponse;
 import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.Report;
@@ -32,15 +34,85 @@ public class AdminServiceImpl implements AdminService {
         this.reportRepository = reportRepository;
     }
 
+    // =========================================================
+    // DASHBOARD
+    // =========================================================
+
     @Override
+    @Transactional(readOnly = true)
     public AdminStatsResponse getStats() {
 
-        long users = userRepository.count();
-        long posts = postRepository.count();
-        long reports = reportRepository.countByStatus("PENDING");
+        long totalUsers = userRepository.count();
+        long bannedUsers = userRepository.countByStatus("BANNED");
 
-        return new AdminStatsResponse(users, posts, reports);
+        long totalPosts = postRepository.count();
+        long hiddenPosts = postRepository.countByVisibility("HIDDEN");
+
+        long pendingReports = reportRepository.countByStatus("PENDING");
+
+        return new AdminStatsResponse(
+                totalUsers,
+                bannedUsers,
+                totalPosts,
+                hiddenPosts,
+                pendingReports);
     }
+
+    // =========================================================
+    // BANNED USERS
+    // =========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> getBannedUsers() {
+
+        return userRepository
+                .findByStatusOrderByCreatedAtDesc("BANNED")
+                .stream()
+                .map(this::toAdminUserResponse)
+                .toList();
+    }
+
+    private AdminUserResponse toAdminUserResponse(Users user) {
+
+        return new AdminUserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getStatus(),
+                user.getAvatarUrl(),
+                user.getCreatedAt());
+    }
+
+    // =========================================================
+    // HIDDEN POSTS
+    // =========================================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminPostResponse> getHiddenPosts() {
+
+        return postRepository
+                .findAllByVisibilityOrderByCreatedAtDesc("HIDDEN")
+                .stream()
+                .map(this::toAdminPostResponse)
+                .toList();
+    }
+
+    private AdminPostResponse toAdminPostResponse(Post post) {
+
+        return new AdminPostResponse(
+                post.getId(),
+                post.getAuthor().getUsername(),
+                post.getContent(),
+                post.getVisibility(),
+                post.getCreatedAt());
+    }
+
+    // =========================================================
+    // REPORTS
+    // =========================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -110,17 +182,103 @@ public class AdminServiceImpl implements AdminService {
         reportRepository.save(report);
     }
 
+    // =========================================================
+    // BAN / UNBAN
+    // =========================================================
+
+    @Override
+    @Transactional
+    public void banUser(Long userId) {
+
+        Users user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if ("ROLE_ADMIN".equalsIgnoreCase(user.getRole())
+                || "ADMIN".equalsIgnoreCase(user.getRole())) {
+
+            throw new IllegalArgumentException(
+                    "Admin users cannot be banned");
+        }
+
+        if ("BANNED".equalsIgnoreCase(user.getStatus())) {
+            return;
+        }
+
+        user.setStatus("BANNED");
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void unbanUser(Long userId) {
+
+        Users user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        user.setStatus("ACTIVE");
+        userRepository.save(user);
+    }
+
+    // =========================================================
+    // HIDE / UNHIDE
+    // =========================================================
+
+    @Override
+    @Transactional
+    public void hidePost(Long postId) {
+
+        Post post = postRepository
+                .findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        post.setVisibility("HIDDEN");
+        postRepository.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void unhidePost(Long postId) {
+
+        Post post = postRepository
+                .findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        post.setVisibility("VISIBLE");
+        postRepository.save(post);
+    }
+
+    // =========================================================
+    // DELETE
+    // =========================================================
+
     @Override
     @Transactional
     public void deleteUser(Long userId) {
 
-        userRepository.deleteById(userId);
+        Users user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if ("ROLE_ADMIN".equalsIgnoreCase(user.getRole())
+                || "ADMIN".equalsIgnoreCase(user.getRole())) {
+
+            throw new IllegalArgumentException(
+                    "Admin users cannot be deleted");
+        }
+
+        userRepository.delete(user);
     }
 
     @Override
     @Transactional
     public void deletePost(Long postId) {
 
-        postRepository.deleteById(postId);
+        Post post = postRepository
+                .findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        postRepository.delete(post);
     }
 }

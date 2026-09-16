@@ -1,7 +1,10 @@
 package com.zone01.myblog.dto;
 
 public record AdminStatsResponse(
-    long totalUsers,
-    long totalPosts,
-    long pendingReports
-) {}
+        long totalUsers,
+        long bannedUsers,
+        long totalPosts,
+        long hiddenPosts,
+        long pendingReports
+) {
+}
