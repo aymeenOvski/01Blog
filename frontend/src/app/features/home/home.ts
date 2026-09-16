@@ -7,6 +7,7 @@ import { PostService } from '../posts/services/post.service';
 import { UserService } from '../profile/services/user.service';
 import { UserSummary } from '../profile/models/user-profile.model';
 import { PostResponse } from '../posts/models/post.model';
+import { ReportModalComponent } from '../reports/components/report-modal/report-modal';
 
 export interface DashboardMediaPreview {
   file: File;
@@ -17,7 +18,12 @@ export interface DashboardMediaPreview {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    ReportModalComponent
+  ],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
@@ -33,6 +39,9 @@ export class Home implements OnInit, OnDestroy {
   readonly maxContentLength = 2000;
   readonly maxMediaFiles = 5;
   readonly maxFileSizeBytes = 5 * 1024 * 1024;
+  showReportModal = false;
+  reportTargetPostId: number | null = null;
+  reportTargetUsername: string | null = null;
 
   username: string;
 
@@ -330,6 +339,22 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
+  openReportModal(post: PostResponse): void {
+    post.showMenu = false;
+
+    if (post.username === this.username) {
+      return;
+    }
+
+    this.reportTargetPostId = post.id;
+    this.showReportModal = true;
+  }
+
+  closeReportModal(): void {
+    this.showReportModal = false;
+    this.reportTargetPostId = null;
+  }
+  
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');

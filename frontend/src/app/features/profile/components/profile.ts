@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ReportModalComponent } from '../../reports/components/report-modal/report-modal';
 
 
 import { UserService } from '../services/user.service';
@@ -14,7 +15,7 @@ import { PostResponse, CommentResponse } from '../../posts/models/post.model';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, ReportModalComponent],
   templateUrl: './profile.html',
   styleUrl: './profile.css'
 })
@@ -35,6 +36,9 @@ export class Profile implements OnInit, OnDestroy {
   postsLoading = false;
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
+  showReportModal = false;
+  showProfileMenu = false;
+  reportTargetPostId: number | null = null;
 
   activeModalTab: 'followers' | 'following' | null = null;
   userListLoading = false;
@@ -84,6 +88,11 @@ export class Profile implements OnInit, OnDestroy {
         this.postsLoading = false;
       }
     });
+  }
+
+  toggleProfileMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showProfileMenu = !this.showProfileMenu;
   }
 
   toggleFollow(): void {
@@ -136,7 +145,7 @@ export class Profile implements OnInit, OnDestroy {
 
   /* Optimistic Like Handler */
   toggleLike(post: PostResponse): void {
-    if (post.isSubmittingLike) return; 
+    if (post.isSubmittingLike) return;
     post.isSubmittingLike = true;
 
     const originalState = post.isLiked ?? false;
@@ -263,7 +272,7 @@ export class Profile implements OnInit, OnDestroy {
     post.showMenu = false;
     if (confirm('Are you sure you want to delete this post?')) {
       const originalPosts = [...this.posts];
-      
+
       this.posts = this.posts.filter(p => p.id !== post.id);
 
       this.postService.deletePost(post.id).subscribe({
@@ -286,15 +295,40 @@ export class Profile implements OnInit, OnDestroy {
     this.routeSub?.unsubscribe();
   }
 
+  openReportModal(): void {
+    if (!this.profile || this.isOwner) {
+      return;
+    }
+
+    this.showProfileMenu = false;
+    this.showReportModal = true;
+    this.reportTargetPostId = null;
+  }
+
+  openReportPostModal(post: PostResponse): void {
+    post.showMenu = false;
+
+    if (post.username === this.currentUser) {
+      return;
+    }
+
+    this.showProfileMenu = false;
+    this.showReportModal = true;
+    this.reportTargetPostId = post.id;
+  }
+
+  closeReportModal(): void {
+    this.showReportModal = false;
+    this.reportTargetPostId = null;
+  }
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    const clickedInside = this.elementRef.nativeElement.contains(event.target);
     const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');
 
     if (!isMenuButton) {
       this.posts.forEach(p => p.showMenu = false);
+      this.showProfileMenu = false;
     }
   }
-
 
 }

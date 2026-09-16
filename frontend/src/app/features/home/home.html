@@ -7,21 +7,28 @@
   <div class="dashboard-grid">
 
     <!-- ===================== LEFT: Suggested users ===================== -->
-    <aside class="dash-card suggested-card" [class.is-open]="mobilePanel === 'suggested'" aria-label="Suggested users to follow">
+    <aside class="dash-card suggested-card" [class.is-open]="mobilePanel === 'suggested'"
+      aria-label="Suggested users to follow">
       <header class="card-header">
         <div class="header-icon header-icon--emerald">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16">
-            <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.829zM3.794 1.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0V3.5h-.5a.5.5 0 0 1 0-1h.5V2a.5.5 0 0 1 .5-.5M10.207 2a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 .5-.5M2.794 15.207a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0v-.5h-.5a.5.5 0 0 1 0-1h.5v-.5a.5.5 0 0 1 .5-.5"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-stars"
+            viewBox="0 0 16 16">
+            <path
+              d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.829zM3.794 1.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0V3.5h-.5a.5.5 0 0 1 0-1h.5V2a.5.5 0 0 1 .5-.5M10.207 2a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 .5-.5M2.794 15.207a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0v-.5h-.5a.5.5 0 0 1 0-1h.5v-.5a.5.5 0 0 1 .5-.5" />
           </svg>
         </div>
         <div>
           <h2 class="card-title">Who to Follow</h2>
-          <span class="count-pill count-pill--emerald" *ngIf="!isLoadingSuggested">{{ suggestedUsers.length }} {{ suggestedUsers.length === 1 ? 'suggestion' : 'suggestions' }}</span>
+          <span class="count-pill count-pill--emerald" *ngIf="!isLoadingSuggested">{{ suggestedUsers.length }} {{
+            suggestedUsers.length === 1 ? 'suggestion' : 'suggestions' }}</span>
         </div>
-        <button type="button" class="refresh-btn" (click)="loadSuggested()" aria-label="Refresh suggestions" title="Refresh">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+        <button type="button" class="refresh-btn" (click)="loadSuggested()" aria-label="Refresh suggestions"
+          title="Refresh">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+            class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+            <path
+              d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
           </svg>
         </button>
       </header>
@@ -40,13 +47,8 @@
               <span class="row-sub">View profile</span>
             </span>
           </a>
-          <button
-            type="button"
-            class="follow-btn"
-            [class.is-pending]="isFollowPending(user.username)"
-            [disabled]="isFollowPending(user.username)"
-            (click)="followSuggested(user)"
-          >
+          <button type="button" class="follow-btn" [class.is-pending]="isFollowPending(user.username)"
+            [disabled]="isFollowPending(user.username)" (click)="followSuggested(user)">
             <span *ngIf="!isFollowPending(user.username)">Follow</span>
             <span *ngIf="isFollowPending(user.username)" class="btn-spinner btn-spinner--dark"></span>
           </button>
@@ -65,12 +67,15 @@
 
       <div class="list-state" *ngIf="!isLoadingSuggested && !suggestedError && suggestedUsers.length === 0">
         <div class="empty-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check2-circle" viewBox="0 0 16 16">
-            <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0"/>
-            <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-check2-circle"
+            viewBox="0 0 16 16">
+            <path
+              d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0" />
+            <path
+              d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z" />
           </svg>
         </div>
-        <p>No suggestions right now.<br/>You are following everyone!</p>
+        <p>No suggestions right now.<br />You are following everyone!</p>
       </div>
     </aside>
 
@@ -78,20 +83,14 @@
     <section class="dash-card composer-card" aria-label="Create a post">
       <div class="success-banner" *ngIf="postSuccess" role="status">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+          <path
+            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
         </svg>
         Your post has been published!
       </div>
 
-      <textarea
-        [(ngModel)]="content"
-        name="content"
-        class="composer-textarea"
-        rows="5"
-        placeholder="Share your story, ideas or moments..."
-        maxlength="2200"
-        [disabled]="isSubmitting"
-      ></textarea>
+      <textarea [(ngModel)]="content" name="content" class="composer-textarea" rows="5"
+        placeholder="Share your story, ideas or moments..." maxlength="2200" [disabled]="isSubmitting"></textarea>
 
       <div class="media-grid" *ngIf="mediaPreviews.length > 0">
         <div class="media-thumb" *ngFor="let preview of mediaPreviews; let i = index">
@@ -104,18 +103,14 @@
       <div class="error-banner" *ngIf="errorMessage" role="alert">{{ errorMessage }}</div>
 
       <footer class="composer-footer">
-        <input
-          #mediaInput
-          type="file"
-          accept="image/*,video/*"
-          multiple
-          hidden
-          (change)="onFileSelected($event)"
-        />
-        <button type="button" class="attach-btn" (click)="triggerFileSelect()" [disabled]="isSubmitting" title="Attach images or videos">
-          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
-            <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
-            <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3h10a2 2 0 0 1 2 2zM2 4a1 1 0 0 0-1 1v4.208l2.271-2.271a1 1 0 0 1 1.414 0l2.293 2.293 2.293-2.293a1 1 0 0 1 1.414 0L14 10.586V5a1 1 0 0 0-1-1zm0 8h10a1 1 0 0 0 .993-.883L9.5 8.5l-2 2-2.293-2.293L2 11.086zm10.5-1.914L10.893 8.5l1.607-1.607z"/>
+        <input #mediaInput type="file" accept="image/*,video/*" multiple hidden (change)="onFileSelected($event)" />
+        <button type="button" class="attach-btn" (click)="triggerFileSelect()" [disabled]="isSubmitting"
+          title="Attach images or videos">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-images"
+            viewBox="0 0 16 16">
+            <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3" />
+            <path
+              d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3h10a2 2 0 0 1 2 2zM2 4a1 1 0 0 0-1 1v4.208l2.271-2.271a1 1 0 0 1 1.414 0l2.293 2.293 2.293-2.293a1 1 0 0 1 1.414 0L14 10.586V5a1 1 0 0 0-1-1zm0 8h10a1 1 0 0 0 .993-.883L9.5 8.5l-2 2-2.293-2.293L2 11.086zm10.5-1.914L10.893 8.5l1.607-1.607z" />
           </svg>
           <span>Media</span>
         </button>
@@ -135,19 +130,25 @@
     <section class="dash-card feed-card" aria-label="Feed of posts from people you follow">
       <header class="card-header">
         <div class="header-icon header-icon--sky">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-rss" viewBox="0 0 16 16">
-            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-            <path d="M5.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-3-8.5a1 1 0 0 1 1-1c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1-1-1m0 4a1 1 0 0 1 1-1 6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1-1-1"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-rss"
+            viewBox="0 0 16 16">
+            <path
+              d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
+            <path
+              d="M5.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-3-8.5a1 1 0 0 1 1-1c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1-1-1m0 4a1 1 0 0 1 1-1 6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1-1-1" />
           </svg>
         </div>
         <div>
           <h2 class="card-title">Feed</h2>
-          <span class="count-pill" *ngIf="!isLoadingFeed && !feedError">{{ feedPosts.length }} {{ feedPosts.length === 1 ? 'post' : 'posts' }}</span>
+          <span class="count-pill" *ngIf="!isLoadingFeed && !feedError">{{ feedPosts.length }} {{ feedPosts.length === 1
+            ? 'post' : 'posts' }}</span>
         </div>
         <button type="button" class="refresh-btn" (click)="loadFeed()" aria-label="Refresh feed" title="Refresh">
-          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
-            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+            class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z" />
+            <path
+              d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466" />
           </svg>
         </button>
       </header>
@@ -164,12 +165,15 @@
 
       <div class="list-state" *ngIf="!isLoadingFeed && !feedError && feedPosts.length === 0">
         <div class="empty-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-rss" viewBox="0 0 16 16">
-            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-            <path d="M5.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-3-8.5a1 1 0 0 1 1-1c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1-1-1m0 4a1 1 0 0 1 1-1 6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1-1-1"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" class="bi bi-rss"
+            viewBox="0 0 16 16">
+            <path
+              d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
+            <path
+              d="M5.5 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-3-8.5a1 1 0 0 1 1-1c5.523 0 10 4.477 10 10a1 1 0 1 1-2 0 8 8 0 0 0-8-8 1 1 0 0 1-1-1m0 4a1 1 0 0 1 1-1 6 6 0 0 1 6 6 1 1 0 1 1-2 0 4 4 0 0 0-4-4 1 1 0 0 1-1-1" />
           </svg>
         </div>
-        <p>No posts in your feed yet.<br/>Follow people to see their latest posts here!</p>
+        <p>No posts in your feed yet.<br />Follow people to see their latest posts here!</p>
       </div>
 
       <div class="feed-list" *ngIf="!isLoadingFeed && !feedError && feedPosts.length > 0">
@@ -190,29 +194,34 @@
 
             <!-- 3-Dot Options Menu Container -->
             <div class="dropdown post-options-dropdown">
-              <button
-                class="btn btn-icon text-muted-custom p-1"
-                type="button"
-                (click)="togglePostMenu(post, $event)"
-                aria-label="Post options"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="1"/>
-                  <circle cx="12" cy="5" r="1"/>
-                  <circle cx="12" cy="19" r="1"/>
+              <button class="btn btn-icon text-muted-custom p-1" type="button" (click)="togglePostMenu(post, $event)"
+                aria-label="Post options">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="12" cy="5" r="1" />
+                  <circle cx="12" cy="19" r="1" />
                 </svg>
               </button>
 
               <!-- Dropdown Menu items -->
               <div class="dropdown-menu dropdown-menu-end show" *ngIf="post.showMenu">
 
-                <!-- Feed only shows posts from people you follow: Repost -->
-                <button class="dropdown-item d-flex align-items-center gap-2" (click)="repost(post)">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>
-                  </svg>
+                <button *ngIf="post.username !== username" type="button"
+                  class="dropdown-item d-flex align-items-center gap-2" (click)="openReportModal(post)">
+
+                  <!-- warning icon -->
+
+                  Report Post
+                </button>
+
+                <button type="button" class="dropdown-item d-flex align-items-center gap-2" (click)="repost(post)">
+
+                  <!-- repost icon -->
+
                   Repost
                 </button>
+
               </div>
             </div>
           </header>
@@ -223,39 +232,32 @@
           </div>
 
           <!-- Post Media -->
-          <div class="post-media-grid" *ngIf="post.mediaUrls && post.mediaUrls.length > 0" [class.grid-single]="post.mediaUrls.length === 1" [class.grid-double]="post.mediaUrls.length === 2" [class.grid-multi]="post.mediaUrls.length >= 3">
+          <div class="post-media-grid" *ngIf="post.mediaUrls && post.mediaUrls.length > 0"
+            [class.grid-single]="post.mediaUrls.length === 1" [class.grid-double]="post.mediaUrls.length === 2"
+            [class.grid-multi]="post.mediaUrls.length >= 3">
             <div class="post-media-item" *ngFor="let url of post.mediaUrls">
-              <img
-                *ngIf="!isVideoUrl(url)"
-                [src]="resolveMediaUrl(url)"
-                alt="Post image"
-                loading="lazy"
-              />
-              <video
-                *ngIf="isVideoUrl(url)"
-                [src]="resolveMediaUrl(url)"
-                controls
-                preload="metadata"
-              ></video>
+              <img *ngIf="!isVideoUrl(url)" [src]="resolveMediaUrl(url)" alt="Post image" loading="lazy" />
+              <video *ngIf="isVideoUrl(url)" [src]="resolveMediaUrl(url)" controls preload="metadata"></video>
             </div>
           </div>
 
           <!-- Post Actions -->
           <div class="post-actions d-flex align-items-center gap-3 pt-3 mt-2 border-top border-secondary-subtle">
-            <button
-              (click)="toggleLike(post)"
-              class="btn-action d-flex align-items-center gap-1"
-              [class.liked]="post.isLiked"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" [attr.fill]="post.isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+            <button (click)="toggleLike(post)" class="btn-action d-flex align-items-center gap-1"
+              [class.liked]="post.isLiked">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                [attr.fill]="post.isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
               </svg>
               <span>{{ post.likesCount || 0 }}</span>
             </button>
 
             <button (click)="toggleComments(post)" class="btn-action d-flex align-items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
               <span>{{ post.commentsCount || (post.comments ? post.comments.length : 0) }}</span>
             </button>
@@ -264,21 +266,12 @@
           <!-- Collapsible Comments Section -->
           <div class="comments-section mt-3" *ngIf="post.showComments">
             <form (ngSubmit)="addComment(post)" class="d-flex align-items-start gap-2 mb-3">
-              <textarea
-                class="form-control form-control-sm comment-input"
+              <textarea class="form-control form-control-sm comment-input"
                 placeholder="Write a comment... (Enter to post, Shift+Enter for new line)"
-                [(ngModel)]="post.newCommentText"
-                maxlength="1000"
-                name="commentText"
-                rows="1"
-                (keydown.enter)="onCommentKeyDown($event, post)"
-                [disabled]="!!post.isSubmittingComment"
-              ></textarea>
-              <button
-                type="submit"
-                class="btn btn-primary btn-sm px-3"
-                [disabled]="!post.newCommentText || !post.newCommentText.trim() || post.newCommentText.length > 1000 || post.isSubmittingComment"
-              >
+                [(ngModel)]="post.newCommentText" maxlength="1000" name="commentText" rows="1"
+                (keydown.enter)="onCommentKeyDown($event, post)" [disabled]="!!post.isSubmittingComment"></textarea>
+              <button type="submit" class="btn btn-primary btn-sm px-3"
+                [disabled]="!post.newCommentText || !post.newCommentText.trim() || post.newCommentText.length > 1000 || post.isSubmittingComment">
                 Post
               </button>
             </form>
@@ -305,27 +298,23 @@
 
     <!-- ===================== Mobile panel toggles ===================== -->
     <div class="mobile-actions">
-      <button
-        type="button"
-        class="mobile-action-btn mobile-action-btn--emerald"
-        [class.is-active]="mobilePanel === 'suggested'"
-        [attr.aria-expanded]="mobilePanel === 'suggested'"
-        (click)="toggleMobilePanel('suggested')"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16">
-          <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.829zM3.794 1.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0V3.5h-.5a.5.5 0 0 1 0-1h.5V2a.5.5 0 0 1 .5-.5M10.207 2a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 .5-.5M2.794 15.207a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0v-.5h-.5a.5.5 0 0 1 0-1h.5v-.5a.5.5 0 0 1 .5-.5"/>
+      <button type="button" class="mobile-action-btn mobile-action-btn--emerald"
+        [class.is-active]="mobilePanel === 'suggested'" [attr.aria-expanded]="mobilePanel === 'suggested'"
+        (click)="toggleMobilePanel('suggested')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars"
+          viewBox="0 0 16 16">
+          <path
+            d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.829zM3.794 1.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0V3.5h-.5a.5.5 0 0 1 0-1h.5V2a.5.5 0 0 1 .5-.5M10.207 2a.5.5 0 0 1 .5.5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 .5-.5M2.794 15.207a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 0 1h-.5v.5a.5.5 0 0 1-1 0v-.5h-.5a.5.5 0 0 1 0-1h.5v-.5a.5.5 0 0 1 .5-.5" />
         </svg>
         Who to Follow
       </button>
-      <button
-        type="button"
-        class="mobile-action-btn mobile-action-btn--violet"
-        [class.is-active]="mobilePanel === 'settings'"
-        [attr.aria-expanded]="mobilePanel === 'settings'"
-        (click)="toggleMobilePanel('settings')"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
-          <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+      <button type="button" class="mobile-action-btn mobile-action-btn--violet"
+        [class.is-active]="mobilePanel === 'settings'" [attr.aria-expanded]="mobilePanel === 'settings'"
+        (click)="toggleMobilePanel('settings')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+          class="bi bi-lightning-charge" viewBox="0 0 16 16">
+          <path
+            d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z" />
         </svg>
         Quick Actions
       </button>
@@ -335,8 +324,10 @@
     <aside class="dash-card settings-card" [class.is-open]="mobilePanel === 'settings'" aria-label="Account shortcuts">
       <header class="card-header">
         <div class="header-icon header-icon--violet">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-lightning-charge" viewBox="0 0 16 16">
-            <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+            class="bi bi-lightning-charge" viewBox="0 0 16 16">
+            <path
+              d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z" />
           </svg>
         </div>
         <div>
@@ -348,52 +339,70 @@
       <nav class="actions-list">
         <a [routerLink]="['/profile', username]" class="action-tile action-tile--sky">
           <span class="tile-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
-              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-person"
+              viewBox="0 0 16 16">
+              <path
+                d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1" />
             </svg>
           </span>
           <span class="tile-text">
             <span class="tile-label">Profile</span>
             <span class="tile-hint">View your public page</span>
           </span>
-          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8" />
           </svg>
         </a>
 
         <a routerLink="/settings" class="action-tile action-tile--amber">
           <span class="tile-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
-              <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-              <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-gear"
+              viewBox="0 0 16 16">
+              <path
+                d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+              <path
+                d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.185 1.185l-.159.291a1.873 1.873 0 0 0 1.116 2.693l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.185-1.185l.159-.291a1.873 1.873 0 0 0-1.116-2.693l-.318-.094c-.835-.246-.835-1.428 0-1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.415-.764.42-1.6 1.185-1.184l.291.159a1.873 1.873 0 0 0 2.693-1.116z" />
             </svg>
           </span>
           <span class="tile-text">
             <span class="tile-label">Settings</span>
             <span class="tile-hint">Preferences &amp; security</span>
           </span>
-          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8" />
           </svg>
         </a>
 
         <button type="button" class="action-tile action-tile--red" (click)="logout()">
           <span class="tile-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-              <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor"
+              class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+              <path fill-rule="evenodd"
+                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+              <path fill-rule="evenodd"
+                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
             </svg>
           </span>
           <span class="tile-text">
             <span class="tile-label">Logout</span>
             <span class="tile-hint">End this session</span>
           </span>
-          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8"/>
+          <svg class="tile-arrow" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8" />
           </svg>
         </button>
       </nav>
     </aside>
 
   </div>
+
+  <app-report-modal *ngIf="showReportModal && reportTargetPostId !== null" [postId]="reportTargetPostId"
+    (closed)="closeReportModal()">
+  </app-report-modal>
 </div>

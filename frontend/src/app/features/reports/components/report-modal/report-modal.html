@@ -1,0 +1,103 @@
+<div class="report-overlay" (click)="onOverlayClick($event)">
+    <div class="report-modal">
+
+        <button
+            type="button"
+            class="close-button"
+            aria-label="Close"
+            (click)="close()"
+            [disabled]="isSubmitting">
+            ×
+        </button>
+
+        <ng-container *ngIf="!success">
+
+            <div class="report-icon">
+                !
+            </div>
+
+            <h2>
+                {{ isPostReport ? 'Report post' : 'Report user' }}
+            </h2>
+
+            <p class="report-description">
+                <ng-container *ngIf="isPostReport">
+                    Report this post if you believe it violates the community
+                    guidelines.
+                </ng-container>
+
+                <ng-container *ngIf="!isPostReport">
+                    Report <strong>@{{ username }}</strong> if you believe they
+                    are violating the community guidelines.
+                </ng-container>
+            </p>
+
+            <label for="reportReason">
+                Reason
+            </label>
+
+            <textarea
+                id="reportReason"
+                [(ngModel)]="reason"
+                [maxlength]="maxReasonLength"
+                placeholder="Describe the issue..."
+                rows="6"
+                [disabled]="isSubmitting">
+            </textarea>
+
+            <div class="character-count">
+                {{ reasonLength }}/{{ maxReasonLength }}
+            </div>
+
+            <div
+                class="error-message"
+                *ngIf="errorMessage">
+                {{ errorMessage }}
+            </div>
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="btn-cancel"
+                    (click)="close()"
+                    [disabled]="isSubmitting">
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-submit"
+                    (click)="submit()"
+                    [disabled]="!isValid">
+
+                    <span
+                        class="spinner"
+                        *ngIf="isSubmitting">
+                    </span>
+
+                    {{ isSubmitting ? 'Submitting...' : 'Submit report' }}
+
+                </button>
+
+            </div>
+
+        </ng-container>
+
+        <ng-container *ngIf="success">
+
+            <div class="success-icon">
+                ✓
+            </div>
+
+            <h2>Report submitted</h2>
+
+            <p class="report-description">
+                Thanks for helping keep 01Blog safe. An administrator will
+                review your report.
+            </p>
+
+        </ng-container>
+
+    </div>
+</div>
