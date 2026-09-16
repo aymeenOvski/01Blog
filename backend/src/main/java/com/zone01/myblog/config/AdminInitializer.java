@@ -12,13 +12,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class AdminInitializer {
 
-    @Value("${app.admin.username:admin}")
+    @Value("${app.admin.username}")
     private String adminUsername;
 
-    @Value("${app.admin.email:admin@01blog.local}")
+    @Value("${app.admin.email}")
     private String adminEmail;
 
-    @Value("${app.admin.password:admin123}")
+    @Value("${app.admin.password}")
     private String adminPassword;
 
     @Bean
