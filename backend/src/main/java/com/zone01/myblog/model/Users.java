@@ -105,6 +105,10 @@ public class Users implements java.io.Serializable {
         this.role = role;
     }
 
+    public void setPassword(String password) {
+        this.passwordHash = password;
+    }
+
     public String getBio() {
         return bio;
     }
