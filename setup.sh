@@ -1,33 +1,44 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "🚀 Starting 01Blog Development Setup..."
+# Stop execution immediately if any command fails
+set -e
 
-# 1. Update system packages
-echo "📦 Updating package index..."
-sudo apt-get update -y
+echo "=========================================="
+echo "   Starting System Tools Installation     "
+echo "=========================================="
 
-# 2. Install Docker & dependencies if not installed
-if ! command -v docker &> /dev/null; then
-    echo "🐳 Installing Docker..."
-    sudo apt-get install -y ca-certificates curl gnupg lsb-release
-    sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update -y
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    
-    # Allow running docker without sudo
-    sudo usermod -aG docker $USER
-    echo "✅ Docker installed successfully."
-else
-    echo "✅ Docker is already installed."
+# 1. Install Micromamba
+echo "--> Installing Micromamba..."
+curl -L micro.mamba.pm/install.sh | bash
+
+# Source shell configuration to make micromamba available in current session
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc"
+elif [ -f "$HOME/.zshrc" ]; then
+    source "$HOME/.zshrc"
 fi
 
-# 3. Pull light Docker images needed for development
-echo "📥 Pulling lightweight Docker images..."
-sudo docker pull postgres:16-alpine
-sudo docker pull node:20-alpine
+# Ensure micromamba binary is accessible
+export PATH="$HOME/.local/bin:$PATH"
 
-echo "🎉 All tools and base images are ready!"
+# 2. Install PostgreSQL, Node.js, and Maven via Micromamba
+echo "--> Installing PostgreSQL, Node.js, and Maven via conda-forge..."
+micromamba install postgresql nodejs maven -c conda-forge -y
+
+# 3. Install Angular CLI Globally
+echo "--> Installing Angular CLI globally via npm..."
+npm install -g @angular/cli
+
+echo "=========================================="
+echo "      Checking Installed Versions         "
+echo "=========================================="
+micromamba --version
+postgres --version
+node -v
+mvn -version
+ng version
+
+echo "=========================================="
+echo " Setup Complete! Restart your terminal or "
+echo " run: source ~/.bashrc (or source ~/.zshrc)"
+echo "=========================================="
