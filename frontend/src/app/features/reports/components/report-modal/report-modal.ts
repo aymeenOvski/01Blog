@@ -1,7 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReportService } from './../../services/report.service';
+
+import {
+  ReportService
+} from './../../services/report.service';
+
+import {
+  ReportReason,
+  ReportRequest
+} from '../../models/report.model';
 
 @Component({
   selector: 'app-report-modal',
@@ -13,56 +21,76 @@ import { ReportService } from './../../services/report.service';
 export class ReportModalComponent {
 
   @Input() username: string | null = null;
+
   @Input() postId: number | null = null;
 
   @Output() closed = new EventEmitter<void>();
 
-  reason = '';
+  selectedReason: ReportReason | '' = '';
+
+  description = '';
+
   isSubmitting = false;
+
   success = false;
+
   errorMessage = '';
 
-  readonly maxReasonLength = 1000;
+  readonly maxDescriptionLength = 1000;
 
-  constructor(private reportService: ReportService) {}
+  readonly reportReasons: { value: ReportReason; label: string }[] = [
+    { value: 'SPAM', label: 'Spam' },
+    { value: 'HARASSMENT', label: 'Harassment or bullying' },
+    { value: 'INAPPROPRIATE_CONTENT', label: 'Inappropriate content' },
+    { value: 'HATE_SPEECH', label: 'Hate speech' },
+    { value: 'FAKE_ACCOUNT', label: 'Fake or impersonation account' },
+    { value: 'OTHER', label: 'Other' }
+  ];
+
+  constructor(private reportService: ReportService) { }
 
   get isPostReport(): boolean {
     return this.postId !== null;
   }
 
   get isValid(): boolean {
-    return this.reason.trim().length > 0
-      && this.reason.length <= this.maxReasonLength
-      && !this.isSubmitting;
+    return (
+      this.selectedReason !== '' &&
+      this.description.length <= this.maxDescriptionLength &&
+      !this.isSubmitting
+    );
   }
 
-  get reasonLength(): number {
-    return this.reason.length;
+  get descriptionLength(): number {
+    return this.description.length;
   }
 
   submit(): void {
-    if (!this.isValid) {
+    if (!this.isValid || this.selectedReason === '') {
       return;
     }
 
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    const request = this.isPostReport
+    const request: ReportRequest = this.isPostReport
       ? {
-          targetPostId: this.postId,
-          reason: this.reason.trim()
-        }
+        targetPostId: this.postId,
+        reason: this.selectedReason,
+        description: this.description.trim() || null
+      }
       : {
-          targetUsername: this.username,
-          reason: this.reason.trim()
-        };
+        targetUsername: this.username,
+        reason: this.selectedReason,
+        description: this.description.trim() || null
+      };
 
     this.reportService.submitReport(request).subscribe({
       next: () => {
         this.isSubmitting = false;
         this.success = true;
       },
+
       error: (error) => {
         this.isSubmitting = false;
 

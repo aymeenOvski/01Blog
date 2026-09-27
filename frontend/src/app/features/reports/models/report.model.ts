@@ -1,7 +1,16 @@
+export type ReportReason =
+  | 'SPAM'
+  | 'HARASSMENT'
+  | 'INAPPROPRIATE_CONTENT'
+  | 'HATE_SPEECH'
+  | 'FAKE_ACCOUNT'
+  | 'OTHER';
+
 export interface ReportRequest {
   targetPostId?: number | null;
   targetUsername?: string | null;
-  reason: string;
+  reason: ReportReason;
+  description?: string | null;
 }
 
 export interface ReportResponse {
@@ -11,7 +20,8 @@ export interface ReportResponse {
   targetPostId: number | null;
   reporterUsername: string;
   targetUsername: string;
-  reason: string;
+  reason: ReportReason;
+  description: string | null;
   status: string;
   createdAt: string;
 }

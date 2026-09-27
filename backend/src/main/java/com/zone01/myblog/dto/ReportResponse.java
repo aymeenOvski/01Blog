@@ -1,5 +1,6 @@
 package com.zone01.myblog.dto;
 
+import com.zone01.myblog.model.enums.ReportReason;
 import java.time.Instant;
 
 public record ReportResponse(
@@ -9,7 +10,8 @@ public record ReportResponse(
     Long targetPostId,
     String reporterUsername,
     String targetUsername,
-    String reason,
+    ReportReason reason,
+    String description,
     String status,
     Instant createdAt
 ) {}

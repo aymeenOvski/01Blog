@@ -33,22 +33,10 @@
 
     </div>
 
-    <button
-      type="button"
-      class="refresh-button"
-      [disabled]="isRefreshing"
-      (click)="refresh()">
+    <button type="button" class="refresh-button" [disabled]="isRefreshing" (click)="refresh()">
 
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
         [class.refreshing]="isRefreshing">
 
         <path d="M20 11a8.1 8.1 0 0 0-15.5-2" />
@@ -76,16 +64,8 @@
     <div class="metric-card">
 
       <div class="metric-icon metric-icon-users">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
@@ -103,9 +83,7 @@
           {{ stats.totalUsers }}
         </strong>
 
-        <span
-          class="metric-skeleton"
-          *ngIf="isLoadingStats">
+        <span class="metric-skeleton" *ngIf="isLoadingStats">
         </span>
 
       </div>
@@ -116,16 +94,8 @@
     <div class="metric-card">
 
       <div class="metric-icon metric-icon-posts">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
@@ -143,9 +113,7 @@
           {{ stats.totalPosts }}
         </strong>
 
-        <span
-          class="metric-skeleton"
-          *ngIf="isLoadingStats">
+        <span class="metric-skeleton" *ngIf="isLoadingStats">
         </span>
 
       </div>
@@ -153,21 +121,11 @@
     </div>
 
 
-    <div
-      class="metric-card"
-      [class.metric-card-attention]="pendingReportsCount > 0">
+    <div class="metric-card" [class.metric-card-attention]="pendingReportsCount > 0">
 
       <div class="metric-icon metric-icon-reports">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
           <line x1="12" y1="9" x2="12" y2="13" />
@@ -184,16 +142,12 @@
           {{ pendingReportsCount }}
         </strong>
 
-        <span
-          class="metric-skeleton"
-          *ngIf="isLoadingStats">
+        <span class="metric-skeleton" *ngIf="isLoadingStats">
         </span>
 
       </div>
 
-      <span
-        class="attention-label"
-        *ngIf="pendingReportsCount > 0">
+      <span class="attention-label" *ngIf="pendingReportsCount > 0">
 
         Needs attention
 
@@ -205,16 +159,8 @@
     <div class="metric-card">
 
       <div class="metric-icon metric-icon-banned">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <circle cx="12" cy="12" r="9" />
           <path d="m5.6 5.6 12.8 12.8" />
@@ -230,9 +176,7 @@
           {{ stats.bannedUsers }}
         </strong>
 
-        <span
-          class="metric-skeleton"
-          *ngIf="isLoadingStats">
+        <span class="metric-skeleton" *ngIf="isLoadingStats">
         </span>
 
       </div>
@@ -243,16 +187,8 @@
     <div class="metric-card">
 
       <div class="metric-icon metric-icon-hidden">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="19"
-          height="19"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M3 6h18" />
           <path d="M8 6V4h8v2" />
@@ -271,9 +207,7 @@
           {{ stats.hiddenPosts }}
         </strong>
 
-        <span
-          class="metric-skeleton"
-          *ngIf="isLoadingStats">
+        <span class="metric-skeleton" *ngIf="isLoadingStats">
         </span>
 
       </div>
@@ -287,9 +221,7 @@
   <!-- ERRORS -->
   <!-- ============================================================ -->
 
-  <div
-    class="error-banner"
-    *ngIf="statsError">
+  <div class="error-banner" *ngIf="statsError">
 
     <div class="error-icon">
       !
@@ -299,9 +231,7 @@
       {{ statsError }}
     </span>
 
-    <button
-      type="button"
-      (click)="loadStats()">
+    <button type="button" (click)="loadStats()">
 
       Retry
 
@@ -310,9 +240,7 @@
   </div>
 
 
-  <div
-    class="error-banner"
-    *ngIf="reportsError">
+  <div class="error-banner" *ngIf="reportsError">
 
     <div class="error-icon">
       !
@@ -322,9 +250,7 @@
       {{ reportsError }}
     </span>
 
-    <button
-      type="button"
-      (click)="loadReports()">
+    <button type="button" (click)="loadReports()">
 
       Retry
 
@@ -333,9 +259,7 @@
   </div>
 
 
-  <div
-    class="error-banner"
-    *ngIf="bannedUsersError">
+  <div class="error-banner" *ngIf="bannedUsersError">
 
     <div class="error-icon">
       !
@@ -345,9 +269,7 @@
       {{ bannedUsersError }}
     </span>
 
-    <button
-      type="button"
-      (click)="loadBannedUsers()">
+    <button type="button" (click)="loadBannedUsers()">
 
       Retry
 
@@ -356,9 +278,7 @@
   </div>
 
 
-  <div
-    class="error-banner"
-    *ngIf="hiddenPostsError">
+  <div class="error-banner" *ngIf="hiddenPostsError">
 
     <div class="error-icon">
       !
@@ -368,9 +288,7 @@
       {{ hiddenPostsError }}
     </span>
 
-    <button
-      type="button"
-      (click)="loadHiddenPosts()">
+    <button type="button" (click)="loadHiddenPosts()">
 
       Retry
 
@@ -383,14 +301,9 @@
   <!-- NAVIGATION -->
   <!-- ============================================================ -->
 
-  <nav
-    class="admin-tabs"
-    aria-label="Admin sections">
+  <nav class="admin-tabs" aria-label="Admin sections">
 
-    <button
-      type="button"
-      class="admin-tab"
-      [class.active]="activeTab === 'overview'"
+    <button type="button" class="admin-tab" [class.active]="activeTab === 'overview'"
       (click)="setActiveTab('overview')">
 
       <span class="tab-label">
@@ -400,19 +313,14 @@
     </button>
 
 
-    <button
-      type="button"
-      class="admin-tab"
-      [class.active]="activeTab === 'user-reports'"
+    <button type="button" class="admin-tab" [class.active]="activeTab === 'user-reports'"
       (click)="setActiveTab('user-reports')">
 
       <span class="tab-label">
         User Reports
       </span>
 
-      <span
-        class="tab-count"
-        *ngIf="userReportsCount > 0">
+      <span class="tab-count" *ngIf="userReportsCount > 0">
 
         {{ userReportsCount }}
 
@@ -421,19 +329,14 @@
     </button>
 
 
-    <button
-      type="button"
-      class="admin-tab"
-      [class.active]="activeTab === 'post-reports'"
+    <button type="button" class="admin-tab" [class.active]="activeTab === 'post-reports'"
       (click)="setActiveTab('post-reports')">
 
       <span class="tab-label">
         Post Reports
       </span>
 
-      <span
-        class="tab-count"
-        *ngIf="postReportsCount > 0">
+      <span class="tab-count" *ngIf="postReportsCount > 0">
 
         {{ postReportsCount }}
 
@@ -442,19 +345,14 @@
     </button>
 
 
-    <button
-      type="button"
-      class="admin-tab"
-      [class.active]="activeTab === 'banned-users'"
+    <button type="button" class="admin-tab" [class.active]="activeTab === 'banned-users'"
       (click)="setActiveTab('banned-users')">
 
       <span class="tab-label">
         Banned Users
       </span>
 
-      <span
-        class="tab-count"
-        *ngIf="bannedUsers.length > 0">
+      <span class="tab-count" *ngIf="bannedUsers.length > 0">
 
         {{ bannedUsers.length }}
 
@@ -463,19 +361,14 @@
     </button>
 
 
-    <button
-      type="button"
-      class="admin-tab"
-      [class.active]="activeTab === 'hidden-posts'"
+    <button type="button" class="admin-tab" [class.active]="activeTab === 'hidden-posts'"
       (click)="setActiveTab('hidden-posts')">
 
       <span class="tab-label">
         Hidden Posts
       </span>
 
-      <span
-        class="tab-count"
-        *ngIf="hiddenPosts.length > 0">
+      <span class="tab-count" *ngIf="hiddenPosts.length > 0">
 
         {{ hiddenPosts.length }}
 
@@ -490,8 +383,7 @@
   <!-- REPORT CONTENT -->
   <!-- ============================================================ -->
 
-  <ng-container
-    *ngIf="
+  <ng-container *ngIf="
       activeTab === 'overview' ||
       activeTab === 'user-reports' ||
       activeTab === 'post-reports'
@@ -503,31 +395,31 @@
 
         <span class="content-eyebrow">
           {{
-            activeTab === 'overview'
-              ? 'PLATFORM'
-              : activeTab === 'user-reports'
-                ? 'USER MODERATION'
-                : 'CONTENT MODERATION'
+          activeTab === 'overview'
+          ? 'PLATFORM'
+          : activeTab === 'user-reports'
+          ? 'USER MODERATION'
+          : 'CONTENT MODERATION'
           }}
         </span>
 
         <h2>
           {{
-            activeTab === 'overview'
-              ? 'Needs your attention'
-              : activeTab === 'user-reports'
-                ? 'Reported users'
-                : 'Reported posts'
+          activeTab === 'overview'
+          ? 'Needs your attention'
+          : activeTab === 'user-reports'
+          ? 'Reported users'
+          : 'Reported posts'
           }}
         </h2>
 
         <p>
           {{
-            activeTab === 'overview'
-              ? 'Review the latest pending reports across the platform.'
-              : activeTab === 'user-reports'
-                ? 'Review reports submitted against community accounts.'
-                : 'Review posts that have been flagged by the community.'
+          activeTab === 'overview'
+          ? 'Review the latest pending reports across the platform.'
+          : activeTab === 'user-reports'
+          ? 'Review reports submitted against community accounts.'
+          : 'Review posts that have been flagged by the community.'
           }}
         </p>
 
@@ -544,9 +436,7 @@
     </section>
 
 
-    <div
-      class="reports-loading"
-      *ngIf="isLoadingReports">
+    <div class="reports-loading" *ngIf="isLoadingReports">
 
       <div class="loading-spinner"></div>
 
@@ -557,9 +447,7 @@
     </div>
 
 
-    <div
-      class="empty-state"
-      *ngIf="
+    <div class="empty-state" *ngIf="
         !isLoadingReports &&
         !reportsError &&
         currentResultCount === 0
@@ -567,16 +455,8 @@
 
       <div class="empty-icon">
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M20 6 9 17l-5-5" />
 
@@ -586,37 +466,32 @@
 
       <h3>
         {{
-          activeTab === 'overview'
-            ? 'Nothing needs attention'
-            : 'No pending reports'
+        activeTab === 'overview'
+        ? 'Nothing needs attention'
+        : 'No pending reports'
         }}
       </h3>
 
       <p>
         {{
-          activeTab === 'overview'
-            ? 'The moderation queue is currently clear.'
-            : 'There are currently no reports in this category.'
+        activeTab === 'overview'
+        ? 'The moderation queue is currently clear.'
+        : 'There are currently no reports in this category.'
         }}
       </p>
 
     </div>
 
 
-    <section
-      class="reports-list"
-      *ngIf="
+    <section class="reports-list" *ngIf="
         !isLoadingReports &&
         !reportsError &&
         currentResultCount > 0
       ">
 
-      <ng-container
-        *ngFor="let report of reports">
+      <ng-container *ngFor="let report of reports">
 
-        <article
-          class="report-card"
-          *ngIf="
+        <article class="report-card" *ngIf="
             activeTab === 'overview' ||
             (activeTab === 'user-reports' && report.type === 'USER') ||
             (activeTab === 'post-reports' && report.type === 'POST')
@@ -636,9 +511,9 @@
 
                   <span class="target-kind">
                     {{
-                      report.type === 'USER'
-                        ? 'USER REPORT'
-                        : 'POST REPORT'
+                    report.type === 'USER'
+                    ? 'USER REPORT'
+                    : 'POST REPORT'
                     }}
                   </span>
 
@@ -658,9 +533,7 @@
 
             </div>
 
-            <time
-              class="report-time"
-              [attr.datetime]="report.createdAt">
+            <time class="report-time" [attr.datetime]="report.createdAt">
 
               {{ formatDate(report.createdAt) }}
 
@@ -683,15 +556,23 @@
 
 
           <div class="reason-container">
-
             <span class="reason-label">
-              Report description
+              Report reason
             </span>
 
             <p>
               {{ report.reason }}
             </p>
 
+            <ng-container *ngIf="report.description">
+              <span class="reason-label report-details-label">
+                Additional details
+              </span>
+
+              <p class="report-description">
+                {{ report.description }}
+              </p>
+            </ng-container>
           </div>
 
 
@@ -700,9 +581,9 @@
             <span class="target-reference">
 
               {{
-                report.type === 'USER'
-                  ? 'Account moderation'
-                  : 'Content moderation'
+              report.type === 'USER'
+              ? 'Account moderation'
+              : 'Content moderation'
               }}
 
             </span>
@@ -710,27 +591,14 @@
 
             <div class="report-actions">
 
-              <button
-                type="button"
-                class="report-action dismiss-action"
-                [disabled]="isProcessingReport(report.id)"
+              <button type="button" class="report-action dismiss-action" [disabled]="isProcessingReport(report.id)"
                 (click)="dismissReport(report)">
 
-                <span
-                  class="action-spinner"
-                  *ngIf="isProcessingReport(report.id)">
+                <span class="action-spinner" *ngIf="isProcessingReport(report.id)">
                 </span>
 
-                <svg
-                  *ngIf="!isProcessingReport(report.id)"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
+                <svg *ngIf="!isProcessingReport(report.id)" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                   stroke-linejoin="round">
 
                   <path d="M18 6 6 18" />
@@ -739,46 +607,30 @@
                 </svg>
 
                 {{
-                  isProcessingReport(report.id)
-                    ? 'Processing'
-                    : 'Dismiss'
+                isProcessingReport(report.id)
+                ? 'Processing'
+                : 'Dismiss'
                 }}
 
               </button>
 
 
-              <button
-                *ngIf="report.type === 'USER'"
-                type="button"
-                class="report-action moderate-action"
-                [disabled]="
+              <button *ngIf="report.type === 'USER'" type="button" class="report-action moderate-action" [disabled]="
                   isProcessingReport(report.id) ||
                   isProcessingUser(report.targetUserId ?? -1)
-                "
-                (click)="banReportedUser(report)">
+                " (click)="banReportedUser(report)">
 
-                <span
-                  class="action-spinner"
-                  *ngIf="
+                <span class="action-spinner" *ngIf="
                     report.targetUserId !== null &&
                     isProcessingUser(report.targetUserId)
                   ">
                 </span>
 
-                <svg
-                  *ngIf="
+                <svg *ngIf="
                     report.targetUserId === null ||
                     !isProcessingUser(report.targetUserId)
-                  "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
+                  " xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
                   <circle cx="12" cy="12" r="9" />
                   <path d="m5.6 5.6 12.8 12.8" />
@@ -786,47 +638,31 @@
                 </svg>
 
                 {{
-                  report.targetUserId !== null &&
-                  isProcessingUser(report.targetUserId)
-                    ? 'Banning'
-                    : 'Ban user'
+                report.targetUserId !== null &&
+                isProcessingUser(report.targetUserId)
+                ? 'Banning'
+                : 'Ban user'
                 }}
 
               </button>
 
 
-              <button
-                *ngIf="report.type === 'POST'"
-                type="button"
-                class="report-action moderate-action"
-                [disabled]="
+              <button *ngIf="report.type === 'POST'" type="button" class="report-action moderate-action" [disabled]="
                   isProcessingReport(report.id) ||
                   isProcessingPost(report.targetPostId ?? -1)
-                "
-                (click)="hideReportedPost(report)">
+                " (click)="hideReportedPost(report)">
 
-                <span
-                  class="action-spinner"
-                  *ngIf="
+                <span class="action-spinner" *ngIf="
                     report.targetPostId !== null &&
                     isProcessingPost(report.targetPostId)
                   ">
                 </span>
 
-                <svg
-                  *ngIf="
+                <svg *ngIf="
                     report.targetPostId === null ||
                     !isProcessingPost(report.targetPostId)
-                  "
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
+                  " xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
                   <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
                   <line x1="4" y1="4" x2="20" y2="20" />
@@ -834,76 +670,53 @@
                 </svg>
 
                 {{
-                  report.targetPostId !== null &&
-                  isProcessingPost(report.targetPostId)
-                    ? 'Hiding'
-                    : 'Hide post'
+                report.targetPostId !== null &&
+                isProcessingPost(report.targetPostId)
+                ? 'Hiding'
+                : 'Hide post'
                 }}
 
               </button>
 
 
-              <button
-                *ngIf="report.type === 'USER'"
-                type="button"
-                class="report-action delete-action"
-                [disabled]="
+              <button *ngIf="report.type === 'USER'" type="button" class="report-action delete-action" [disabled]="
                   isProcessingReport(report.id) ||
                   isDeletingUser(report.targetUserId ?? -1)
-                "
-                (click)="askDeleteReportedUser(report)">
+                " (click)="askDeleteReportedUser(report)">
 
                 Delete user
 
               </button>
 
 
-              <button
-                *ngIf="report.type === 'POST'"
-                type="button"
-                class="report-action delete-action"
-                [disabled]="
+              <button *ngIf="report.type === 'POST'" type="button" class="report-action delete-action" [disabled]="
                   isProcessingReport(report.id) ||
                   isDeletingPost(report.targetPostId ?? -1)
-                "
-                (click)="askDeleteReportedPost(report)">
+                " (click)="askDeleteReportedPost(report)">
 
                 Delete post
 
               </button>
 
 
-              <button
-                type="button"
-                class="report-action resolve-action"
-                [disabled]="isProcessingReport(report.id)"
+              <button type="button" class="report-action resolve-action" [disabled]="isProcessingReport(report.id)"
                 (click)="resolveReport(report)">
 
-                <svg
-                  *ngIf="!isProcessingReport(report.id)"
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
+                <svg *ngIf="!isProcessingReport(report.id)" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                   stroke-linejoin="round">
 
                   <path d="M20 6 9 17l-5-5" />
 
                 </svg>
 
-                <span
-                  class="action-spinner"
-                  *ngIf="isProcessingReport(report.id)">
+                <span class="action-spinner" *ngIf="isProcessingReport(report.id)">
                 </span>
 
                 {{
-                  isProcessingReport(report.id)
-                    ? 'Processing'
-                    : 'Resolve'
+                isProcessingReport(report.id)
+                ? 'Processing'
+                : 'Resolve'
                 }}
 
               </button>
@@ -925,8 +738,7 @@
   <!-- BANNED USERS -->
   <!-- ============================================================ -->
 
-  <ng-container
-    *ngIf="activeTab === 'banned-users'">
+  <ng-container *ngIf="activeTab === 'banned-users'">
 
     <section class="content-header">
 
@@ -954,9 +766,7 @@
     </section>
 
 
-    <div
-      class="reports-loading"
-      *ngIf="isLoadingBannedUsers">
+    <div class="reports-loading" *ngIf="isLoadingBannedUsers">
 
       <div class="loading-spinner"></div>
 
@@ -967,9 +777,7 @@
     </div>
 
 
-    <div
-      class="empty-state"
-      *ngIf="
+    <div class="empty-state" *ngIf="
         !isLoadingBannedUsers &&
         !bannedUsersError &&
         bannedUsers.length === 0
@@ -977,16 +785,8 @@
 
       <div class="empty-icon">
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M20 6 9 17l-5-5" />
 
@@ -1005,17 +805,13 @@
     </div>
 
 
-    <section
-      class="moderation-list"
-      *ngIf="
+    <section class="moderation-list" *ngIf="
         !isLoadingBannedUsers &&
         !bannedUsersError &&
         bannedUsers.length > 0
       ">
 
-      <article
-        class="moderation-card"
-        *ngFor="let user of bannedUsers">
+      <article class="moderation-card" *ngFor="let user of bannedUsers">
 
         <div class="moderation-main">
 
@@ -1024,7 +820,7 @@
             <div class="moderation-avatar">
 
               {{
-                user.username.charAt(0).toUpperCase()
+              user.username.charAt(0).toUpperCase()
               }}
 
             </div>
@@ -1058,29 +854,15 @@
 
           <div class="moderation-actions">
 
-            <button
-              type="button"
-              class="report-action resolve-action"
-              [disabled]="
+            <button type="button" class="report-action resolve-action" [disabled]="
                 isProcessingUser(user.id)
-              "
-              (click)="unbanUser(user)">
+              " (click)="unbanUser(user)">
 
-              <span
-                class="action-spinner"
-                *ngIf="isProcessingUser(user.id)">
+              <span class="action-spinner" *ngIf="isProcessingUser(user.id)">
               </span>
 
-              <svg
-                *ngIf="!isProcessingUser(user.id)"
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+              <svg *ngIf="!isProcessingUser(user.id)" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
 
                 <path d="M5 12h14" />
@@ -1089,21 +871,17 @@
               </svg>
 
               {{
-                isProcessingUser(user.id)
-                  ? 'Unbanning'
-                  : 'Unban'
+              isProcessingUser(user.id)
+              ? 'Unbanning'
+              : 'Unban'
               }}
 
             </button>
 
-            <button
-              type="button"
-              class="report-action delete-action"
-              [disabled]="
+            <button type="button" class="report-action delete-action" [disabled]="
                 isProcessingUser(user.id) ||
                 isDeletingUser(user.id)
-              "
-              (click)="askDeleteBannedUser(user)">
+              " (click)="askDeleteBannedUser(user)">
 
               Delete user
 
@@ -1124,8 +902,7 @@
   <!-- HIDDEN POSTS -->
   <!-- ============================================================ -->
 
-  <ng-container
-    *ngIf="activeTab === 'hidden-posts'">
+  <ng-container *ngIf="activeTab === 'hidden-posts'">
 
     <section class="content-header">
 
@@ -1153,9 +930,7 @@
     </section>
 
 
-    <div
-      class="reports-loading"
-      *ngIf="isLoadingHiddenPosts">
+    <div class="reports-loading" *ngIf="isLoadingHiddenPosts">
 
       <div class="loading-spinner"></div>
 
@@ -1166,9 +941,7 @@
     </div>
 
 
-    <div
-      class="empty-state"
-      *ngIf="
+    <div class="empty-state" *ngIf="
         !isLoadingHiddenPosts &&
         !hiddenPostsError &&
         hiddenPosts.length === 0
@@ -1176,16 +949,8 @@
 
       <div class="empty-icon">
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M20 6 9 17l-5-5" />
 
@@ -1204,17 +969,13 @@
     </div>
 
 
-    <section
-      class="moderation-list"
-      *ngIf="
+    <section class="moderation-list" *ngIf="
         !isLoadingHiddenPosts &&
         !hiddenPostsError &&
         hiddenPosts.length > 0
       ">
 
-      <article
-        class="moderation-card"
-        *ngFor="let post of hiddenPosts">
+      <article class="moderation-card" *ngFor="let post of hiddenPosts">
 
         <div class="post-card-header">
 
@@ -1252,7 +1013,7 @@
         <div class="hidden-post-content">
 
           {{
-            post.content || 'Content unavailable in this moderation response.'
+          post.content || 'Content unavailable in this moderation response.'
           }}
 
         </div>
@@ -1266,27 +1027,14 @@
 
           <div class="moderation-actions">
 
-            <button
-              type="button"
-              class="report-action resolve-action"
-              [disabled]="isProcessingPost(post.id)"
+            <button type="button" class="report-action resolve-action" [disabled]="isProcessingPost(post.id)"
               (click)="unhidePost(post)">
 
-              <span
-                class="action-spinner"
-                *ngIf="isProcessingPost(post.id)">
+              <span class="action-spinner" *ngIf="isProcessingPost(post.id)">
               </span>
 
-              <svg
-                *ngIf="!isProcessingPost(post.id)"
-                xmlns="http://www.w3.org/2000/svg"
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+              <svg *ngIf="!isProcessingPost(post.id)" xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
 
                 <path d="M3 12s3.5-5 9-5 9 5 9 5-3.5 5-9 5-9-5-9-5Z" />
@@ -1295,21 +1043,17 @@
               </svg>
 
               {{
-                isProcessingPost(post.id)
-                  ? 'Unhiding'
-                  : 'Unhide'
+              isProcessingPost(post.id)
+              ? 'Unhiding'
+              : 'Unhide'
               }}
 
             </button>
 
-            <button
-              type="button"
-              class="report-action delete-action"
-              [disabled]="
+            <button type="button" class="report-action delete-action" [disabled]="
                 isProcessingPost(post.id) ||
                 isDeletingPost(post.id)
-              "
-              (click)="askDeleteHiddenPost(post)">
+              " (click)="askDeleteHiddenPost(post)">
 
               Delete post
 
@@ -1330,41 +1074,20 @@
   <!-- TOAST -->
   <!-- ============================================================ -->
 
-  <div
-    class="toast"
-    *ngIf="toastMessage"
-    [class.toast-success]="toastType === 'success'"
+  <div class="toast" *ngIf="toastMessage" [class.toast-success]="toastType === 'success'"
     [class.toast-error]="toastType === 'error'">
 
     <div class="toast-icon">
 
-      <svg
-        *ngIf="toastType === 'success'"
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
+      <svg *ngIf="toastType === 'success'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
         <path d="M20 6 9 17l-5-5" />
 
       </svg>
 
-      <svg
-        *ngIf="toastType === 'error'"
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round">
+      <svg *ngIf="toastType === 'error'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
         <circle cx="12" cy="12" r="9" />
         <line x1="12" y1="8" x2="12" y2="12" />
@@ -1378,11 +1101,7 @@
       {{ toastMessage }}
     </span>
 
-    <button
-      type="button"
-      class="toast-close"
-      aria-label="Close notification"
-      (click)="dismissToast()">
+    <button type="button" class="toast-close" aria-label="Close notification" (click)="dismissToast()">
 
       ×
 
@@ -1395,20 +1114,11 @@
   <!-- CONFIRMATION MODAL -->
   <!-- ============================================================ -->
 
-  <div
-    class="modal-backdrop"
-    *ngIf="confirmation"
-    (click)="closeConfirmation()">
+  <div class="modal-backdrop" *ngIf="confirmation" (click)="closeConfirmation()">
 
-    <div
-      class="confirmation-modal"
-      (click)="$event.stopPropagation()">
+    <div class="confirmation-modal" (click)="$event.stopPropagation()">
 
-      <button
-        type="button"
-        class="modal-close"
-        aria-label="Close"
-        (click)="closeConfirmation()">
+      <button type="button" class="modal-close" aria-label="Close" (click)="closeConfirmation()">
 
         ×
 
@@ -1417,16 +1127,8 @@
 
       <div class="danger-icon">
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="21"
-          height="21"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
           <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
           <line x1="12" y1="9" x2="12" y2="13" />
@@ -1439,17 +1141,16 @@
 
       <h2>
         {{
-          confirmation.type === 'delete-user'
-            ? 'Delete this user?'
-            : 'Delete this post?'
+        confirmation.type === 'delete-user'
+        ? 'Delete this user?'
+        : 'Delete this post?'
         }}
       </h2>
 
 
       <p class="confirmation-text">
 
-        <ng-container
-          *ngIf="confirmation.type === 'delete-user'">
+        <ng-container *ngIf="confirmation.type === 'delete-user'">
 
           You are about to permanently remove
 
@@ -1462,8 +1163,7 @@
         </ng-container>
 
 
-        <ng-container
-          *ngIf="confirmation.type === 'delete-post'">
+        <ng-container *ngIf="confirmation.type === 'delete-post'">
 
           You are about to permanently remove the post by
 
@@ -1483,24 +1183,18 @@
 
       <div class="confirmation-actions">
 
-        <button
-          type="button"
-          class="cancel-button"
-          (click)="closeConfirmation()">
+        <button type="button" class="cancel-button" (click)="closeConfirmation()">
 
           Cancel
 
         </button>
 
-        <button
-          type="button"
-          class="confirm-delete-button"
-          (click)="confirmAction()">
+        <button type="button" class="confirm-delete-button" (click)="confirmAction()">
 
           {{
-            confirmation.type === 'delete-user'
-              ? 'Delete user'
-              : 'Delete post'
+          confirmation.type === 'delete-user'
+          ? 'Delete user'
+          : 'Delete post'
           }}
 
         </button>

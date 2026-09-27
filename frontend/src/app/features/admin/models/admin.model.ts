@@ -19,6 +19,7 @@ export interface AdminReport {
   reporterUsername: string;
   targetUsername: string;
   reason: string;
+  description: string | null;
   status: ReportStatus;
   createdAt: string;
 }

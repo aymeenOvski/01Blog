@@ -1,12 +1,7 @@
 <div class="report-overlay" (click)="onOverlayClick($event)">
     <div class="report-modal">
 
-        <button
-            type="button"
-            class="close-button"
-            aria-label="Close"
-            (click)="close()"
-            [disabled]="isSubmitting">
+        <button type="button" class="close-button" aria-label="Close" (click)="close()" [disabled]="isSubmitting">
             ×
         </button>
 
@@ -36,44 +31,49 @@
                 Reason
             </label>
 
-            <textarea
-                id="reportReason"
-                [(ngModel)]="reason"
-                [maxlength]="maxReasonLength"
-                placeholder="Describe the issue..."
-                rows="6"
-                [disabled]="isSubmitting">
+            <select id="reportReason" [(ngModel)]="selectedReason" [disabled]="isSubmitting">
+
+                <option value="" disabled>
+                    Select a reason
+                </option>
+
+                <option *ngFor="let reportReason of reportReasons" [value]="reportReason.value">
+
+                    {{ reportReason.label }}
+
+                </option>
+
+            </select>
+
+            <label for="reportDescription">
+                Additional details (optional)
+            </label>
+
+            <textarea id="reportDescription" [(ngModel)]="description" [maxlength]="maxDescriptionLength"
+                placeholder="Add more details if you want..." rows="5" [disabled]="isSubmitting">
             </textarea>
 
             <div class="character-count">
-                {{ reasonLength }}/{{ maxReasonLength }}
+                {{ descriptionLength }}/{{ maxDescriptionLength }}
             </div>
 
-            <div
-                class="error-message"
-                *ngIf="errorMessage">
+            <div class="error-message" *ngIf="errorMessage">
+
                 {{ errorMessage }}
+
             </div>
 
             <div class="modal-actions">
 
-                <button
-                    type="button"
-                    class="btn-cancel"
-                    (click)="close()"
-                    [disabled]="isSubmitting">
+                <button type="button" class="btn-cancel" (click)="close()" [disabled]="isSubmitting">
+
                     Cancel
+
                 </button>
 
-                <button
-                    type="button"
-                    class="btn-submit"
-                    (click)="submit()"
-                    [disabled]="!isValid">
+                <button type="button" class="btn-submit" (click)="submit()" [disabled]="!isValid">
 
-                    <span
-                        class="spinner"
-                        *ngIf="isSubmitting">
+                    <span class="spinner" *ngIf="isSubmitting">
                     </span>
 
                     {{ isSubmitting ? 'Submitting...' : 'Submit report' }}

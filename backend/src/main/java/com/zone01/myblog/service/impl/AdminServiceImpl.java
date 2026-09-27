@@ -139,6 +139,7 @@ public class AdminServiceImpl implements AdminService {
                     report.getReporter().getUsername(),
                     post.getAuthor().getUsername(),
                     report.getReason(),
+                    report.getDescription(),
                     report.getStatus(),
                     report.getCreatedAt());
         }
@@ -153,6 +154,7 @@ public class AdminServiceImpl implements AdminService {
                 report.getReporter().getUsername(),
                 user.getUsername(),
                 report.getReason(),
+                report.getDescription(),
                 report.getStatus(),
                 report.getCreatedAt());
     }

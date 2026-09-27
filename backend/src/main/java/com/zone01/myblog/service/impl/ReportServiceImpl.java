@@ -37,14 +37,15 @@ public class ReportServiceImpl implements ReportService {
             String reporterUsername) {
 
         Users reporter = userRepository.findByUsername(reporterUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Reporter not found"));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Reporter not found"));
 
         boolean hasUserTarget = request.targetUsername() != null
                 && !request.targetUsername().isBlank();
 
         boolean hasPostTarget = request.targetPostId() != null;
 
-        // XOR logic
+        // A report must target exactly one user or one post.
         if (hasUserTarget == hasPostTarget) {
             throw new IllegalArgumentException(
                     "A report must target exactly one user or one post");
@@ -56,8 +57,8 @@ public class ReportServiceImpl implements ReportService {
 
             Users targetUser = userRepository
                     .findByUsername(request.targetUsername())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Target user not found"));
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Target user not found"));
 
             if (reporter.getId().equals(targetUser.getId())) {
                 throw new IllegalArgumentException(
@@ -67,14 +68,16 @@ public class ReportServiceImpl implements ReportService {
             report = new Report(
                     reporter,
                     targetUser,
-                    request.reason());
+                    request.reason(),
+                    request.description()
+            );
 
         } else {
 
             Post targetPost = postRepository
                     .findByIdWithAuthor(request.targetPostId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Target post not found"));
+                    .orElseThrow(() ->
+                            new IllegalArgumentException("Target post not found"));
 
             if (targetPost.getAuthor().getId().equals(reporter.getId())) {
                 throw new IllegalArgumentException(
@@ -84,7 +87,9 @@ public class ReportServiceImpl implements ReportService {
             report = new Report(
                     reporter,
                     targetPost,
-                    request.reason());
+                    request.reason(),
+                    request.description()
+            );
         }
 
         Report saved = reportRepository.save(report);
@@ -106,8 +111,10 @@ public class ReportServiceImpl implements ReportService {
                     report.getReporter().getUsername(),
                     post.getAuthor().getUsername(),
                     report.getReason(),
+                    report.getDescription(),
                     report.getStatus(),
-                    report.getCreatedAt());
+                    report.getCreatedAt()
+            );
         }
 
         Users user = report.getTargetUser();
@@ -120,7 +127,9 @@ public class ReportServiceImpl implements ReportService {
                 report.getReporter().getUsername(),
                 user.getUsername(),
                 report.getReason(),
+                report.getDescription(),
                 report.getStatus(),
-                report.getCreatedAt());
+                report.getCreatedAt()
+        );
     }
 }
