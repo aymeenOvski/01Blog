@@ -43,6 +43,24 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/users/{id}/reports/dismiss")
+    public ResponseEntity<Void> dismissUserReports(@PathVariable Long id) {
+        adminService.dismissUserReports(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/users/banned/reports/dismiss")
+    public ResponseEntity<Void> dismissBannedUserReports() {
+        adminService.dismissBannedUserReports();
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/posts/hidden/reports/dismiss")
+    public ResponseEntity<Void> dismissHiddenPostReports() {
+        adminService.dismissHiddenPostReports();
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         adminService.deleteUser(id);
@@ -95,5 +113,15 @@ public class AdminController {
 
         adminService.unhidePost(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<AdminUserResponse>> getAllUsers() {
+        return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @GetMapping("/posts")
+    public ResponseEntity<List<AdminPostResponse>> getAllPosts() {
+        return ResponseEntity.ok(adminService.getAllPosts());
     }
 }

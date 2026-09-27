@@ -139,4 +139,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      * ------------------------------------------------------------
      */
     long countByVisibility(String visibility);
+
+    List<Post> findAllByOrderByCreatedAtDesc();
 }

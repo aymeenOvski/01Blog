@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 
 import { AdminService } from '../../services/admin.service';
+
 import {
   AdminPost,
   AdminReport,
@@ -11,6 +12,8 @@ import {
 
 type AdminTab =
   | 'overview'
+  | 'users'
+  | 'posts'
   | 'user-reports'
   | 'post-reports'
   | 'banned-users'
@@ -24,6 +27,26 @@ type Confirmation =
     }
   | {
       type: 'delete-post';
+      postId: number;
+      username: string;
+    }
+  | {
+      type: 'ban-user';
+      userId: number;
+      username: string;
+    }
+  | {
+      type: 'unban-user';
+      userId: number;
+      username: string;
+    }
+  | {
+      type: 'hide-post';
+      postId: number;
+      username: string;
+    }
+  | {
+      type: 'unhide-post';
       postId: number;
       username: string;
     };
@@ -42,18 +65,26 @@ export class AdminDashboardComponent implements OnInit {
   stats: AdminStats | null = null;
 
   reports: AdminReport[] = [];
+
+  users: AdminUser[] = [];
   bannedUsers: AdminUser[] = [];
+
+  posts: AdminPost[] = [];
   hiddenPosts: AdminPost[] = [];
 
   activeTab: AdminTab = 'overview';
 
   isLoadingStats = true;
   isLoadingReports = true;
+  isLoadingUsers = false;
+  isLoadingPosts = false;
   isLoadingBannedUsers = false;
   isLoadingHiddenPosts = false;
 
   statsError: string | null = null;
   reportsError: string | null = null;
+  usersError: string | null = null;
+  postsError: string | null = null;
   bannedUsersError: string | null = null;
   hiddenPostsError: string | null = null;
 
@@ -63,6 +94,9 @@ export class AdminDashboardComponent implements OnInit {
 
   private deletingUsers = new Set<number>();
   private deletingPosts = new Set<number>();
+  private clearingUserReports = new Set<number>();
+  isClearingBannedUserReports = false;
+  isClearingHiddenPostReports = false;
 
   toastMessage: string | null = null;
   toastType: 'success' | 'error' = 'success';
@@ -82,6 +116,8 @@ export class AdminDashboardComponent implements OnInit {
   loadDashboard(): void {
     this.loadStats();
     this.loadReports();
+    this.loadUsers();
+    this.loadPosts();
     this.loadBannedUsers();
     this.loadHiddenPosts();
   }
@@ -90,6 +126,8 @@ export class AdminDashboardComponent implements OnInit {
     return (
       this.isLoadingStats ||
       this.isLoadingReports ||
+      this.isLoadingUsers ||
+      this.isLoadingPosts ||
       this.isLoadingBannedUsers ||
       this.isLoadingHiddenPosts
     );
@@ -104,8 +142,10 @@ export class AdminDashboardComponent implements OnInit {
         this.stats = stats;
         this.isLoadingStats = false;
       },
+
       error: error => {
         this.isLoadingStats = false;
+
         this.statsError =
           error?.error?.message ||
           'Unable to load dashboard statistics.';
@@ -122,11 +162,53 @@ export class AdminDashboardComponent implements OnInit {
         this.reports = reports;
         this.isLoadingReports = false;
       },
+
       error: error => {
         this.isLoadingReports = false;
+
         this.reportsError =
           error?.error?.message ||
           'Unable to load pending reports.';
+      }
+    });
+  }
+
+  loadUsers(): void {
+    this.isLoadingUsers = true;
+    this.usersError = null;
+
+    this.adminService.getAllUsers().subscribe({
+      next: users => {
+        this.users = users;
+        this.isLoadingUsers = false;
+      },
+
+      error: error => {
+        this.isLoadingUsers = false;
+
+        this.usersError =
+          error?.error?.message ||
+          'Unable to load users.';
+      }
+    });
+  }
+
+  loadPosts(): void {
+    this.isLoadingPosts = true;
+    this.postsError = null;
+
+    this.adminService.getAllPosts().subscribe({
+      next: posts => {
+        this.posts = posts;
+        this.isLoadingPosts = false;
+      },
+
+      error: error => {
+        this.isLoadingPosts = false;
+
+        this.postsError =
+          error?.error?.message ||
+          'Unable to load posts.';
       }
     });
   }
@@ -140,8 +222,10 @@ export class AdminDashboardComponent implements OnInit {
         this.bannedUsers = users;
         this.isLoadingBannedUsers = false;
       },
+
       error: error => {
         this.isLoadingBannedUsers = false;
+
         this.bannedUsersError =
           error?.error?.message ||
           'Unable to load banned users.';
@@ -158,8 +242,10 @@ export class AdminDashboardComponent implements OnInit {
         this.hiddenPosts = posts;
         this.isLoadingHiddenPosts = false;
       },
+
       error: error => {
         this.isLoadingHiddenPosts = false;
+
         this.hiddenPostsError =
           error?.error?.message ||
           'Unable to load hidden posts.';
@@ -203,12 +289,44 @@ export class AdminDashboardComponent implements OnInit {
     return this.postReports.length;
   }
 
+  userReportsCountFor(userId: number): number {
+    return this.reports.filter(
+      report => report.type === 'USER' && report.targetUserId === userId
+    ).length;
+  }
+
+  get bannedUserReportsCount(): number {
+    const bannedUserIds = new Set(
+      this.bannedUsers.map(user => user.id)
+    );
+
+    return this.reports.filter(
+      report => report.type === 'USER' && bannedUserIds.has(report.targetUserId)
+    ).length;
+  }
+
+  get hiddenPostReportsCount(): number {
+    const hiddenPostIds = new Set(
+      this.hiddenPosts.map(post => post.id)
+    );
+
+    return this.reports.filter(
+      report => report.type === 'POST' && hiddenPostIds.has(report.targetPostId)
+    ).length;
+  }
+
   get pendingReportsCount(): number {
     return this.stats?.pendingReports ?? this.reports.length;
   }
 
   get currentResultCount(): number {
     switch (this.activeTab) {
+      case 'users':
+        return this.users.length;
+
+      case 'posts':
+        return this.posts.length;
+
       case 'user-reports':
         return this.userReports.length;
 
@@ -229,6 +347,26 @@ export class AdminDashboardComponent implements OnInit {
 
   get currentResultLabel(): string {
     switch (this.activeTab) {
+      case 'users':
+        return this.users.length === 1
+          ? 'user'
+          : 'users';
+
+      case 'posts':
+        return this.posts.length === 1
+          ? 'post'
+          : 'posts';
+
+      case 'user-reports':
+        return this.userReports.length === 1
+          ? 'user report'
+          : 'user reports';
+
+      case 'post-reports':
+        return this.postReports.length === 1
+          ? 'post report'
+          : 'post reports';
+
       case 'banned-users':
         return this.bannedUsers.length === 1
           ? 'banned user'
@@ -261,14 +399,16 @@ export class AdminDashboardComponent implements OnInit {
       .updateReport(report.id, 'RESOLVE')
       .subscribe({
         next: () => {
-          this.removeReport(report.id);
           this.processingReports.delete(report.id);
+
+          this.removeReport(report.id);
 
           this.showToast(
             'Report resolved successfully.',
             'success'
           );
         },
+
         error: error => {
           this.processingReports.delete(report.id);
 
@@ -292,14 +432,16 @@ export class AdminDashboardComponent implements OnInit {
       .updateReport(report.id, 'DISMISS')
       .subscribe({
         next: () => {
-          this.removeReport(report.id);
           this.processingReports.delete(report.id);
+
+          this.removeReport(report.id);
 
           this.showToast(
             'Report dismissed.',
             'success'
           );
         },
+
         error: error => {
           this.processingReports.delete(report.id);
 
@@ -324,57 +466,10 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    const userId = report.targetUserId;
-
-    if (this.isProcessingUser(userId)) {
-      return;
-    }
-
-    this.processingUsers.add(userId);
-
-    this.adminService
-      .banUser(userId)
-      .subscribe({
-        next: () => {
-          this.processingUsers.delete(userId);
-
-          if (!this.bannedUsers.some(user => user.id === userId)) {
-            this.bannedUsers = [
-              {
-                id: userId,
-                username: report.targetUsername,
-                email: '',
-                role: 'ROLE_USER',
-                status: 'BANNED',
-                avatarUrl: null,
-                createdAt: report.createdAt
-              },
-              ...this.bannedUsers
-            ];
-          }
-
-          if (this.stats) {
-            this.stats = {
-              ...this.stats,
-              bannedUsers: this.stats.bannedUsers + 1
-            };
-          }
-
-          this.showToast(
-            `@${report.targetUsername} has been banned.`,
-            'success'
-          );
-        },
-        error: error => {
-          this.processingUsers.delete(userId);
-
-          this.showToast(
-            error?.error?.message ||
-            `Unable to ban @${report.targetUsername}.`,
-            'error'
-          );
-        }
-      });
+    this.askBanUser(
+      report.targetUserId,
+      report.targetUsername
+    );
   }
 
   // ================================================================
@@ -389,151 +484,469 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    const postId = report.targetPostId;
+    this.askHidePost(
+      report.targetPostId,
+      report.targetUsername
+    );
+  }
+
+  // ================================================================
+  // USER MODERATION
+  // ================================================================
+
+  askBanUser(user: AdminUser | number, username?: string): void {
+    const userId =
+      typeof user === 'number'
+        ? user
+        : user.id;
+
+    const userName =
+      typeof user === 'number'
+        ? username ?? 'this user'
+        : user.username;
+
+    if (this.isProcessingUser(userId)) {
+      return;
+    }
+
+    this.confirmation = {
+      type: 'ban-user',
+      userId,
+      username: userName
+    };
+  }
+
+  askUnbanUser(user: AdminUser): void {
+    if (this.isProcessingUser(user.id)) {
+      return;
+    }
+
+    this.confirmation = {
+      type: 'unban-user',
+      userId: user.id,
+      username: user.username
+    };
+  }
+
+  dismissReportsForUser(user: AdminUser): void {
+    if (this.isClearingUserReports(user.id)) {
+      return;
+    }
+
+    const reportIds = this.reports
+      .filter(report => report.type === 'USER' && report.targetUserId === user.id)
+      .map(report => report.id);
+
+    if (reportIds.length === 0) {
+      return;
+    }
+
+    this.clearingUserReports.add(user.id);
+
+    this.adminService.dismissUserReports(user.id).subscribe({
+      next: () => {
+        this.clearingUserReports.delete(user.id);
+        this.reports = this.reports.filter(
+          report => !reportIds.includes(report.id)
+        );
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            pendingReports: Math.max(
+              0,
+              this.stats.pendingReports - reportIds.length
+            )
+          };
+        }
+
+        this.showToast(
+          `Reports for @${user.username} were dismissed.`,
+          'success'
+        );
+      },
+
+      error: error => {
+        this.clearingUserReports.delete(user.id);
+        this.showToast(
+          error?.error?.message ||
+          `Unable to dismiss reports for @${user.username}.`,
+          'error'
+        );
+      }
+    });
+  }
+
+  dismissReportsForBannedUsers(): void {
+    if (this.isClearingBannedUserReports || this.bannedUserReportsCount === 0) {
+      return;
+    }
+
+    const bannedUserIds = new Set(
+      this.bannedUsers.map(user => user.id)
+    );
+    const dismissedReportsCount = this.bannedUserReportsCount;
+
+    this.isClearingBannedUserReports = true;
+
+    this.adminService.dismissBannedUserReports().subscribe({
+      next: () => {
+        this.isClearingBannedUserReports = false;
+        this.reports = this.reports.filter(
+          report => report.type !== 'USER' || !bannedUserIds.has(report.targetUserId)
+        );
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            pendingReports: Math.max(
+              0,
+              this.stats.pendingReports - dismissedReportsCount
+            )
+          };
+        }
+
+        this.showToast(
+          'Reports for banned users were dismissed.',
+          'success'
+        );
+      },
+
+      error: error => {
+        this.isClearingBannedUserReports = false;
+        this.showToast(
+          error?.error?.message ||
+          'Unable to dismiss reports for banned users.',
+          'error'
+        );
+      }
+    });
+  }
+
+  dismissReportsForHiddenPosts(): void {
+    if (this.isClearingHiddenPostReports || this.hiddenPostReportsCount === 0) {
+      return;
+    }
+
+    const hiddenPostIds = new Set(
+      this.hiddenPosts.map(post => post.id)
+    );
+    const dismissedReportsCount = this.hiddenPostReportsCount;
+
+    this.isClearingHiddenPostReports = true;
+
+    this.adminService.dismissHiddenPostReports().subscribe({
+      next: () => {
+        this.isClearingHiddenPostReports = false;
+        this.reports = this.reports.filter(
+          report => report.type !== 'POST' || !hiddenPostIds.has(report.targetPostId)
+        );
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            pendingReports: Math.max(
+              0,
+              this.stats.pendingReports - dismissedReportsCount
+            )
+          };
+        }
+
+        this.showToast(
+          'Reports for hidden posts were dismissed.',
+          'success'
+        );
+      },
+
+      error: error => {
+        this.isClearingHiddenPostReports = false;
+        this.showToast(
+          error?.error?.message ||
+          'Unable to dismiss reports for hidden posts.',
+          'error'
+        );
+      }
+    });
+  }
+
+  private executeBanUser(
+    userId: number,
+    username: string
+  ): void {
+    if (this.isProcessingUser(userId)) {
+      return;
+    }
+
+    this.processingUsers.add(userId);
+    this.confirmation = null;
+
+    const userWasAlreadyBanned =
+      this.users.some(
+        user => user.id === userId && user.status === 'BANNED'
+      ) ||
+      this.bannedUsers.some(user => user.id === userId);
+
+    this.adminService.banUser(userId).subscribe({
+      next: () => {
+        this.processingUsers.delete(userId);
+
+        this.users = this.users.map(user =>
+          user.id === userId
+            ? {
+                ...user,
+                status: 'BANNED'
+              }
+            : user
+        );
+
+        const user = this.users.find(
+          currentUser => currentUser.id === userId
+        );
+
+        if (user) {
+          this.bannedUsers = [
+            user,
+            ...this.bannedUsers.filter(
+              currentUser => currentUser.id !== userId
+            )
+          ];
+        }
+
+        if (this.stats && !userWasAlreadyBanned) {
+          this.stats = {
+            ...this.stats,
+            bannedUsers: this.stats.bannedUsers + 1
+          };
+        }
+
+        this.showToast(
+          `@${username} has been banned.`,
+          'success'
+        );
+      },
+
+      error: error => {
+        this.processingUsers.delete(userId);
+
+        this.showToast(
+          error?.error?.message ||
+          `Unable to ban @${username}.`,
+          'error'
+        );
+      }
+    });
+  }
+
+  private executeUnbanUser(
+    userId: number,
+    username: string
+  ): void {
+    if (this.isProcessingUser(userId)) {
+      return;
+    }
+
+    this.processingUsers.add(userId);
+    this.confirmation = null;
+
+    this.adminService.unbanUser(userId).subscribe({
+      next: () => {
+        this.processingUsers.delete(userId);
+
+        this.users = this.users.map(user =>
+          user.id === userId
+            ? {
+                ...user,
+                status: 'ACTIVE'
+              }
+            : user
+        );
+
+        this.bannedUsers = this.bannedUsers.filter(
+          user => user.id !== userId
+        );
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            bannedUsers: Math.max(
+              0,
+              this.stats.bannedUsers - 1
+            )
+          };
+        }
+
+        this.showToast(
+          `@${username} has been unbanned.`,
+          'success'
+        );
+      },
+
+      error: error => {
+        this.processingUsers.delete(userId);
+
+        this.showToast(
+          error?.error?.message ||
+          `Unable to unban @${username}.`,
+          'error'
+        );
+      }
+    });
+  }
+
+  // ================================================================
+  // POST MODERATION
+  // ================================================================
+
+  askHidePost(post: AdminPost | number, username?: string): void {
+    const postId =
+      typeof post === 'number'
+        ? post
+        : post.id;
+
+    const postUsername =
+      typeof post === 'number'
+        ? username ?? 'this user'
+        : post.username;
 
     if (this.isProcessingPost(postId)) {
       return;
     }
 
-    this.processingPosts.add(postId);
-
-    this.adminService
-      .hidePost(postId)
-      .subscribe({
-        next: () => {
-          this.processingPosts.delete(postId);
-
-          if (!this.hiddenPosts.some(post => post.id === postId)) {
-            this.hiddenPosts = [
-              {
-                id: postId,
-                username: report.targetUsername,
-                content: '',
-                visibility: 'HIDDEN',
-                createdAt: report.createdAt
-              },
-              ...this.hiddenPosts
-            ];
-          }
-
-          if (this.stats) {
-            this.stats = {
-              ...this.stats,
-              hiddenPosts: this.stats.hiddenPosts + 1
-            };
-          }
-
-          this.showToast(
-            'Post hidden successfully.',
-            'success'
-          );
-        },
-        error: error => {
-          this.processingPosts.delete(postId);
-
-          this.showToast(
-            error?.error?.message ||
-            'Unable to hide this post.',
-            'error'
-          );
-        }
-      });
+    this.confirmation = {
+      type: 'hide-post',
+      postId,
+      username: postUsername
+    };
   }
 
-  // ================================================================
-  // BANNED USERS
-  // ================================================================
-
-  unbanUser(user: AdminUser): void {
-    if (this.isProcessingUser(user.id)) {
-      return;
-    }
-
-    this.processingUsers.add(user.id);
-
-    this.adminService
-      .unbanUser(user.id)
-      .subscribe({
-        next: () => {
-          this.processingUsers.delete(user.id);
-
-          this.bannedUsers = this.bannedUsers.filter(
-            currentUser => currentUser.id !== user.id
-          );
-
-          if (this.stats) {
-            this.stats = {
-              ...this.stats,
-              bannedUsers: Math.max(
-                0,
-                this.stats.bannedUsers - 1
-              )
-            };
-          }
-
-          this.showToast(
-            `@${user.username} has been unbanned.`,
-            'success'
-          );
-        },
-        error: error => {
-          this.processingUsers.delete(user.id);
-
-          this.showToast(
-            error?.error?.message ||
-            `Unable to unban @${user.username}.`,
-            'error'
-          );
-        }
-      });
-  }
-
-  // ================================================================
-  // HIDDEN POSTS
-  // ================================================================
-
-  unhidePost(post: AdminPost): void {
+  askUnhidePost(post: AdminPost): void {
     if (this.isProcessingPost(post.id)) {
       return;
     }
 
-    this.processingPosts.add(post.id);
+    this.confirmation = {
+      type: 'unhide-post',
+      postId: post.id,
+      username: post.username
+    };
+  }
 
-    this.adminService
-      .unhidePost(post.id)
-      .subscribe({
-        next: () => {
-          this.processingPosts.delete(post.id);
+  private executeHidePost(
+    postId: number,
+    username: string
+  ): void {
+    if (this.isProcessingPost(postId)) {
+      return;
+    }
 
-          this.hiddenPosts = this.hiddenPosts.filter(
-            currentPost => currentPost.id !== post.id
-          );
+    this.processingPosts.add(postId);
+    this.confirmation = null;
 
-          if (this.stats) {
-            this.stats = {
-              ...this.stats,
-              hiddenPosts: Math.max(
-                0,
-                this.stats.hiddenPosts - 1
-              )
-            };
-          }
+    this.adminService.hidePost(postId).subscribe({
+      next: () => {
+        this.processingPosts.delete(postId);
 
-          this.showToast(
-            'Post is visible again.',
-            'success'
-          );
-        },
-        error: error => {
-          this.processingPosts.delete(post.id);
+        this.posts = this.posts.map(post =>
+          post.id === postId
+            ? {
+                ...post,
+                visibility: 'HIDDEN'
+              }
+            : post
+        );
 
-          this.showToast(
-            error?.error?.message ||
-            'Unable to unhide this post.',
-            'error'
-          );
+        const post = this.posts.find(
+          currentPost => currentPost.id === postId
+        );
+
+        if (post) {
+          this.hiddenPosts = [
+            post,
+            ...this.hiddenPosts.filter(
+              currentPost => currentPost.id !== postId
+            )
+          ];
         }
-      });
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            hiddenPosts: this.stats.hiddenPosts + 1
+          };
+        }
+
+        this.showToast(
+          'Post hidden successfully.',
+          'success'
+        );
+      },
+
+      error: error => {
+        this.processingPosts.delete(postId);
+
+        this.showToast(
+          error?.error?.message ||
+          `Unable to hide the post by @${username}.`,
+          'error'
+        );
+      }
+    });
+  }
+
+  private executeUnhidePost(
+    postId: number,
+    username: string
+  ): void {
+    if (this.isProcessingPost(postId)) {
+      return;
+    }
+
+    this.processingPosts.add(postId);
+    this.confirmation = null;
+
+    this.adminService.unhidePost(postId).subscribe({
+      next: () => {
+        this.processingPosts.delete(postId);
+
+        this.posts = this.posts.map(post =>
+          post.id === postId
+            ? {
+                ...post,
+                visibility: 'VISIBLE'
+              }
+            : post
+        );
+
+        this.hiddenPosts = this.hiddenPosts.filter(
+          post => post.id !== postId
+        );
+
+        if (this.stats) {
+          this.stats = {
+            ...this.stats,
+            hiddenPosts: Math.max(
+              0,
+              this.stats.hiddenPosts - 1
+            )
+          };
+        }
+
+        this.showToast(
+          `Post by @${username} is visible again.`,
+          'success'
+        );
+      },
+
+      error: error => {
+        this.processingPosts.delete(postId);
+
+        this.showToast(
+          error?.error?.message ||
+          'Unable to unhide this post.',
+          'error'
+        );
+      }
+    });
   }
 
   // ================================================================
@@ -570,7 +983,11 @@ export class AdminDashboardComponent implements OnInit {
     };
   }
 
-  askDeleteBannedUser(user: AdminUser): void {
+  askDeleteUser(user: AdminUser): void {
+    if (this.isDeletingUser(user.id)) {
+      return;
+    }
+
     this.confirmation = {
       type: 'delete-user',
       userId: user.id,
@@ -578,7 +995,11 @@ export class AdminDashboardComponent implements OnInit {
     };
   }
 
-  askDeleteHiddenPost(post: AdminPost): void {
+  askDeletePost(post: AdminPost): void {
+    if (this.isDeletingPost(post.id)) {
+      return;
+    }
+
     this.confirmation = {
       type: 'delete-post',
       postId: post.id,
@@ -597,18 +1018,49 @@ export class AdminDashboardComponent implements OnInit {
 
     const confirmation = this.confirmation;
 
-    if (confirmation.type === 'delete-user') {
-      this.deleteUser(
-        confirmation.userId,
-        confirmation.username
-      );
-      return;
-    }
+    switch (confirmation.type) {
+      case 'delete-user':
+        this.deleteUser(
+          confirmation.userId,
+          confirmation.username
+        );
+        break;
 
-    this.deletePost(
-      confirmation.postId,
-      confirmation.username
-    );
+      case 'delete-post':
+        this.deletePost(
+          confirmation.postId,
+          confirmation.username
+        );
+        break;
+
+      case 'ban-user':
+        this.executeBanUser(
+          confirmation.userId,
+          confirmation.username
+        );
+        break;
+
+      case 'unban-user':
+        this.executeUnbanUser(
+          confirmation.userId,
+          confirmation.username
+        );
+        break;
+
+      case 'hide-post':
+        this.executeHidePost(
+          confirmation.postId,
+          confirmation.username
+        );
+        break;
+
+      case 'unhide-post':
+        this.executeUnhidePost(
+          confirmation.postId,
+          confirmation.username
+        );
+        break;
+    }
   }
 
   // ================================================================
@@ -619,7 +1071,6 @@ export class AdminDashboardComponent implements OnInit {
     userId: number,
     username: string
   ): void {
-
     if (this.isDeletingUser(userId)) {
       return;
     }
@@ -641,6 +1092,10 @@ export class AdminDashboardComponent implements OnInit {
               user => user.id === userId
             );
 
+          this.users = this.users.filter(
+            user => user.id !== userId
+          );
+
           this.reports = this.reports.filter(
             report => report.targetUserId !== userId
           );
@@ -652,20 +1107,23 @@ export class AdminDashboardComponent implements OnInit {
           if (this.stats) {
             this.stats = {
               ...this.stats,
+
               totalUsers: Math.max(
                 0,
                 this.stats.totalUsers - 1
               ),
+
               bannedUsers: wasBanned
                 ? Math.max(
                     0,
                     this.stats.bannedUsers - 1
                   )
                 : this.stats.bannedUsers,
+
               pendingReports: Math.max(
                 0,
                 this.stats.pendingReports -
-                  deletedReportsCount
+                deletedReportsCount
               )
             };
           }
@@ -677,6 +1135,7 @@ export class AdminDashboardComponent implements OnInit {
             'success'
           );
         },
+
         error: error => {
           this.deletingUsers.delete(userId);
 
@@ -697,7 +1156,6 @@ export class AdminDashboardComponent implements OnInit {
     postId: number,
     username: string
   ): void {
-
     if (this.isDeletingPost(postId)) {
       return;
     }
@@ -719,6 +1177,10 @@ export class AdminDashboardComponent implements OnInit {
               post => post.id === postId
             );
 
+          this.posts = this.posts.filter(
+            post => post.id !== postId
+          );
+
           this.reports = this.reports.filter(
             report => report.targetPostId !== postId
           );
@@ -730,20 +1192,23 @@ export class AdminDashboardComponent implements OnInit {
           if (this.stats) {
             this.stats = {
               ...this.stats,
+
               totalPosts: Math.max(
                 0,
                 this.stats.totalPosts - 1
               ),
+
               hiddenPosts: wasHidden
                 ? Math.max(
                     0,
                     this.stats.hiddenPosts - 1
                   )
                 : this.stats.hiddenPosts,
+
               pendingReports: Math.max(
                 0,
                 this.stats.pendingReports -
-                  deletedReportsCount
+                deletedReportsCount
               )
             };
           }
@@ -755,6 +1220,7 @@ export class AdminDashboardComponent implements OnInit {
             'success'
           );
         },
+
         error: error => {
           this.deletingPosts.delete(postId);
 
@@ -807,6 +1273,10 @@ export class AdminDashboardComponent implements OnInit {
     return this.deletingPosts.has(postId);
   }
 
+  isClearingUserReports(userId: number): boolean {
+    return this.clearingUserReports.has(userId);
+  }
+
   // ================================================================
   // DATE
   // ================================================================
@@ -832,7 +1302,6 @@ export class AdminDashboardComponent implements OnInit {
     message: string,
     type: 'success' | 'error'
   ): void {
-
     this.toastMessage = message;
     this.toastType = type;
 

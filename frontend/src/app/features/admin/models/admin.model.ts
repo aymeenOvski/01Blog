@@ -11,11 +11,8 @@ export type ReportStatus =
   | 'RESOLVED'
   | 'DISMISSED';
 
-export interface AdminReport {
+interface BaseAdminReport {
   id: number;
-  type: 'USER' | 'POST';
-  targetUserId: number | null;
-  targetPostId: number | null;
   reporterUsername: string;
   targetUsername: string;
   reason: string;
@@ -23,6 +20,18 @@ export interface AdminReport {
   status: ReportStatus;
   createdAt: string;
 }
+
+export type AdminReport =
+  | (BaseAdminReport & {
+    type: 'USER';
+    targetUserId: number;
+    targetPostId: null;
+  })
+  | (BaseAdminReport & {
+    type: 'POST';
+    targetUserId: null;
+    targetPostId: number;
+  });
 
 export type UserStatus = 'ACTIVE' | 'BANNED';
 

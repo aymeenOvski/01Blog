@@ -58,6 +58,26 @@ public class AdminServiceImpl implements AdminService {
                 pendingReports);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminUserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(this::toAdminUserResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AdminPostResponse> getAllPosts() {
+        return postRepository.findAll()
+                .stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .map(this::toAdminPostResponse)
+                .toList();
+    }
+
     // =========================================================
     // BANNED USERS
     // =========================================================
@@ -182,6 +202,59 @@ public class AdminServiceImpl implements AdminService {
         }
 
         reportRepository.save(report);
+    }
+
+    @Override
+    @Transactional
+    public void dismissUserReports(Long userId) {
+
+        List<Report> reports = reportRepository
+                .findByTargetUserIdAndStatus(userId, "PENDING");
+
+        reports.forEach(report -> report.setStatus("DISMISSED"));
+        reportRepository.saveAll(reports);
+    }
+
+    @Override
+    @Transactional
+    public void dismissBannedUserReports() {
+
+        List<Long> bannedUserIds = userRepository
+                .findByStatusOrderByCreatedAtDesc("BANNED")
+                .stream()
+                .map(Users::getId)
+                .toList();
+
+        if (bannedUserIds.isEmpty()) {
+            return;
+        }
+
+        List<Report> reports = reportRepository
+                .findByTargetUserIdInAndStatus(bannedUserIds, "PENDING");
+
+        reports.forEach(report -> report.setStatus("DISMISSED"));
+        reportRepository.saveAll(reports);
+    }
+
+    @Override
+    @Transactional
+    public void dismissHiddenPostReports() {
+
+        List<Long> hiddenPostIds = postRepository
+                .findAllByVisibilityOrderByCreatedAtDesc("HIDDEN")
+                .stream()
+                .map(Post::getId)
+                .toList();
+
+        if (hiddenPostIds.isEmpty()) {
+            return;
+        }
+
+        List<Report> reports = reportRepository
+                .findByTargetPostIdInAndStatus(hiddenPostIds, "PENDING");
+
+        reports.forEach(report -> report.setStatus("DISMISSED"));
+        reportRepository.saveAll(reports);
     }
 
     // =========================================================

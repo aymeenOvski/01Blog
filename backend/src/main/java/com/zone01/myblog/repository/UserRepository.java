@@ -22,5 +22,5 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     long countByStatus(String status);
 
-    
+    List<Users> findAllByOrderByCreatedAtDesc();
 }

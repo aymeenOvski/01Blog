@@ -18,7 +18,17 @@ public interface AdminService {
 
     List<ReportResponse> getPendingReports();
 
+    List<AdminUserResponse> getAllUsers();
+
+    List<AdminPostResponse> getAllPosts();
+
     void resolveReport(Long reportId, String action);
+
+    void dismissUserReports(Long userId);
+
+    void dismissBannedUserReports();
+
+    void dismissHiddenPostReports();
 
     void banUser(Long userId);
 

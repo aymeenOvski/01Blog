@@ -18,7 +18,6 @@ import {
 export class AdminService {
 
   private http = inject(HttpClient);
-
   private readonly apiUrl = '/api/admin';
 
   getStats(): Observable<AdminStats> {
@@ -37,7 +36,6 @@ export class AdminService {
     reportId: number,
     action: 'RESOLVE' | 'DISMISS'
   ): Observable<void> {
-
     const params = new HttpParams()
       .set('action', action);
 
@@ -45,6 +43,33 @@ export class AdminService {
       `${this.apiUrl}/reports/${reportId}`,
       {},
       { params }
+    );
+  }
+
+  dismissUserReports(userId: number): Observable<void> {
+    return this.http.patch<void>(
+      `${this.apiUrl}/users/${userId}/reports/dismiss`,
+      {}
+    );
+  }
+
+  dismissBannedUserReports(): Observable<void> {
+    return this.http.patch<void>(
+      `${this.apiUrl}/users/banned/reports/dismiss`,
+      {}
+    );
+  }
+
+  dismissHiddenPostReports(): Observable<void> {
+    return this.http.patch<void>(
+      `${this.apiUrl}/posts/hidden/reports/dismiss`,
+      {}
+    );
+  }
+
+  getAllUsers(): Observable<AdminUser[]> {
+    return this.http.get<AdminUser[]>(
+      `${this.apiUrl}/users`
     );
   }
 
@@ -68,6 +93,18 @@ export class AdminService {
     );
   }
 
+  deleteUser(userId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/users/${userId}`
+    );
+  }
+
+  getAllPosts(): Observable<AdminPost[]> {
+    return this.http.get<AdminPost[]>(
+      `${this.apiUrl}/posts`
+    );
+  }
+
   getHiddenPosts(): Observable<AdminPost[]> {
     return this.http.get<AdminPost[]>(
       `${this.apiUrl}/posts/hidden`
@@ -85,12 +122,6 @@ export class AdminService {
     return this.http.patch<void>(
       `${this.apiUrl}/posts/${postId}/unhide`,
       {}
-    );
-  }
-
-  deleteUser(userId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/users/${userId}`
     );
   }
 

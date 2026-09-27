@@ -1453,3 +1453,26 @@
     max-width: none;
   }
 }
+
+.user-role {
+  color: #475569 !important;
+  font-size: 9px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.confirm-moderation-button {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: #92400e;
+}
+
+.confirm-moderation-button:hover {
+  background: #b45309;
+}
+
+.resolve-badge {
+  background: rgba(74, 222, 128, 0.08);
+  color: #86efac;
+  border: 1px solid rgba(74, 222, 128, 0.18);
+}
