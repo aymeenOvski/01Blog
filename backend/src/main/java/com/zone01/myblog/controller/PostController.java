@@ -76,6 +76,13 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/repost")
+    public ResponseEntity<PostResponse> repostPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(postService.repostPost(id, userDetails.getUsername()));
+    }
+
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> toggleLike(
             @PathVariable Long id,

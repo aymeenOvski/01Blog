@@ -56,6 +56,7 @@ export class Home implements OnInit, OnDestroy {
   isLoadingSuggested = true;
   suggestedError: string | null = null;
   followPending = new Set<string>();
+  repostingPostIds = new Set<number>();
   actionError: string | null = null;
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
@@ -261,10 +262,35 @@ export class Home implements OnInit, OnDestroy {
   }
 
   repost(post: PostResponse): void {
-    post.showMenu = false;
-    alert(`Reposted "${post.username}"'s post!`);
+    if (this.repostingPostIds.has(post.id)) {
+      return;
+    }
 
-    // TODO: Connect to postService.repost(...) API later
+    if (post.repost) {
+      this.actionError = 'You already reposted this post.';
+      if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+      this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      return;
+    }
+
+    post.showMenu = false;
+    this.repostingPostIds.add(post.id);
+    this.actionError = null;
+
+    this.postService.repost(post.id).subscribe({
+      next: () => {
+        this.repostingPostIds.delete(post.id);
+        this.actionError = `Reposted ${post.username}'s post.`;
+        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      },
+      error: error => {
+        this.repostingPostIds.delete(post.id);
+        this.actionError = error?.error?.message || 'Unable to repost this post.';
+        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      }
+    });
   }
 
   /* Optimistic Like Handler */
@@ -357,9 +383,10 @@ export class Home implements OnInit, OnDestroy {
   
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');
+    const target = event.target as HTMLElement | null;
+    const isInsideMenu = !!target?.closest('.post-options-dropdown');
 
-    if (!isMenuButton) {
+    if (!isInsideMenu) {
       this.feedPosts.forEach(p => p.showMenu = false);
     }
   }

@@ -187,8 +187,13 @@
                 <span *ngIf="!post.avatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
               </div>
               <div>
-                <p class="post-username mb-0">{{ post.username }}</p>
+                <p class="post-username mb-0">
+                  {{ post.repost ? 'Original post by ' + post.originalUsername : post.username }}
+                </p>
                 <small class="post-time">{{ post.createdAt | date:'medium' }}</small>
+                <small class="post-repost-label" *ngIf="post.repost">
+                  Reposted by {{ post.repostedBy }}
+                </small>
               </div>
             </a>
 
@@ -215,7 +220,8 @@
                   Report Post
                 </button>
 
-                <button type="button" class="dropdown-item d-flex align-items-center gap-2" (click)="repost(post)">
+                <button *ngIf="!post.repost" type="button" class="dropdown-item d-flex align-items-center gap-2"
+                  (click)="repost(post)">
 
                   <!-- repost icon -->
 

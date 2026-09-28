@@ -40,6 +40,10 @@ export class PostService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  repost(id: number): Observable<PostResponse> {
+    return this.http.post<PostResponse>(`${this.apiUrl}/${id}/repost`, {});
+  }
+
   toggleLike(id: number): Observable<boolean> {
     return this.http.post<boolean>(`${this.apiUrl}/${id}/like`, {});
   }

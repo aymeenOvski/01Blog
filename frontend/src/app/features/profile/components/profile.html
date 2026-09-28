@@ -108,6 +108,7 @@
     <h3 class="posts-title mb-3">Recent Posts</h3>
 
     <div *ngIf="postsLoading" class="posts-state">Loading posts...</div>
+    <div *ngIf="actionError" class="posts-state error" role="alert">{{ actionError }}</div>
     <div *ngIf="!postsLoading && postsErrorMessage" class="posts-state error">{{ postsErrorMessage }}</div>
     <div *ngIf="!postsLoading && !postsErrorMessage && posts.length === 0" class="posts-state">
       No posts yet.
@@ -124,8 +125,13 @@
               <span *ngIf="!post.avatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
             </div>
             <div>
-              <p class="post-username mb-0">{{ post.username }}</p>
+              <p class="post-username mb-0">
+                {{ post.repost ? 'Original post by ' + post.originalUsername : post.username }}
+              </p>
               <small class="post-time">{{ post.createdAt | date:'medium' }}</small>
+              <small class="post-repost-label" *ngIf="post.repost">
+                Reposted by {{ post.repostedBy }}
+              </small>
             </div>
           </div>
 
@@ -145,7 +151,7 @@
             <div class="dropdown-menu dropdown-menu-end show" *ngIf="post.showMenu">
 
               <!-- Owner Actions: Edit & Delete -->
-              <ng-container *ngIf="isOwner || currentUser === post.username; else visitorActions">
+              <ng-container *ngIf="!post.repost && (isOwner || currentUser === post.username); else visitorActions">
                 <button class="dropdown-item d-flex align-items-center gap-2" (click)="editPost(post)">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

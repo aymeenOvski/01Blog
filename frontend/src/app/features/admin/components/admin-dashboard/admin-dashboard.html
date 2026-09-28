@@ -493,7 +493,7 @@
               </div>
 
               <strong>
-                @{{ user.username }}
+                {{ user.username }}
               </strong>
 
               <span>
@@ -664,7 +664,7 @@
               </div>
 
               <strong>
-                @{{ post.username }}
+                {{ post.username }}
               </strong>
 
             </div>
@@ -884,7 +884,7 @@
                     {{
                     report.type === 'USER'
                     ? 'USER REPORT'
-                    : 'POST REPORT'
+                    : 'POST OWNER'
                     }}
                   </span>
 
@@ -897,7 +897,7 @@
                 </div>
 
                 <strong class="target-name">
-                  @{{ report.targetUsername }}
+                  {{ report.targetUsername }}
                 </strong>
 
               </div>
@@ -918,7 +918,7 @@
             </span>
 
             <strong>
-              @{{ report.reporterUsername }}
+              {{ report.reporterUsername }}
             </strong>
 
           </div>
@@ -1176,7 +1176,7 @@
               </div>
 
               <strong>
-                @{{ user.username }}
+                {{ user.username }}
               </strong>
 
               <span>
@@ -1338,7 +1338,7 @@
               </div>
 
               <strong>
-                @{{ post.username }}
+                {{ post.username }}
               </strong>
 
             </div>
@@ -1487,7 +1487,7 @@
           You are about to permanently remove
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>
 
           and their associated data.
@@ -1498,7 +1498,7 @@
           You are about to permanently remove the post by
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>.
         </ng-container>
 
@@ -1507,7 +1507,7 @@
           You are about to ban
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>
 
           from accessing the platform.
@@ -1518,7 +1518,7 @@
           You are about to restore access for
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>.
         </ng-container>
 
@@ -1527,7 +1527,7 @@
           You are about to hide the post by
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>
 
           from normal users.
@@ -1538,7 +1538,7 @@
           You are about to make the post by
 
           <strong>
-            @{{ confirmation.username }}
+            {{ confirmation.username }}
           </strong>
 
           visible again.

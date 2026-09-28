@@ -35,6 +35,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             LEFT JOIN Comment c ON c.post = p
             WHERE p.author.username = :targetUsername
               AND p.visibility = 'VISIBLE'
+                                                        AND p.author.status = 'ACTIVE'
             GROUP BY p
             ORDER BY p.createdAt DESC
             """)
@@ -66,6 +67,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 WHERE f.follower.username = :currentUsername
             )
               AND p.visibility = 'VISIBLE'
+              AND p.author.status = 'ACTIVE'
             GROUP BY p
             ORDER BY p.createdAt DESC
             """)
@@ -92,6 +94,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             LEFT JOIN Comment c ON c.post = p
             WHERE p.id = :postId
               AND p.visibility = 'VISIBLE'
+              AND p.author.status = 'ACTIVE'
             GROUP BY p
             """)
     Optional<Object[]> findPostByIdWithCounts(
@@ -102,6 +105,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             SELECT p
             FROM Post p
             WHERE p.visibility = 'VISIBLE'
+                                                        AND p.author.status = 'ACTIVE'
             ORDER BY p.createdAt DESC
             """)
     List<Post> findVisiblePostsOrderByCreatedAtDesc();
@@ -111,6 +115,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             FROM Post p
             WHERE p.author = :author
               AND p.visibility = 'VISIBLE'
+                                                        AND p.author.status = 'ACTIVE'
             ORDER BY p.createdAt DESC
             """)
     List<Post> findVisiblePostsByAuthorOrderByCreatedAtDesc(

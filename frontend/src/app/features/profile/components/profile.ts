@@ -36,9 +36,12 @@ export class Profile implements OnInit, OnDestroy {
   postsLoading = false;
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
+  actionError: string | null = null;
+  private actionErrorTimeout?: ReturnType<typeof setTimeout>;
   showReportModal = false;
   showProfileMenu = false;
   reportTargetPostId: number | null = null;
+  repostingPostIds = new Set<number>();
 
   activeModalTab: 'followers' | 'following' | null = null;
   userListLoading = false;
@@ -234,6 +237,7 @@ export class Profile implements OnInit, OnDestroy {
 
   togglePostMenu(post: PostResponse, event: Event): void {
     event.stopPropagation();
+    this.showProfileMenu = false;
     // Close any other active options menus
     this.posts.forEach(p => {
       if (p !== post) p.showMenu = false;
@@ -263,7 +267,7 @@ export class Profile implements OnInit, OnDestroy {
         post.isEditing = false;
       },
       error: (err) => {
-        alert(err.error?.message || 'Failed to update post');
+        this.actionError = err.error?.message || 'Failed to update post';
       }
     });
   }
@@ -278,7 +282,7 @@ export class Profile implements OnInit, OnDestroy {
       this.postService.deletePost(post.id).subscribe({
         error: (err) => {
           this.posts = originalPosts;
-          alert(err.error?.message || 'Failed to delete post');
+          this.actionError = err.error?.message || 'Failed to delete post';
         }
       });
     }
@@ -286,13 +290,40 @@ export class Profile implements OnInit, OnDestroy {
 
   repost(post: PostResponse): void {
     post.showMenu = false;
-    alert(`Reposted "${post.username}"'s post!`);
 
-    // TODO: Connect to postService.repost(...) API later
+    if (this.repostingPostIds.has(post.id)) {
+      return;
+    }
+
+    if (post.repost) {
+      this.actionError = 'You already reposted this post.';
+      if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+      this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      return;
+    }
+
+    this.repostingPostIds.add(post.id);
+    this.actionError = null;
+
+    this.postService.repost(post.id).subscribe({
+      next: () => {
+        this.repostingPostIds.delete(post.id);
+        this.actionError = `Reposted ${post.username}'s post.`;
+        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      },
+      error: error => {
+        this.repostingPostIds.delete(post.id);
+        this.actionError = error?.error?.message || 'Unable to repost this post.';
+        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
+    if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
   }
 
   openReportModal(): void {
@@ -321,11 +352,13 @@ export class Profile implements OnInit, OnDestroy {
     this.showReportModal = false;
     this.reportTargetPostId = null;
   }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    const isMenuButton = (event.target as HTMLElement).closest('.post-options-dropdown');
+    const target = event.target as HTMLElement | null;
+    const isInsideMenu = !!target?.closest('.post-options-dropdown, .profile-options-dropdown');
 
-    if (!isMenuButton) {
+    if (!isInsideMenu) {
       this.posts.forEach(p => p.showMenu = false);
       this.showProfileMenu = false;
     }

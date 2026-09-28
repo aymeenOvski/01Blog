@@ -27,6 +27,9 @@ export interface PostResponse {
   isSubmittingLike?: boolean;
   commentsCount?: number;
   comments?: CommentResponse[];
+  repost?: boolean;
+  repostedBy?: string;
+  originalUsername?: string;
   showComments?: boolean;
   newCommentText?: string;
   isSubmittingComment?: boolean;

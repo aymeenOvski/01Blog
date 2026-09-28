@@ -702,6 +702,12 @@
   color: #64748b;
 }
 
+.post-repost-label {
+  display: block;
+  color: #7dd3fc;
+  font-size: 0.72rem;
+}
+
 .text-muted-custom {
   color: #94a3b8;
 }
@@ -840,17 +846,24 @@
   box-shadow: 0 0 0 0.25rem rgba(56, 189, 248, 0.25) !important;
 }
 
-.post-options-dropdown .dropdown-menu {
-  background-color: #1e293b !important;
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+.post-options-dropdown .dropdown-menu,
+.dropdown-menu.show {
+  background: #111827 !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(10px);
 }
 
-.post-options-dropdown .dropdown-item {
+.post-options-dropdown .dropdown-item,
+.dropdown-menu.show .dropdown-item {
+  background: transparent !important;
   color: #cbd5e1 !important;
 }
 
-.post-options-dropdown .dropdown-item:hover {
+.post-options-dropdown .dropdown-item:hover,
+.dropdown-menu.show .dropdown-item:hover {
   background-color: rgba(56, 189, 248, 0.12) !important;
   color: #ffffff !important;
 }

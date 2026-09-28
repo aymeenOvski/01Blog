@@ -9,12 +9,14 @@ import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Comment;
 import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.PostLike;
+import com.zone01.myblog.model.Repost;
 import com.zone01.myblog.model.Notification;
 import com.zone01.myblog.model.NotificationTicket;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.CommentRepository;
 import com.zone01.myblog.repository.PostLikeRepository;
 import com.zone01.myblog.repository.PostRepository;
+import com.zone01.myblog.repository.RepostRepository;
 import com.zone01.myblog.repository.UserRepository;
 import com.zone01.myblog.repository.NotificationRepository;
 import com.zone01.myblog.repository.NotificationTicketRepository;
@@ -42,6 +44,7 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final PostLikeRepository postLikeRepository;
+    private final RepostRepository repostRepository;
     private final CommentRepository commentRepository;
     private final NotificationRepository notificationRepository;
     private final FollowRepository followRepository;
@@ -57,11 +60,13 @@ public class PostServiceImpl implements PostService {
             FileStorageService fileStorageService, PostLikeRepository postLikeRepository,
             CommentRepository commentRepository, NotificationRepository notificationRepository,
             NotificationTicketRepository notificationTicketRepository,
-            SimpMessagingTemplate messagingTemplate, FollowRepository followRepository) {
+            SimpMessagingTemplate messagingTemplate, FollowRepository followRepository,
+            RepostRepository repostRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.fileStorageService = fileStorageService;
         this.postLikeRepository = postLikeRepository;
+        this.repostRepository = repostRepository;
         this.commentRepository = commentRepository;
         this.notificationRepository = notificationRepository;
         this.notificationTicketRepository = notificationTicketRepository;
@@ -161,15 +166,62 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public List<PostResponse> getUserPosts(String targetUsername, String currentUsername) {
         List<Object[]> results = postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
-        return results.stream().map(this::mapToPostResponse).toList();
+        List<PostResponse> authoredPosts = results.stream()
+            .map(this::mapToPostResponse)
+            .toList();
+
+        List<PostResponse> repostedPosts = repostRepository
+            .findVisibleByUserUsername(targetUsername)
+            .stream()
+            .map(repost -> mapRepostToResponse(repost, currentUsername))
+            .toList();
+
+        return java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
+            .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
+            .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PostResponse> getFeedPosts(String currentUsername) {
-        return postRepository.findFeedPostsWithCounts(currentUsername).stream()
+        List<PostResponse> authoredPosts = postRepository.findFeedPostsWithCounts(currentUsername).stream()
                 .map(this::mapToPostResponse)
                 .toList();
+
+        List<PostResponse> repostedPosts = repostRepository
+                .findVisibleFromFollowedUsers(currentUsername)
+                .stream()
+                .map(repost -> mapRepostToResponse(repost, currentUsername))
+                .toList();
+
+        return java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
+                .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public PostResponse repostPost(Long postId, String currentUsername) {
+        Users user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+        Post post = postRepository.findByIdWithAuthor(postId)
+                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
+
+        if (!"VISIBLE".equalsIgnoreCase(post.getVisibility()) || post.getAuthor().isBanned()) {
+            throw BlogApiException.notFound("Post not found");
+        }
+
+        if (post.getAuthor().getId().equals(user.getId())) {
+            throw BlogApiException.badRequest("You cannot repost your own post");
+        }
+
+        if (repostRepository.existsByUserIdAndPostId(user.getId(), postId)) {
+            throw BlogApiException.conflict("You already reposted this post");
+        }
+
+        Repost repost = repostRepository.save(new Repost(user, post));
+        return mapRepostToResponse(repost, currentUsername);
     }
 
     @Override
@@ -217,6 +269,29 @@ public class PostServiceImpl implements PostService {
                 isLiked,
                 commentCount);
     }
+
+            private PostResponse mapRepostToResponse(Repost repost, String currentUsername) {
+            Post post = repost.getPost();
+            Long postId = post.getId();
+
+            return new PostResponse(
+                postId,
+                post.getAuthor().getUsername(),
+                post.getAuthor().getAvatarUrl(),
+                post.getContent(),
+                post.getMediaUrls(),
+                repost.getCreatedAt(),
+                postLikeRepository.countByPostId(postId),
+                postLikeRepository.existsByPostIdAndUserId(
+                    postId,
+                    userRepository.findByUsername(currentUsername)
+                        .map(Users::getId)
+                        .orElse(-1L)),
+                commentRepository.countByPostId(postId),
+                true,
+                repost.getUser().getUsername(),
+                post.getAuthor().getUsername());
+            }
 
     @Override
     @Transactional

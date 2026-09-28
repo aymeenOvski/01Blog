@@ -162,6 +162,12 @@
     color: #94a3b8;
 }
 
+.post-repost-label {
+    display: block;
+    color: #f59e0b;
+    font-size: 0.72rem;
+}
+
 .post-content {
     color: #dee2e6;
     line-height: 1.5;
@@ -345,20 +351,27 @@
 }
 
 .post-options-dropdown .dropdown-menu,
-.profile-options-dropdown .dropdown-menu {
-    background-color: #1e293b !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+.profile-options-dropdown .dropdown-menu,
+.dropdown-menu.show {
+    background: #111827 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    border-radius: 12px !important;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(10px);
 }
 
 .post-options-dropdown .dropdown-item,
-.profile-options-dropdown .dropdown-item {
+.profile-options-dropdown .dropdown-item,
+.dropdown-menu.show .dropdown-item {
+    background: transparent !important;
     color: #cbd5e1 !important;
 }
 
 .post-options-dropdown .dropdown-item:hover,
-.profile-options-dropdown .dropdown-item:hover {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+.profile-options-dropdown .dropdown-item:hover,
+.dropdown-menu.show .dropdown-item:hover {
+    background-color: rgba(59, 130, 246, 0.12) !important;
     color: #ffffff !important;
 }
 

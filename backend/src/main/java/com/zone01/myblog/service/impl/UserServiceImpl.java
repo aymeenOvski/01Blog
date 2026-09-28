@@ -51,6 +51,10 @@ public class UserServiceImpl implements UserService {
         Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+        if (user.isBanned()) {
+            throw BlogApiException.notFound("User not found");
+        }
+
         boolean isOwner = currentUsername != null && currentUsername.equals(user.getUsername());
         boolean isFollowing = false;
         if (!isOwner && currentUsername != null) {

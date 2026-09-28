@@ -17,6 +17,7 @@ public interface PostService {
     List<PostResponse> getFeedPosts(String currentUsername);
 
     PostResponse updatePost(Long postId, PostUpdateRequest request, String currentUsername);
+    PostResponse repostPost(Long postId, String currentUsername);
     void deletePost(Long postId, String currentUsername);
     boolean toggleLike(Long postId, String currentUsername);
     CommentResponse addComment(Long postId, CommentRequest request, String currentUsername);
