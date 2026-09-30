@@ -1,16 +1,16 @@
-import { Component, OnInit, OnDestroy, inject, HostListener, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { ReportModalComponent } from '../../reports/components/report-modal/report-modal';
 
+import { ReportModalComponent } from '../../reports/components/report-modal/report-modal';
 
 import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserProfileResponse, UserSummary } from '../models/user-profile.model';
 import { PostService } from '../../posts/services/post.service';
-import { PostResponse, CommentResponse } from '../../posts/models/post.model';
+import { PostResponse } from '../../posts/models/post.model';
 
 @Component({
   selector: 'app-profile',
@@ -20,75 +20,140 @@ import { PostResponse, CommentResponse } from '../../posts/models/post.model';
   styleUrl: './profile.css'
 })
 export class Profile implements OnInit, OnDestroy {
-  private elementRef = inject(ElementRef);
+
   private userService = inject(UserService);
   private authService = inject(AuthService);
   private postService = inject(PostService);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   private routeSub?: Subscription;
 
   profile: UserProfileResponse | null = null;
+
   currentUser = this.authService.getUsername();
+
   posts: PostResponse[] = [];
+
   isOwner = false;
+
   loading = true;
   postsLoading = false;
+
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
   actionError: string | null = null;
+
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
+
   showReportModal = false;
   showProfileMenu = false;
+
   reportTargetPostId: number | null = null;
+
   repostingPostIds = new Set<number>();
 
   activeModalTab: 'followers' | 'following' | null = null;
+
   userListLoading = false;
   userList: UserSummary[] = [];
 
   ngOnInit(): void {
     this.routeSub = this.route.paramMap.subscribe(params => {
-      const username = params.get('username') || this.currentUser;
-      if (username) {
-        this.loadProfile(username);
+      const username = params.get('username');
+
+      // A profile route must always have a username.
+      // Never silently fall back to the logged-in user's profile.
+      if (!username || !username.trim()) {
+        this.router.navigate(['/404'], { replaceUrl: true });
+        return;
       }
+
+      this.loadProfile(username);
     });
   }
 
   loadProfile(username: string): void {
-    this.loading = true;
-    this.postsLoading = true;
-    this.postsErrorMessage = null;
-
     const normalizedUsername = username.trim();
 
-    this.userService.getUserProfile(username).subscribe({
+    // IMPORTANT:
+    // Clear the previous profile immediately.
+    // Otherwise Angular can keep showing the previous user's data
+    // while the new profile request is loading/failing.
+    this.profile = null;
+    this.posts = [];
+    this.isOwner = false;
+
+    this.loading = true;
+    this.postsLoading = true;
+
+    this.errorMessage = null;
+    this.postsErrorMessage = null;
+    this.actionError = null;
+
+    this.showProfileMenu = false;
+    this.showReportModal = false;
+    this.reportTargetPostId = null;
+
+    this.activeModalTab = null;
+    this.userList = [];
+
+    // First load the requested user's profile.
+    // Only request their posts if the profile actually exists.
+    this.userService.getUserProfile(normalizedUsername).subscribe({
+
       next: (data) => {
         this.profile = data;
         this.isOwner = this.currentUser === data.username;
         this.loading = false;
-      },
-      error: (err) => {
-        this.errorMessage = err.error?.message || 'Failed to load user profile';
-        this.loading = false;
-      }
-    });
 
-    this.postService.getUserPosts(normalizedUsername).subscribe({
-      next: (posts) => {
-        this.posts = posts.map(post => ({
-          ...post,
-          showMenu: false,
-          isEditing: false,
-          editingContent: ''
-        }));
-        this.postsLoading = false;
+        this.postService.getUserPosts(normalizedUsername).subscribe({
+
+          next: (posts) => {
+            this.posts = posts.map(post => ({
+              ...post,
+              showMenu: false,
+              isEditing: false,
+              editingContent: ''
+            }));
+
+            this.postsLoading = false;
+          },
+
+          error: (err) => {
+            this.posts = [];
+            this.postsLoading = false;
+
+            // If the user has become unavailable between the two requests,
+            // treat the whole profile as unavailable.
+            if (err.status === 404) {
+              this.profile = null;
+              this.router.navigate(['/404'], { replaceUrl: true });
+              return;
+            }
+
+            this.postsErrorMessage =
+              err.error?.message || 'Failed to load posts';
+          }
+        });
       },
+
       error: (err) => {
+        // NEVER keep the old profile when the requested profile fails.
+        this.profile = null;
         this.posts = [];
-        this.postsErrorMessage = err.error?.message || 'Failed to load posts';
+        this.isOwner = false;
+
+        this.loading = false;
         this.postsLoading = false;
+
+        if (err.status === 404) {
+          this.router.navigate(['/404'], { replaceUrl: true });
+          return;
+        }
+
+        this.errorMessage =
+          err.error?.message || 'Failed to load user profile';
       }
     });
   }
@@ -102,38 +167,56 @@ export class Profile implements OnInit, OnDestroy {
     if (!this.profile || this.isOwner) return;
 
     const originalState = this.profile.isFollowing;
+
     this.profile.isFollowing = !originalState;
-    this.profile.followersCount = (this.profile.followersCount || 0) + (originalState ? -1 : 1);
+
+    this.profile.followersCount =
+      (this.profile.followersCount || 0) +
+      (originalState ? -1 : 1);
 
     this.userService.toggleFollow(this.profile.username).subscribe({
+
       next: (isFollowing) => {
         if (this.profile && isFollowing !== this.profile.isFollowing) {
-          this.profile.followersCount = (this.profile.followersCount || 0) + (isFollowing ? 1 : -1);
+          this.profile.followersCount =
+            (this.profile.followersCount || 0) +
+            (isFollowing ? 1 : -1);
+
           this.profile.isFollowing = isFollowing;
         }
       },
+
       error: () => {
-        this.profile!.isFollowing = originalState;
-        this.profile!.followersCount = (this.profile!.followersCount || 0) + (originalState ? 1 : -1);
+        if (!this.profile) return;
+
+        this.profile.isFollowing = originalState;
+
+        this.profile.followersCount =
+          (this.profile.followersCount || 0) +
+          (originalState ? 1 : -1);
       }
     });
   }
 
   openUserListModal(tab: 'followers' | 'following'): void {
     if (!this.profile) return;
+
     this.activeModalTab = tab;
     this.userListLoading = true;
     this.userList = [];
 
-    const request = tab === 'followers'
-      ? this.userService.getFollowers(this.profile.username)
-      : this.userService.getFollowing(this.profile.username);
+    const request =
+      tab === 'followers'
+        ? this.userService.getFollowers(this.profile.username)
+        : this.userService.getFollowing(this.profile.username);
 
     request.subscribe({
+
       next: (users) => {
         this.userList = users;
         this.userListLoading = false;
       },
+
       error: () => {
         this.userList = [];
         this.userListLoading = false;
@@ -146,22 +229,28 @@ export class Profile implements OnInit, OnDestroy {
     this.userList = [];
   }
 
-  /* Optimistic Like Handler */
   toggleLike(post: PostResponse): void {
     if (post.isSubmittingLike) return;
+
     post.isSubmittingLike = true;
 
     const originalState = post.isLiked ?? false;
     const currentCount = post.likesCount ?? 0;
 
     post.isLiked = !originalState;
-    post.likesCount = Math.max(0, currentCount + (originalState ? -1 : 1));
+
+    post.likesCount = Math.max(
+      0,
+      currentCount + (originalState ? -1 : 1)
+    );
 
     this.postService.toggleLike(post.id).subscribe({
+
       next: (isLiked) => {
         post.isLiked = isLiked;
         post.isSubmittingLike = false;
       },
+
       error: () => {
         post.isLiked = originalState;
         post.likesCount = currentCount;
@@ -170,16 +259,18 @@ export class Profile implements OnInit, OnDestroy {
     });
   }
 
-  /* Collapsible Comments Toggle */
   toggleComments(post: PostResponse): void {
     post.showComments = !post.showComments;
 
     if (post.showComments && !post.comments) {
       post.comments = [];
+
       this.postService.getComments(post.id).subscribe({
+
         next: (comments) => {
           post.comments = comments;
         },
+
         error: (err) => {
           console.error('Failed to load comments', err);
         }
@@ -187,21 +278,33 @@ export class Profile implements OnInit, OnDestroy {
     }
   }
 
-  /* Optimistic Comment Submission */
   addComment(post: PostResponse): void {
-    if (!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment) return;
+    if (
+      !post.newCommentText ||
+      !post.newCommentText.trim() ||
+      post.isSubmittingComment
+    ) {
+      return;
+    }
 
     const commentText = post.newCommentText.trim();
+
     post.isSubmittingComment = true;
 
     this.postService.addComment(post.id, { content: commentText }).subscribe({
+
       next: (newComment) => {
-        if (!post.comments) post.comments = [];
+        if (!post.comments) {
+          post.comments = [];
+        }
+
         post.comments.push(newComment);
         post.commentsCount = (post.commentsCount || 0) + 1;
+
         post.newCommentText = '';
         post.isSubmittingComment = false;
       },
+
       error: (err) => {
         console.error('Failed to add comment', err);
         post.isSubmittingComment = false;
@@ -223,25 +326,40 @@ export class Profile implements OnInit, OnDestroy {
       return '';
     }
 
-    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
+    if (
+      mediaUrl.startsWith('http://') ||
+      mediaUrl.startsWith('https://')
+    ) {
       return mediaUrl;
     }
 
-    return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
+    return mediaUrl.startsWith('/')
+      ? mediaUrl
+      : `/${mediaUrl}`;
   }
 
   isVideoUrl(url: string): boolean {
     const lower = url.toLowerCase();
-    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.includes('/video/');
+
+    return (
+      lower.endsWith('.mp4') ||
+      lower.endsWith('.webm') ||
+      lower.endsWith('.mov') ||
+      lower.includes('/video/')
+    );
   }
 
   togglePostMenu(post: PostResponse, event: Event): void {
     event.stopPropagation();
+
     this.showProfileMenu = false;
-    // Close any other active options menus
+
     this.posts.forEach(p => {
-      if (p !== post) p.showMenu = false;
+      if (p !== post) {
+        p.showMenu = false;
+      }
     });
+
     post.showMenu = !post.showMenu;
   }
 
@@ -257,35 +375,48 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   saveEdit(post: PostResponse): void {
-    if (!post.editingContent || !post.editingContent.trim()) return;
+    if (!post.editingContent || !post.editingContent.trim()) {
+      return;
+    }
 
     const updatedText = post.editingContent.trim();
 
-    this.postService.updatePost(post.id, { content: updatedText }).subscribe({
+    this.postService.updatePost(post.id, {
+      content: updatedText
+    }).subscribe({
+
       next: (updatedPost) => {
         post.content = updatedPost.content;
         post.isEditing = false;
       },
+
       error: (err) => {
-        this.actionError = err.error?.message || 'Failed to update post';
+        this.actionError =
+          err.error?.message || 'Failed to update post';
       }
     });
   }
 
   deletePost(post: PostResponse): void {
     post.showMenu = false;
-    if (confirm('Are you sure you want to delete this post?')) {
-      const originalPosts = [...this.posts];
 
-      this.posts = this.posts.filter(p => p.id !== post.id);
-
-      this.postService.deletePost(post.id).subscribe({
-        error: (err) => {
-          this.posts = originalPosts;
-          this.actionError = err.error?.message || 'Failed to delete post';
-        }
-      });
+    if (!confirm('Are you sure you want to delete this post?')) {
+      return;
     }
+
+    const originalPosts = [...this.posts];
+
+    this.posts = this.posts.filter(p => p.id !== post.id);
+
+    this.postService.deletePost(post.id).subscribe({
+
+      error: (err) => {
+        this.posts = originalPosts;
+
+        this.actionError =
+          err.error?.message || 'Failed to delete post';
+      }
+    });
   }
 
   repost(post: PostResponse): void {
@@ -297,8 +428,16 @@ export class Profile implements OnInit, OnDestroy {
 
     if (post.repost) {
       this.actionError = 'You already reposted this post.';
-      if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-      this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+      if (this.actionErrorTimeout) {
+        clearTimeout(this.actionErrorTimeout);
+      }
+
+      this.actionErrorTimeout = setTimeout(
+        () => (this.actionError = null),
+        3000
+      );
+
       return;
     }
 
@@ -306,24 +445,48 @@ export class Profile implements OnInit, OnDestroy {
     this.actionError = null;
 
     this.postService.repost(post.id).subscribe({
+
       next: () => {
         this.repostingPostIds.delete(post.id);
-        this.actionError = `Reposted ${post.username}'s post.`;
-        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+        this.actionError =
+          `Reposted ${post.username}'s post.`;
+
+        if (this.actionErrorTimeout) {
+          clearTimeout(this.actionErrorTimeout);
+        }
+
+        this.actionErrorTimeout = setTimeout(
+          () => (this.actionError = null),
+          3000
+        );
       },
-      error: error => {
+
+      error: (error) => {
         this.repostingPostIds.delete(post.id);
-        this.actionError = error?.error?.message || 'Unable to repost this post.';
-        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+        this.actionError =
+          error?.error?.message ||
+          'Unable to repost this post.';
+
+        if (this.actionErrorTimeout) {
+          clearTimeout(this.actionErrorTimeout);
+        }
+
+        this.actionErrorTimeout = setTimeout(
+          () => (this.actionError = null),
+          3000
+        );
       }
     });
   }
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
-    if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+
+    if (this.actionErrorTimeout) {
+      clearTimeout(this.actionErrorTimeout);
+    }
   }
 
   openReportModal(): void {
@@ -356,12 +519,15 @@ export class Profile implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement | null;
-    const isInsideMenu = !!target?.closest('.post-options-dropdown, .profile-options-dropdown');
+
+    const isInsideMenu =
+      !!target?.closest(
+        '.post-options-dropdown, .profile-options-dropdown'
+      );
 
     if (!isInsideMenu) {
-      this.posts.forEach(p => p.showMenu = false);
+      this.posts.forEach(p => (p.showMenu = false));
       this.showProfileMenu = false;
     }
   }
-
 }
