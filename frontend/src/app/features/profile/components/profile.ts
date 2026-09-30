@@ -128,7 +128,10 @@ export class Profile implements OnInit, OnDestroy {
             // treat the whole profile as unavailable.
             if (err.status === 404) {
               this.profile = null;
-              this.router.navigate(['/404'], { replaceUrl: true });
+              this.router.navigate(['/404'], {
+                replaceUrl: true,
+                queryParams: { errorMessage: err.error?.message || 'Resource not found' }
+              });
               return;
             }
 
@@ -139,7 +142,6 @@ export class Profile implements OnInit, OnDestroy {
       },
 
       error: (err) => {
-        // NEVER keep the old profile when the requested profile fails.
         this.profile = null;
         this.posts = [];
         this.isOwner = false;
@@ -148,7 +150,10 @@ export class Profile implements OnInit, OnDestroy {
         this.postsLoading = false;
 
         if (err.status === 404) {
-          this.router.navigate(['/404'], { replaceUrl: true });
+          this.router.navigate(['/404'], {
+            replaceUrl: true,
+            queryParams: { errorMessage: err.error?.message || 'Resource not found' }
+          });
           return;
         }
 

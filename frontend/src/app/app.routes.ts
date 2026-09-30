@@ -57,7 +57,7 @@ export const routes: Routes = [
   {
     path: '404',
     loadComponent: () =>
-      import('./features/not-found/components/not-found/not-found')
+      import('./features/not-found/components/not-found')
         .then(m => m.NotFoundComponent)
   },
 
