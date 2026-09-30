@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         if (user.isBanned()) {
-            throw BlogApiException.notFound("User not found");
+            throw BlogApiException.notFound("User does not exist anymore");
         }
 
         boolean isOwner = currentUsername != null && currentUsername.equals(user.getUsername());
