@@ -7,6 +7,8 @@ import {
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Subject, Subscription, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 
 import {
   Router,
@@ -15,6 +17,8 @@ import {
 } from '@angular/router';
 
 import { AuthService } from '../../../auth/services/auth.service';
+import { UserService } from '../../../profile/services/user.service';
+import { UserSummary } from '../../../profile/models/user-profile.model';
 
 import {
   CreatePostModalComponent
@@ -33,6 +37,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     RouterLinkActive,
     CreatePostModalComponent
@@ -50,11 +55,23 @@ export class Navbar implements OnInit {
 
   private elementRef = inject(ElementRef);
 
+  private userService = inject(UserService);
+
+  private searchQuery$ = new Subject<string>();
+
+  private searchSubscription?: Subscription;
+
   isNotificationsOpen = false;
 
   isProfileDropDownOpen = false;
 
   isCreatePostOpen = false;
+
+  searchQuery = '';
+
+  searchResults: UserSummary[] = [];
+
+  isSearching = false;
 
   ngOnInit(): void {
 
@@ -62,6 +79,30 @@ export class Navbar implements OnInit {
       this.notificationService.initWebSocket();
     }
 
+    this.searchSubscription = this.searchQuery$.pipe(
+      debounceTime(250),
+      distinctUntilChanged(),
+      switchMap(query => {
+        const normalizedQuery = query.trim();
+        if (normalizedQuery.length < 2) {
+          this.isSearching = false;
+          return of([] as UserSummary[]);
+        }
+
+        this.isSearching = true;
+        return this.userService.searchUsers(normalizedQuery).pipe(
+          catchError(() => of([] as UserSummary[]))
+        );
+      })
+    ).subscribe(results => {
+      this.searchResults = results;
+      this.isSearching = false;
+    });
+
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
   }
 
   get isLoggedIn(): boolean {
@@ -82,6 +123,16 @@ export class Navbar implements OnInit {
 
   closeDropdown(): void {
     this.isProfileDropDownOpen = false;
+  }
+
+  onSearchInput(query: string): void {
+    this.searchQuery$.next(query);
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.isSearching = false;
   }
 
   openCreatePost(): void {

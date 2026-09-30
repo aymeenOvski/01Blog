@@ -6,10 +6,14 @@ import com.zone01.myblog.dto.UpdateProfileInfoRequest;
 import com.zone01.myblog.dto.UpdateProfileSecurityRequest;
 import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
+import com.zone01.myblog.dto.UserSummaryResponse;
+
+import java.util.List;
 
 public interface UserService {
     UserProfileResponse getUserProfile(String username, String currentUsername);
     UserProfileResponse updateProfileInfo(String currentUsername, UpdateProfileInfoRequest request);
     UserSecurityResponse updateProfileSecurity(String currentUsername, UpdateProfileSecurityRequest request);
     UserProfileResponse updateAvatar(String currentUsername, MultipartFile file);
+    List<UserSummaryResponse> searchUsers(String query);
 }

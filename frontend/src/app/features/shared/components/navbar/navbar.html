@@ -17,6 +17,32 @@
       <span>Write</span>
     </button>
 
+    <div class="user-search">
+      <label class="visually-hidden" for="user-search-input">Search users</label>
+      <div class="user-search-input-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input id="user-search-input" type="search" [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchInput($event)" placeholder="Search users" autocomplete="off" />
+        <span class="search-spinner" *ngIf="isSearching"></span>
+      </div>
+
+      <div class="user-search-results" *ngIf="searchQuery.trim().length >= 2 && !isSearching">
+        <a *ngFor="let user of searchResults" [routerLink]="['/profile', user.username]"
+          (click)="clearSearch()" class="user-search-result">
+          <span class="search-avatar">
+            <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" [alt]="user.username" />
+            <span *ngIf="!user.avatarUrl">{{ user.username.charAt(0).toUpperCase() }}</span>
+          </span>
+          <span>{{ user.username }}</span>
+        </a>
+        <span class="user-search-empty" *ngIf="searchResults.length === 0">No users found</span>
+      </div>
+    </div>
+
     <!-- Notification Bell -->
     <div class="position-relative">
       <button type="button"

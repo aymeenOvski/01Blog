@@ -55,4 +55,10 @@ export class UserService {
   getSuggestedUsers(): Observable<UserSummary[]> {
     return this.http.get<UserSummary[]>(`${this.apiUrl}/suggested`);
   }
+
+  searchUsers(query: string): Observable<UserSummary[]> {
+    return this.http.get<UserSummary[]>(`${this.apiUrl}/search`, {
+      params: { q: query }
+    });
+  }
 }

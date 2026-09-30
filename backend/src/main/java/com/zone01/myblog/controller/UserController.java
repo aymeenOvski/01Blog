@@ -39,6 +39,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserProfile(username, currentUsername));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSummaryResponse>> searchUsers(@RequestParam("q") String query) {
+        return ResponseEntity.ok(userService.searchUsers(query));
+    }
+
     @GetMapping("/suggested")
     public ResponseEntity<List<UserSummaryResponse>> getSuggestedUsers(
             @AuthenticationPrincipal UserDetails userDetails) {

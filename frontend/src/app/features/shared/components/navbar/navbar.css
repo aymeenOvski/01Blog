@@ -128,6 +128,116 @@
   transform: scale(0.96);
 }
 
+.user-search {
+  position: relative;
+  width: min(260px, 26vw);
+}
+
+.user-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  color: #94a3b8;
+  background: #111c31;
+  border: 1px solid #263653;
+  border-radius: 10px;
+}
+
+.user-search-input-wrap:focus-within {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.user-search-input-wrap input {
+  width: 100%;
+  min-width: 0;
+  color: #f8fafc;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.user-search-input-wrap input::placeholder {
+  color: #64748b;
+}
+
+.search-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 2px solid #475569;
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: search-spin 0.7s linear infinite;
+}
+
+.user-search-results {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid #263653;
+  border-radius: 10px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.42);
+  z-index: 1060;
+}
+
+.user-search-result {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  color: #e2e8f0;
+  text-decoration: none;
+}
+
+.user-search-result:hover {
+  color: #ffffff;
+  background: #1e293b;
+}
+
+.search-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #2563eb;
+  border-radius: 50%;
+}
+
+.search-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-search-empty {
+  display: block;
+  padding: 0.75rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+@keyframes search-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 800px) {
+  .user-search {
+    width: min(210px, 32vw);
+  }
+}
+
 .notification-btn {
   transition: background-color 0.2s ease, opacity 0.2s ease;
   cursor: pointer;

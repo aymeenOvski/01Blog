@@ -4,6 +4,7 @@ import com.zone01.myblog.dto.UpdateProfileInfoRequest;
 import com.zone01.myblog.dto.UpdateProfileSecurityRequest;
 import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
+import com.zone01.myblog.dto.UserSummaryResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Users;
 import com.zone01.myblog.repository.FollowRepository;
@@ -178,5 +179,20 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return new UserProfileResponse(user.getUsername(), user.getBio(), user.getAvatarUrl(), true, user.getEmail());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserSummaryResponse> searchUsers(String query) {
+        String normalizedQuery = query == null ? "" : query.trim();
+        if (normalizedQuery.length() < 2) {
+            return List.of();
+        }
+
+        return userRepository
+                .findTop10ByUsernameContainingIgnoreCaseAndStatusOrderByUsernameAsc(normalizedQuery, "ACTIVE")
+                .stream()
+                .map(user -> new UserSummaryResponse(user.getUsername(), user.getAvatarUrl()))
+                .toList();
     }
 }
