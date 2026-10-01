@@ -204,20 +204,44 @@
 
         <!-- Regular Content View vs. Edit Mode -->
         <div *ngIf="!post.isEditing" class="post-body">
-          <p class="post-content mb-0" *ngIf="post.content">{{ post.content }}</p>
+
+          <p class="post-content mb-0" *ngIf="post.content">
+            {{ post.content }}
+          </p>
+
+          <small *ngIf="savedPostId === post.id" class="text-success fw-semibold d-block mt-2">
+            ✓ Post updated successfully
+          </small>
+
         </div>
 
         <div *ngIf="post.isEditing" class="post-edit-container my-2">
           <textarea class="form-control form-control-sm comment-input mb-2" [(ngModel)]="post.editingContent"
-            maxlength="2000" rows="3"></textarea>
+            maxlength="2000" rows="3">
+  </textarea>
+
           <div class="d-flex justify-content-between align-items-center">
-            <small class="text-muted">{{ post.editingContent ? post.editingContent.length : 0 }}/2000</small>
-            <div class="d-flex gap-2">
-              <button class="btn btn-secondary btn-sm" (click)="cancelEdit(post)">Cancel</button>
-              <button class="btn btn-primary btn-sm" [disabled]="!post.editingContent || !post.editingContent.trim()"
-                (click)="saveEdit(post)">
-                Save
+
+            <small class="text-muted">
+              {{ post.editingContent ? post.editingContent.length : 0 }}/2000
+            </small>
+
+            <div class="d-flex gap-2 align-items-center">
+
+              <button class="btn btn-secondary btn-sm" [disabled]="savingPostId === post.id" (click)="cancelEdit(post)">
+                Cancel
               </button>
+
+              <button class="btn btn-primary btn-sm" [disabled]="
+          !post.editingContent ||
+          !post.editingContent.trim() ||
+          savingPostId === post.id
+        " (click)="saveEdit(post)">
+
+                {{ savingPostId === post.id ? 'Saving...' : 'Save' }}
+
+              </button>
+
             </div>
           </div>
         </div>

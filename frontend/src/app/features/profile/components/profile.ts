@@ -43,6 +43,8 @@ export class Profile implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
   actionError: string | null = null;
+  savingPostId: number | null = null;
+  savedPostId: number | null = null;
 
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
@@ -76,10 +78,6 @@ export class Profile implements OnInit, OnDestroy {
   loadProfile(username: string): void {
     const normalizedUsername = username.trim();
 
-    // IMPORTANT:
-    // Clear the previous profile immediately.
-    // Otherwise Angular can keep showing the previous user's data
-    // while the new profile request is loading/failing.
     this.profile = null;
     this.posts = [];
     this.isOwner = false;
@@ -386,6 +384,10 @@ export class Profile implements OnInit, OnDestroy {
 
     const updatedText = post.editingContent.trim();
 
+    this.savingPostId = post.id;
+    this.savedPostId = null;
+    this.actionError = null;
+
     this.postService.updatePost(post.id, {
       content: updatedText
     }).subscribe({
@@ -393,9 +395,20 @@ export class Profile implements OnInit, OnDestroy {
       next: (updatedPost) => {
         post.content = updatedPost.content;
         post.isEditing = false;
+
+        this.savingPostId = null;
+        this.savedPostId = post.id;
+
+        setTimeout(() => {
+          if (this.savedPostId === post.id) {
+            this.savedPostId = null;
+          }
+        }, 2000);
       },
 
       error: (err) => {
+        this.savingPostId = null;
+
         this.actionError =
           err.error?.message || 'Failed to update post';
       }
