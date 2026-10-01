@@ -323,6 +323,28 @@
     max-height: 320px;
     overflow-y: auto;
     padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.65) transparent;
+}
+
+.comments-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.55);
+    background-clip: padding-box;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(125, 211, 252, 0.7);
+    background-clip: padding-box;
 }
 
 .comments-section .comment-input {
