@@ -14,6 +14,8 @@ import com.zone01.myblog.service.AdminService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -60,22 +62,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AdminUserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .map(this::toAdminUserResponse)
-                .toList();
+    public Page<AdminUserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(this::toAdminUserResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AdminPostResponse> getAllPosts() {
-        return postRepository.findAll()
-                .stream()
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
-                .map(this::toAdminPostResponse)
-                .toList();
+    public Page<AdminPostResponse> getAllPosts(Pageable pageable) {
+        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .map(this::toAdminPostResponse);
     }
 
     // =========================================================
@@ -84,13 +80,11 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AdminUserResponse> getBannedUsers() {
+    public Page<AdminUserResponse> getBannedUsers(Pageable pageable) {
 
         return userRepository
-                .findByStatusOrderByCreatedAtDesc("BANNED")
-                .stream()
-                .map(this::toAdminUserResponse)
-                .toList();
+                .findByStatusOrderByCreatedAtDesc("BANNED", pageable)
+                .map(this::toAdminUserResponse);
     }
 
     private AdminUserResponse toAdminUserResponse(Users user) {
@@ -111,13 +105,11 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AdminPostResponse> getHiddenPosts() {
+    public Page<AdminPostResponse> getHiddenPosts(Pageable pageable) {
 
         return postRepository
-                .findAllByVisibilityOrderByCreatedAtDesc("HIDDEN")
-                .stream()
-                .map(this::toAdminPostResponse)
-                .toList();
+                .findAllByVisibilityOrderByCreatedAtDesc("HIDDEN", pageable)
+                .map(this::toAdminPostResponse);
     }
 
     private AdminPostResponse toAdminPostResponse(Post post) {

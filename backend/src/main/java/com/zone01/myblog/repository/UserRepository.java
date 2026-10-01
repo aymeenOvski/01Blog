@@ -3,6 +3,8 @@ package com.zone01.myblog.repository;
 import com.zone01.myblog.model.Users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -22,7 +24,9 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
     List<Users> findByStatusOrderByCreatedAtDesc(String status);
 
+    Page<Users> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
     long countByStatus(String status);
 
-    List<Users> findAllByOrderByCreatedAtDesc();
+    Page<Users> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

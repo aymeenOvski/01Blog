@@ -9,7 +9,8 @@ import {
   AdminReport,
   AdminStats,
   AdminUser,
-  AdminPost
+  AdminPost,
+  AdminPage
 } from '../models/admin.model';
 
 @Injectable({
@@ -67,15 +68,23 @@ export class AdminService {
     );
   }
 
-  getAllUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(
-      `${this.apiUrl}/users`
+  getAllUsers(page = 0, size = 20): Observable<AdminPage<AdminUser>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<AdminPage<AdminUser>>(
+      `${this.apiUrl}/users`, { params }
     );
   }
 
-  getBannedUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(
-      `${this.apiUrl}/users/banned`
+  getBannedUsers(page = 0, size = 20): Observable<AdminPage<AdminUser>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<AdminPage<AdminUser>>(
+      `${this.apiUrl}/users/banned`, { params }
     );
   }
 
@@ -99,15 +108,23 @@ export class AdminService {
     );
   }
 
-  getAllPosts(): Observable<AdminPost[]> {
-    return this.http.get<AdminPost[]>(
-      `${this.apiUrl}/posts`
+  getAllPosts(page = 0, size = 20): Observable<AdminPage<AdminPost>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<AdminPage<AdminPost>>(
+      `${this.apiUrl}/posts`, { params }
     );
   }
 
-  getHiddenPosts(): Observable<AdminPost[]> {
-    return this.http.get<AdminPost[]>(
-      `${this.apiUrl}/posts/hidden`
+  getHiddenPosts(page = 0, size = 20): Observable<AdminPage<AdminPost>> {
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
+
+    return this.http.get<AdminPage<AdminPost>>(
+      `${this.apiUrl}/posts/hidden`, { params }
     );
   }
 

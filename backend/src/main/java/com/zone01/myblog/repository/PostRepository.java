@@ -4,6 +4,8 @@ import com.zone01.myblog.model.Post;
 import com.zone01.myblog.model.Users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.Query;
 
 import org.springframework.data.repository.query.Param;
@@ -138,6 +140,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllByVisibilityOrderByCreatedAtDesc(
             String visibility);
 
+    Page<Post> findAllByVisibilityOrderByCreatedAtDesc(
+            String visibility, Pageable pageable);
+
     /*
      * ------------------------------------------------------------
      * ADMIN STATISTICS
@@ -145,5 +150,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      */
     long countByVisibility(String visibility);
 
-    List<Post> findAllByOrderByCreatedAtDesc();
+        Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 }

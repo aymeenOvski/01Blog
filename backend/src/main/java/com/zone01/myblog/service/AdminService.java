@@ -7,20 +7,22 @@ import com.zone01.myblog.dto.AdminPostResponse;
 import com.zone01.myblog.dto.AdminUserResponse;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AdminService {
 
     AdminStatsResponse getStats();
 
-    List<AdminUserResponse> getBannedUsers();
+    Page<AdminUserResponse> getBannedUsers(Pageable pageable);
 
-    List<AdminPostResponse> getHiddenPosts();
+    Page<AdminPostResponse> getHiddenPosts(Pageable pageable);
 
     List<ReportResponse> getPendingReports();
 
-    List<AdminUserResponse> getAllUsers();
+    Page<AdminUserResponse> getAllUsers(Pageable pageable);
 
-    List<AdminPostResponse> getAllPosts();
+    Page<AdminPostResponse> getAllPosts(Pageable pageable);
 
     void resolveReport(Long reportId, String action);
 

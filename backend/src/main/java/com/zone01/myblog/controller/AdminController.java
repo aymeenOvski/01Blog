@@ -9,6 +9,9 @@ import com.zone01.myblog.service.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -74,13 +77,19 @@ public class AdminController {
     }
 
     @GetMapping("/users/banned")
-    public ResponseEntity<List<AdminUserResponse>> getBannedUsers() {
-        return ResponseEntity.ok(adminService.getBannedUsers());
+    public ResponseEntity<Page<AdminUserResponse>> getBannedUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(adminService.getBannedUsers(pageable));
     }
 
     @GetMapping("/posts/hidden")
-    public ResponseEntity<List<AdminPostResponse>> getHiddenPosts() {
-        return ResponseEntity.ok(adminService.getHiddenPosts());
+    public ResponseEntity<Page<AdminPostResponse>> getHiddenPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(adminService.getHiddenPosts(pageable));
     }
 
     @PatchMapping("/users/{id}/ban")
@@ -116,12 +125,18 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<AdminUserResponse>> getAllUsers() {
-        return ResponseEntity.ok(adminService.getAllUsers());
+    public ResponseEntity<Page<AdminUserResponse>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(adminService.getAllUsers(pageable));
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<List<AdminPostResponse>> getAllPosts() {
-        return ResponseEntity.ok(adminService.getAllPosts());
+    public ResponseEntity<Page<AdminPostResponse>> getAllPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(adminService.getAllPosts(pageable));
     }
 }

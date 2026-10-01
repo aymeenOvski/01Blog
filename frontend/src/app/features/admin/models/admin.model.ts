@@ -6,6 +6,15 @@ export interface AdminStats {
   pendingReports: number;
 }
 
+export interface AdminPage<T> {
+  content: T[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+}
+
 export type ReportStatus =
   | 'PENDING'
   | 'RESOLVED'

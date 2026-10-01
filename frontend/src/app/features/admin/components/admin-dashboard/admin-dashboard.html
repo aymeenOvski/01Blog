@@ -564,6 +564,17 @@
 
     </section>
 
+    <nav class="admin-pagination" *ngIf="usersPage && usersPage.totalPages > 1" aria-label="Users pages">
+      <button type="button" class="page-button" [disabled]="usersPage.first"
+        (click)="goToUsersPage(usersPage.number - 1)">Previous</button>
+      <button type="button" class="page-button" *ngFor="let page of pageNumbers(usersPage.totalPages)"
+        [class.active]="page === usersPage.number" (click)="goToUsersPage(page)">
+        {{ page + 1 }}
+      </button>
+      <button type="button" class="page-button" [disabled]="usersPage.last"
+        (click)="goToUsersPage(usersPage.number + 1)">Next</button>
+    </nav>
+
   </ng-container>
 
 
@@ -743,6 +754,17 @@
       </article>
 
     </section>
+
+    <nav class="admin-pagination" *ngIf="postsPage && postsPage.totalPages > 1" aria-label="Posts pages">
+      <button type="button" class="page-button" [disabled]="postsPage.first"
+        (click)="goToPostsPage(postsPage.number - 1)">Previous</button>
+      <button type="button" class="page-button" *ngFor="let page of pageNumbers(postsPage.totalPages)"
+        [class.active]="page === postsPage.number" (click)="goToPostsPage(page)">
+        {{ page + 1 }}
+      </button>
+      <button type="button" class="page-button" [disabled]="postsPage.last"
+        (click)="goToPostsPage(postsPage.number + 1)">Next</button>
+    </nav>
 
   </ng-container>
 
@@ -1233,6 +1255,18 @@
 
     </section>
 
+    <nav class="admin-pagination" *ngIf="bannedUsersPage && bannedUsersPage.totalPages > 1"
+      aria-label="Banned users pages">
+      <button type="button" class="page-button" [disabled]="bannedUsersPage.first"
+        (click)="goToBannedUsersPage(bannedUsersPage.number - 1)">Previous</button>
+      <button type="button" class="page-button" *ngFor="let page of pageNumbers(bannedUsersPage.totalPages)"
+        [class.active]="page === bannedUsersPage.number" (click)="goToBannedUsersPage(page)">
+        {{ page + 1 }}
+      </button>
+      <button type="button" class="page-button" [disabled]="bannedUsersPage.last"
+        (click)="goToBannedUsersPage(bannedUsersPage.number + 1)">Next</button>
+    </nav>
+
   </ng-container>
 
 
@@ -1399,6 +1433,18 @@
       </article>
 
     </section>
+
+    <nav class="admin-pagination" *ngIf="hiddenPostsPage && hiddenPostsPage.totalPages > 1"
+      aria-label="Hidden posts pages">
+      <button type="button" class="page-button" [disabled]="hiddenPostsPage.first"
+        (click)="goToHiddenPostsPage(hiddenPostsPage.number - 1)">Previous</button>
+      <button type="button" class="page-button" *ngFor="let page of pageNumbers(hiddenPostsPage.totalPages)"
+        [class.active]="page === hiddenPostsPage.number" (click)="goToHiddenPostsPage(page)">
+        {{ page + 1 }}
+      </button>
+      <button type="button" class="page-button" [disabled]="hiddenPostsPage.last"
+        (click)="goToHiddenPostsPage(hiddenPostsPage.number + 1)">Next</button>
+    </nav>
 
   </ng-container>
 

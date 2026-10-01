@@ -7,7 +7,8 @@ import {
   AdminPost,
   AdminReport,
   AdminStats,
-  AdminUser
+  AdminUser,
+  AdminPage
 } from '../../models/admin.model';
 
 type AdminTab =
@@ -71,6 +72,12 @@ export class AdminDashboardComponent implements OnInit {
 
   posts: AdminPost[] = [];
   hiddenPosts: AdminPost[] = [];
+
+  readonly pageSize = 20;
+  usersPage: AdminPage<AdminUser> | null = null;
+  postsPage: AdminPage<AdminPost> | null = null;
+  bannedUsersPage: AdminPage<AdminUser> | null = null;
+  hiddenPostsPage: AdminPage<AdminPost> | null = null;
 
   activeTab: AdminTab = 'overview';
 
@@ -173,13 +180,14 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  loadUsers(): void {
+  loadUsers(page = 0): void {
     this.isLoadingUsers = true;
     this.usersError = null;
 
-    this.adminService.getAllUsers().subscribe({
-      next: users => {
-        this.users = users;
+    this.adminService.getAllUsers(page, this.pageSize).subscribe({
+      next: response => {
+        this.usersPage = response;
+        this.users = response.content;
         this.isLoadingUsers = false;
       },
 
@@ -193,13 +201,14 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  loadPosts(): void {
+  loadPosts(page = 0): void {
     this.isLoadingPosts = true;
     this.postsError = null;
 
-    this.adminService.getAllPosts().subscribe({
-      next: posts => {
-        this.posts = posts;
+    this.adminService.getAllPosts(page, this.pageSize).subscribe({
+      next: response => {
+        this.postsPage = response;
+        this.posts = response.content;
         this.isLoadingPosts = false;
       },
 
@@ -213,13 +222,14 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  loadBannedUsers(): void {
+  loadBannedUsers(page = 0): void {
     this.isLoadingBannedUsers = true;
     this.bannedUsersError = null;
 
-    this.adminService.getBannedUsers().subscribe({
-      next: users => {
-        this.bannedUsers = users;
+    this.adminService.getBannedUsers(page, this.pageSize).subscribe({
+      next: response => {
+        this.bannedUsersPage = response;
+        this.bannedUsers = response.content;
         this.isLoadingBannedUsers = false;
       },
 
@@ -233,13 +243,14 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  loadHiddenPosts(): void {
+  loadHiddenPosts(page = 0): void {
     this.isLoadingHiddenPosts = true;
     this.hiddenPostsError = null;
 
-    this.adminService.getHiddenPosts().subscribe({
-      next: posts => {
-        this.hiddenPosts = posts;
+    this.adminService.getHiddenPosts(page, this.pageSize).subscribe({
+      next: response => {
+        this.hiddenPostsPage = response;
+        this.hiddenPosts = response.content;
         this.isLoadingHiddenPosts = false;
       },
 
@@ -263,6 +274,34 @@ export class AdminDashboardComponent implements OnInit {
 
   setActiveTab(tab: AdminTab): void {
     this.activeTab = tab;
+  }
+
+  goToUsersPage(page: number): void {
+    if (page >= 0 && page < (this.usersPage?.totalPages ?? 0)) {
+      this.loadUsers(page);
+    }
+  }
+
+  goToPostsPage(page: number): void {
+    if (page >= 0 && page < (this.postsPage?.totalPages ?? 0)) {
+      this.loadPosts(page);
+    }
+  }
+
+  goToBannedUsersPage(page: number): void {
+    if (page >= 0 && page < (this.bannedUsersPage?.totalPages ?? 0)) {
+      this.loadBannedUsers(page);
+    }
+  }
+
+  goToHiddenPostsPage(page: number): void {
+    if (page >= 0 && page < (this.hiddenPostsPage?.totalPages ?? 0)) {
+      this.loadHiddenPosts(page);
+    }
+  }
+
+  pageNumbers(totalPages: number): number[] {
+    return Array.from({ length: totalPages }, (_, index) => index);
   }
 
   // ================================================================
@@ -322,10 +361,10 @@ export class AdminDashboardComponent implements OnInit {
   get currentResultCount(): number {
     switch (this.activeTab) {
       case 'users':
-        return this.users.length;
+        return this.usersPage?.totalElements ?? this.users.length;
 
       case 'posts':
-        return this.posts.length;
+        return this.postsPage?.totalElements ?? this.posts.length;
 
       case 'user-reports':
         return this.userReports.length;
@@ -334,10 +373,10 @@ export class AdminDashboardComponent implements OnInit {
         return this.postReports.length;
 
       case 'banned-users':
-        return this.bannedUsers.length;
+        return this.bannedUsersPage?.totalElements ?? this.bannedUsers.length;
 
       case 'hidden-posts':
-        return this.hiddenPosts.length;
+        return this.hiddenPostsPage?.totalElements ?? this.hiddenPosts.length;
 
       case 'overview':
       default:
@@ -348,12 +387,12 @@ export class AdminDashboardComponent implements OnInit {
   get currentResultLabel(): string {
     switch (this.activeTab) {
       case 'users':
-        return this.users.length === 1
+        return (this.usersPage?.totalElements ?? this.users.length) === 1
           ? 'user'
           : 'users';
 
       case 'posts':
-        return this.posts.length === 1
+        return (this.postsPage?.totalElements ?? this.posts.length) === 1
           ? 'post'
           : 'posts';
 
@@ -368,12 +407,12 @@ export class AdminDashboardComponent implements OnInit {
           : 'post reports';
 
       case 'banned-users':
-        return this.bannedUsers.length === 1
+        return (this.bannedUsersPage?.totalElements ?? this.bannedUsers.length) === 1
           ? 'banned user'
           : 'banned users';
 
       case 'hidden-posts':
-        return this.hiddenPosts.length === 1
+        return (this.hiddenPostsPage?.totalElements ?? this.hiddenPosts.length) === 1
           ? 'hidden post'
           : 'hidden posts';
 
