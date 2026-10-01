@@ -116,6 +116,26 @@
     gap: 1rem;
 }
 
+.posts-load-more,
+.comments-load-more {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(96, 165, 250, 0.35);
+    border-radius: 9px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.posts-load-more:disabled,
+.comments-load-more:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 .post-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -297,6 +317,12 @@
     border-radius: 12px;
     padding: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.comments-list {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .comments-section .comment-input {

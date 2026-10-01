@@ -9,6 +9,15 @@ export interface CommentRequest {
   content: string;
 }
 
+export interface PagedResponse<T> {
+  content: T[];
+  number: number;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  last: boolean;
+}
+
 export interface PostUpdateRequest {
   content: string;
 }
@@ -27,6 +36,9 @@ export interface PostResponse {
   isSubmittingLike?: boolean;
   commentsCount?: number;
   comments?: CommentResponse[];
+  commentsPage?: number;
+  commentsLastPage?: boolean;
+  commentsLoading?: boolean;
   repost?: boolean;
   repostedBy?: string;
   originalUsername?: string;

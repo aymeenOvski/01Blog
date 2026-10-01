@@ -477,7 +477,7 @@
 
             </form>
 
-            <div class="comments-list d-flex flex-column gap-2" *ngIf="
+            <div class="comments-list d-flex flex-column gap-2" (scroll)="onCommentsScroll($event, post)" *ngIf="
                 post.comments &&
                 post.comments.length > 0
               ">

@@ -4,6 +4,7 @@ import com.zone01.myblog.dto.CommentRequest;
 import com.zone01.myblog.dto.CommentResponse;
 import com.zone01.myblog.dto.PostResponse;
 import com.zone01.myblog.dto.PostUpdateRequest;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.service.PostService;
 
@@ -41,23 +42,29 @@ public class PostController {
     }
 
     @GetMapping("/feed")
-    public ResponseEntity<List<PostResponse>> getFeed(
-            @AuthenticationPrincipal UserDetails userDetails) {
+        public ResponseEntity<PagedResponse<PostResponse>> getFeed(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         if (userDetails == null) {
             throw BlogApiException.unauthorized("Authentication required to load feed");
         }
 
-        return ResponseEntity.ok(postService.getFeedPosts(userDetails.getUsername()));
+        return ResponseEntity.ok(postService.getFeedPosts(
+            userDetails.getUsername(), page, Math.min(size, 50)));
     }
 
     @GetMapping("/user/{targetUsername}")
-    public ResponseEntity<List<PostResponse>> getUserPosts(
+        public ResponseEntity<PagedResponse<PostResponse>> getUserPosts(
             @PathVariable String targetUsername,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
         String currentUsername = (userDetails != null) ? userDetails.getUsername() : null;
-        return ResponseEntity.ok(postService.getUserPosts(targetUsername, currentUsername));
+        return ResponseEntity.ok(postService.getUserPosts(
+            targetUsername, currentUsername, page, Math.min(size, 50)));
     }
 
     @PutMapping("/{id}")
@@ -91,8 +98,11 @@ public class PostController {
     }
 
     @GetMapping("/{id}/comments")
-    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.getPostComments(id));
+    public ResponseEntity<PagedResponse<CommentResponse>> getComments(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(postService.getPostComments(id, page, Math.min(size, 50)));
     }
 
     @PostMapping("/{id}/comments")

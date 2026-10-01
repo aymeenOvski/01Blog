@@ -34,6 +34,9 @@ export class Profile implements OnInit, OnDestroy {
   currentUser = this.authService.getUsername();
 
   posts: PostResponse[] = [];
+  postsPage = 0;
+  postsLastPage = false;
+  postsLoadingMore = false;
 
   isOwner = false;
 
@@ -80,6 +83,8 @@ export class Profile implements OnInit, OnDestroy {
 
     this.profile = null;
     this.posts = [];
+    this.postsPage = 0;
+    this.postsLastPage = false;
     this.isOwner = false;
 
     this.loading = true;
@@ -107,13 +112,15 @@ export class Profile implements OnInit, OnDestroy {
 
         this.postService.getUserPosts(normalizedUsername).subscribe({
 
-          next: (posts) => {
-            this.posts = posts.map(post => ({
+          next: (response) => {
+            this.posts = response.content.map(post => ({
               ...post,
               showMenu: false,
               isEditing: false,
               editingContent: ''
             }));
+            this.postsPage = response.number + 1;
+            this.postsLastPage = response.last;
 
             this.postsLoading = false;
           },
@@ -159,6 +166,43 @@ export class Profile implements OnInit, OnDestroy {
           err.error?.message || 'Failed to load user profile';
       }
     });
+  }
+
+  loadMorePosts(): void {
+    if (!this.profile || this.postsLoadingMore || this.postsLastPage) {
+      return;
+    }
+
+    this.postsLoadingMore = true;
+    this.postService.getUserPosts(this.profile.username, this.postsPage).subscribe({
+      next: response => {
+        this.posts = [
+          ...this.posts,
+          ...response.content.map(post => ({
+            ...post,
+            showMenu: false,
+            isEditing: false,
+            editingContent: ''
+          }))
+        ];
+        this.postsPage = response.number + 1;
+        this.postsLastPage = response.last;
+        this.postsLoadingMore = false;
+      },
+      error: error => {
+        this.postsLoadingMore = false;
+        this.postsErrorMessage = error.error?.message || 'Failed to load more posts';
+      }
+    });
+  }
+
+  @HostListener('window:scroll')
+  onPostsScroll(): void {
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+
+    if (nearBottom && !this.postsLoading && !this.postsLoadingMore && !this.postsLastPage) {
+      this.loadMorePosts();
+    }
   }
 
   toggleProfileMenu(event: MouseEvent): void {
@@ -266,18 +310,37 @@ export class Profile implements OnInit, OnDestroy {
     post.showComments = !post.showComments;
 
     if (post.showComments && !post.comments) {
-      post.comments = [];
+      this.loadComments(post);
+    }
+  }
 
-      this.postService.getComments(post.id).subscribe({
+  loadComments(post: PostResponse): void {
+    if (post.commentsLoading || post.commentsLastPage) {
+      return;
+    }
 
-        next: (comments) => {
-          post.comments = comments;
-        },
+    const page = post.commentsPage ?? 0;
+    post.commentsLoading = true;
+    this.postService.getComments(post.id, page).subscribe({
+      next: response => {
+        post.comments = [...(post.comments ?? []), ...response.content];
+        post.commentsPage = response.number + 1;
+        post.commentsLastPage = response.last;
+        post.commentsLoading = false;
+      },
+      error: error => {
+        post.commentsLoading = false;
+        console.error('Failed to load comments', error);
+      }
+    });
+  }
 
-        error: (err) => {
-          console.error('Failed to load comments', err);
-        }
-      });
+  onCommentsScroll(event: Event, post: PostResponse): void {
+    const element = event.target as HTMLElement;
+    const nearBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 40;
+
+    if (nearBottom) {
+      this.loadComments(post);
     }
   }
 

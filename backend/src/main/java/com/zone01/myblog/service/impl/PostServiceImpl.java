@@ -5,6 +5,7 @@ import com.zone01.myblog.dto.CommentResponse;
 import com.zone01.myblog.dto.NotificationResponse;
 import com.zone01.myblog.dto.PostResponse;
 import com.zone01.myblog.dto.PostUpdateRequest;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Comment;
 import com.zone01.myblog.model.Post;
@@ -30,6 +31,9 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -164,7 +168,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse> getUserPosts(String targetUsername, String currentUsername) {
+        public PagedResponse<PostResponse> getUserPosts(
+            String targetUsername, String currentUsername, int page, int size) {
         List<Object[]> results = postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
         List<PostResponse> authoredPosts = results.stream()
             .map(this::mapToPostResponse)
@@ -176,14 +181,17 @@ public class PostServiceImpl implements PostService {
             .map(repost -> mapRepostToResponse(repost, currentUsername))
             .toList();
 
-        return java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
+        List<PostResponse> mergedPosts = java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
             .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
             .toList();
+
+        return paginate(mergedPosts, page, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PostResponse> getFeedPosts(String currentUsername) {
+        public PagedResponse<PostResponse> getFeedPosts(
+            String currentUsername, int page, int size) {
         List<PostResponse> authoredPosts = postRepository.findFeedPostsWithCounts(currentUsername).stream()
                 .map(this::mapToPostResponse)
                 .toList();
@@ -194,9 +202,11 @@ public class PostServiceImpl implements PostService {
                 .map(repost -> mapRepostToResponse(repost, currentUsername))
                 .toList();
 
-        return java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
+        List<PostResponse> mergedPosts = java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
                 .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
                 .toList();
+
+        return paginate(mergedPosts, page, size);
     }
 
     @Override
@@ -393,9 +403,34 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommentResponse> getPostComments(Long postId) {
-        return commentRepository.findByPostIdOrderByCreatedAtAsc(postId).stream()
+    public PagedResponse<CommentResponse> getPostComments(Long postId, int page, int size) {
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
+        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
+
+        return new PagedResponse<>(
+                comments.getContent().stream()
                 .map(c -> new CommentResponse(c.getId(), c.getUser().getUsername(), c.getContent(), c.getCreatedAt()))
-                .toList();
+                .toList(),
+                comments.getNumber(),
+                comments.getTotalPages(),
+                comments.getTotalElements(),
+                comments.isFirst(),
+                comments.isLast());
+    }
+
+    private <T> PagedResponse<T> paginate(List<T> items, int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), 50);
+        int fromIndex = Math.min(safePage * safeSize, items.size());
+        int toIndex = Math.min(fromIndex + safeSize, items.size());
+        int totalPages = items.isEmpty() ? 0 : (int) Math.ceil((double) items.size() / safeSize);
+
+        return new PagedResponse<>(
+                items.subList(fromIndex, toIndex),
+                safePage,
+                totalPages,
+                items.size(),
+                safePage == 0,
+                toIndex >= items.size());
     }
 }

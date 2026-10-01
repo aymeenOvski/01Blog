@@ -292,7 +292,7 @@
           </form>
 
           <!-- Comment List Thread -->
-          <div class="comments-list d-flex flex-column gap-2" *ngIf="post.comments && post.comments.length > 0">
+          <div class="comments-list d-flex flex-column gap-2" (scroll)="onCommentsScroll($event, post)" *ngIf="post.comments && post.comments.length > 0">
             <div class="comment-item p-2 rounded" *ngFor="let comment of post.comments">
               <div class="d-flex align-items-center justify-content-between mb-1">
                 <span class="fw-bold text-white small">{{ comment.username }}</span>
@@ -305,10 +305,12 @@
           <div *ngIf="!post.comments || post.comments.length === 0" class="text-muted-custom small text-center py-2">
             No comments yet. Be the first to comment!
           </div>
+
         </div>
 
       </article>
     </div>
+
   </section>
 
   <!-- Followers / Following Overlay Modal -->

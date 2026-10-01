@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PostResponse } from '../models/post.model';
+import { PostResponse, PagedResponse } from '../models/post.model';
 import { PostUpdateRequest, CommentRequest, CommentResponse } from '../models/post.model';
 
 @Injectable({
@@ -24,12 +24,16 @@ export class PostService {
     return this.http.post<PostResponse>(this.apiUrl, formData);
   }
 
-  getUserPosts(username: string): Observable<PostResponse[]> {
-    return this.http.get<PostResponse[]>(`${this.apiUrl}/user/${encodeURIComponent(username)}`);
+  getUserPosts(username: string, page = 0, size = 10): Observable<PagedResponse<PostResponse>> {
+    return this.http.get<PagedResponse<PostResponse>>(`${this.apiUrl}/user/${encodeURIComponent(username)}`, {
+      params: { page, size }
+    });
   }
 
-  getFeed(): Observable<PostResponse[]> {
-    return this.http.get<PostResponse[]>(`${this.apiUrl}/feed`);
+  getFeed(page = 0, size = 10): Observable<PagedResponse<PostResponse>> {
+    return this.http.get<PagedResponse<PostResponse>>(`${this.apiUrl}/feed`, {
+      params: { page, size }
+    });
   }
 
   updatePost(id: number, request: PostUpdateRequest): Observable<PostResponse> {
@@ -48,8 +52,10 @@ export class PostService {
     return this.http.post<boolean>(`${this.apiUrl}/${id}/like`, {});
   }
 
-  getComments(id: number): Observable<CommentResponse[]> {
-    return this.http.get<CommentResponse[]>(`${this.apiUrl}/${id}/comments`);
+  getComments(id: number, page = 0, size = 10): Observable<PagedResponse<CommentResponse>> {
+    return this.http.get<PagedResponse<CommentResponse>>(`${this.apiUrl}/${id}/comments`, {
+      params: { page, size }
+    });
   }
 
   addComment(id: number, request: CommentRequest): Observable<CommentResponse> {

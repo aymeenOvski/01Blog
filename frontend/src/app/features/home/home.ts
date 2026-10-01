@@ -81,7 +81,9 @@ export class Home implements OnInit, OnDestroy {
 
   feedPosts: PostResponse[] = [];
   isLoadingFeed = true;
+  isLoadingMoreFeed = false;
   feedError: string | null = null;
+  feedLastPage = false;
 
   mobilePanel: 'suggested' | 'settings' | null = null;
 
@@ -153,26 +155,47 @@ export class Home implements OnInit, OnDestroy {
     return this.followPending.has(username);
   }
 
-  loadFeed(): void {
-    this.isLoadingFeed = true;
+  loadFeed(page = 0): void {
+    this.isLoadingFeed = page === 0;
+    this.isLoadingMoreFeed = page > 0;
     this.feedError = null;
 
-    this.postService.getFeed().subscribe({
-      next: (posts) => {
-        this.feedPosts = posts.map(post => ({
+    this.postService.getFeed(page).subscribe({
+      next: (response) => {
+        const posts = response.content.map(post => ({
           ...post,
           showMenu: false
         }));
 
+        this.feedPosts = page === 0 ? posts : [...this.feedPosts, ...posts];
+        this.feedLastPage = response.last;
+
         this.isLoadingFeed = false;
+        this.isLoadingMoreFeed = false;
       },
 
       error: () => {
         this.feedError =
           'Could not load your feed right now.';
         this.isLoadingFeed = false;
+        this.isLoadingMoreFeed = false;
       }
     });
+  }
+
+  loadMoreFeed(): void {
+    if (!this.isLoadingMoreFeed && !this.feedLastPage) {
+      this.loadFeed(Math.floor(this.feedPosts.length / 10));
+    }
+  }
+
+  @HostListener('window:scroll')
+  onFeedScroll(): void {
+    const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+
+    if (nearBottom && !this.isLoadingFeed && !this.isLoadingMoreFeed && !this.feedLastPage) {
+      this.loadMoreFeed();
+    }
   }
 
   trackByUsername(index: number, user: UserSummary): string {
@@ -487,21 +510,37 @@ export class Home implements OnInit, OnDestroy {
     post.showComments = !post.showComments;
 
     if (post.showComments && !post.comments) {
-      post.comments = [];
+      this.loadComments(post);
+    }
+  }
 
-      this.postService.getComments(post.id).subscribe({
+  loadComments(post: PostResponse): void {
+    if (post.commentsLoading || post.commentsLastPage) {
+      return;
+    }
 
-        next: (comments) => {
-          post.comments = comments;
-        },
+    const page = post.commentsPage ?? 0;
+    post.commentsLoading = true;
+    this.postService.getComments(post.id, page).subscribe({
+      next: response => {
+        post.comments = [...(post.comments ?? []), ...response.content];
+        post.commentsPage = response.number + 1;
+        post.commentsLastPage = response.last;
+        post.commentsLoading = false;
+      },
+      error: error => {
+        post.commentsLoading = false;
+        console.error('Failed to load comments', error);
+      }
+    });
+  }
 
-        error: (err) => {
-          console.error(
-            'Failed to load comments',
-            err
-          );
-        }
-      });
+  onCommentsScroll(event: Event, post: PostResponse): void {
+    const element = event.target as HTMLElement;
+    const nearBottom = element.scrollTop + element.clientHeight >= element.scrollHeight - 40;
+
+    if (nearBottom) {
+      this.loadComments(post);
     }
   }
 
