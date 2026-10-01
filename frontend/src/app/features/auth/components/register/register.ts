@@ -44,6 +44,14 @@ export class RegisterComponent {
         Validators.minLength(8),
         Validators.maxLength(100)
       ]
+    ],
+    confirmPassword: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(100)
+      ]
     ]
   });
 
@@ -51,9 +59,14 @@ export class RegisterComponent {
   get username() { return this.registerForm.get('username'); }
   get email() { return this.registerForm.get('email'); }
   get password() { return this.registerForm.get('password'); }
+  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+
+  get passwordsMatch(): boolean {
+    return this.password?.value === this.confirmPassword?.value;
+  }
 
   onSubmit(): void {
-    if (this.registerForm.invalid) {
+    if (this.registerForm.invalid || !this.passwordsMatch) {
       this.registerForm.markAllAsTouched();
       return;
     }

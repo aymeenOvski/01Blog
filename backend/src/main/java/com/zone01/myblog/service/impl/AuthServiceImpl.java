@@ -42,6 +42,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (!request.password().equals(request.confirmPassword())) {
+            throw BlogApiException.badRequest("Passwords do not match");
+        }
+
         if (userRepository.existsByUsername(request.username())) {
             throw BlogApiException.conflict("Username is already taken");
         }

@@ -59,6 +59,27 @@
           </div>
         </div>
 
+        <!-- Confirm Password -->
+        <div class="mb-3">
+          <label for="confirmPassword" class="form-label text-secondary small">Confirm Password <span class="text-danger">*</span></label>
+          <input
+            id="confirmPassword"
+            type="password"
+            class="form-control custom-input"
+            [class.is-invalid]="confirmPassword?.touched && (confirmPassword?.invalid || !passwordsMatch)"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+          />
+          <div *ngIf="confirmPassword?.touched && confirmPassword?.invalid" class="invalid-feedback">
+            <span *ngIf="confirmPassword?.errors?.['required']">Password confirmation is required.</span>
+            <span *ngIf="confirmPassword?.errors?.['minlength']">Must be at least 8 characters.</span>
+            <span *ngIf="confirmPassword?.errors?.['maxlength']">Cannot exceed 100 characters.</span>
+          </div>
+          <div *ngIf="confirmPassword?.touched && confirmPassword?.valid && !passwordsMatch" class="invalid-feedback">
+            Passwords do not match.
+          </div>
+        </div>
+
         <!-- API Error -->
         <div *ngIf="errorMessage" class="alert alert-danger py-2 mb-3" role="alert">
           {{ errorMessage }}
