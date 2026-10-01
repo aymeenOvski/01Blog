@@ -10,7 +10,10 @@ import { UserService } from '../services/user.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { UserProfileResponse, UserSummary } from '../models/user-profile.model';
 import { PostService } from '../../posts/services/post.service';
-import { PostResponse } from '../../posts/models/post.model';
+import {
+  PostResponse,
+  CommentResponse
+} from '../../posts/models/post.model';
 
 @Component({
   selector: 'app-profile',
@@ -52,6 +55,11 @@ export class Profile implements OnInit, OnDestroy {
   savedPostId: number | null = null;
   deleteConfirmPostId: number | null = null;
   deletingPostId: number | null = null;
+  private expandedPostIds = new Set<number>();
+  private expandedCommentIds = new Set<number>();
+
+  readonly postPreviewLength = 280;
+  readonly commentPreviewLength = 160;
 
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
@@ -102,6 +110,8 @@ export class Profile implements OnInit, OnDestroy {
 
     this.profile = null;
     this.posts = [];
+    this.expandedPostIds.clear();
+    this.expandedCommentIds.clear();
     this.postsPage = 0;
     this.postsLastPage = false;
     this.isOwner = false;
@@ -213,6 +223,39 @@ export class Profile implements OnInit, OnDestroy {
         this.postsErrorMessage = error.error?.message || 'Failed to load more posts';
       }
     });
+  }
+
+  shouldShowPostExpansion(post: PostResponse): boolean {
+    return !!post.content &&
+      post.content.length > this.postPreviewLength;
+  }
+
+  isPostExpanded(post: PostResponse): boolean {
+    return this.expandedPostIds.has(post.id);
+  }
+
+  togglePostExpansion(post: PostResponse): void {
+    if (this.expandedPostIds.has(post.id)) {
+      this.expandedPostIds.delete(post.id);
+    } else {
+      this.expandedPostIds.add(post.id);
+    }
+  }
+
+  shouldShowCommentExpansion(comment: CommentResponse): boolean {
+    return comment.content.length > this.commentPreviewLength;
+  }
+
+  isCommentExpanded(comment: CommentResponse): boolean {
+    return this.expandedCommentIds.has(comment.id);
+  }
+
+  toggleCommentExpansion(comment: CommentResponse): void {
+    if (this.expandedCommentIds.has(comment.id)) {
+      this.expandedCommentIds.delete(comment.id);
+    } else {
+      this.expandedCommentIds.add(comment.id);
+    }
   }
 
   private showPostFeedback(post: PostResponse, message: string): void {

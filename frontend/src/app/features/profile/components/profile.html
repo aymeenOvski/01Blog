@@ -224,9 +224,17 @@
         <!-- Regular Content View vs. Edit Mode -->
         <div *ngIf="!post.isEditing" class="post-body">
 
-          <p class="post-content mb-0" *ngIf="post.content">
+          <p class="post-content mb-0" *ngIf="post.content" [class.post-content-collapsed]="
+    shouldShowPostExpansion(post) &&
+    !isPostExpanded(post)
+  ">
             {{ post.content }}
           </p>
+
+          <button type="button" class="content-toggle" *ngIf="shouldShowPostExpansion(post)"
+            (click)="togglePostExpansion(post)" [attr.aria-expanded]="isPostExpanded(post)">
+            {{ isPostExpanded(post) ? 'See less' : 'See more' }}
+          </button>
 
           <small class="post-feedback" *ngIf="post.actionFeedback">
             ✓ {{ post.actionFeedback }}
@@ -322,7 +330,18 @@
                 <span class="fw-bold text-white small">{{ comment.username }}</span>
                 <span class="text-muted-custom small">{{ comment.createdAt | date:'shortTime' }}</span>
               </div>
-              <p class="comment-text text-light mb-0 small" style="white-space: pre-wrap;">{{ comment.content }}</p>
+              <p class="comment-text text-light mb-0 small" [class.comment-text-collapsed]="
+    shouldShowCommentExpansion(comment) &&
+    !isCommentExpanded(comment)
+  ">
+                {{ comment.content }}
+              </p>
+
+              <button type="button" class="content-toggle content-toggle-comment"
+                *ngIf="shouldShowCommentExpansion(comment)" (click)="toggleCommentExpansion(comment)"
+                [attr.aria-expanded]="isCommentExpanded(comment)">
+                {{ isCommentExpanded(comment) ? 'See less' : 'See more' }}
+              </button>
             </div>
           </div>
 
