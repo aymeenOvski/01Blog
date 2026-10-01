@@ -326,3 +326,45 @@
   height: 20px;
   flex-shrink: 0;
 }
+
+@media (max-width: 600px) {
+  .custom-navbar {
+    align-items: flex-start !important;
+    gap: 12px;
+    padding-inline: 14px !important;
+  }
+
+  .custom-navbar > div {
+    min-width: 0;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px !important;
+  }
+
+  .custom-navbar .btn-write {
+    padding-inline: 11px;
+  }
+
+  .custom-navbar .user-search {
+    order: 10;
+    flex: 1 0 100%;
+    width: 100%;
+  }
+
+  .custom-navbar .notification-dropdown {
+    position: fixed;
+    top: 64px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+  }
+
+  .custom-navbar .profile-dropdown {
+    position: fixed;
+    top: 64px;
+    right: 10px;
+    width: min(210px, calc(100vw - 20px));
+  }
+}

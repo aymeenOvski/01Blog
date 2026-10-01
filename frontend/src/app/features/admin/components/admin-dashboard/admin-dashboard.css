@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .admin-page {
   --admin-bg: #0b1324;
   --admin-surface: #101a2d;
@@ -17,6 +22,7 @@
     var(--admin-bg);
 
   color: var(--admin-text);
+  overflow-x: clip;
 }
 
 /* ================================================================
@@ -1391,6 +1397,36 @@
     padding: 28px 20px 55px;
   }
 
+  .content-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .content-header > div {
+    flex: 1 1 240px;
+  }
+
+  .content-header > .report-action {
+    flex: 1 1 100%;
+  }
+
+  .result-count {
+    margin-left: auto;
+  }
+
+  .report-main {
+    align-items: flex-start;
+  }
+
+  .report-time {
+    padding-top: 2px;
+  }
+
+  .report-footer,
+  .moderation-footer {
+    flex-wrap: wrap;
+  }
+
   .admin-header {
     align-items: flex-start;
     flex-direction: column;
@@ -1444,6 +1480,7 @@
 
   .admin-tabs {
     border-radius: 9px;
+    scrollbar-width: thin;
   }
 
   .admin-tab {
@@ -1455,6 +1492,44 @@
     align-items: flex-start;
     flex-direction: column;
     gap: 7px;
+  }
+
+  .content-header > div,
+  .content-header > .report-action,
+  .result-count {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .content-header > .report-action {
+    box-sizing: border-box;
+  }
+
+  .target-line {
+    flex-wrap: wrap;
+  }
+
+  .report-reporter {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .reason-container {
+    margin-inline: 12px;
+  }
+
+  .report-footer,
+  .moderation-footer {
+    padding-inline: 12px;
+  }
+
+  .admin-pagination {
+    gap: 4px;
+  }
+
+  .page-button {
+    min-width: 32px;
+    padding-inline: 7px;
   }
 
   .report-main {
