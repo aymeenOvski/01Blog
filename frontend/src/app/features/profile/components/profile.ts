@@ -50,6 +50,8 @@ export class Profile implements OnInit, OnDestroy {
   actionSuccess: string | null = null;
   savingPostId: number | null = null;
   savedPostId: number | null = null;
+  deleteConfirmPostId: number | null = null;
+  deletingPostId: number | null = null;
 
   private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
@@ -546,24 +548,58 @@ export class Profile implements OnInit, OnDestroy {
 
   deletePost(post: PostResponse): void {
     post.showMenu = false;
+    this.deleteConfirmPostId = post.id;
+  }
 
-    if (!confirm('Are you sure you want to delete this post?')) {
+  cancelDelete(): void {
+    this.deleteConfirmPostId = null;
+  }
+
+  confirmDeletePost(post: PostResponse): void {
+    if (this.deletingPostId === post.id) {
       return;
     }
 
-    const originalPosts = [...this.posts];
-
-    this.posts = this.posts.filter(p => p.id !== post.id);
+    this.deletingPostId = post.id;
+    this.actionError = null;
 
     this.postService.deletePost(post.id).subscribe({
 
-      error: (err) => {
-        this.posts = originalPosts;
+      next: () => {
+        this.posts = this.posts.filter(
+          p => p.id !== post.id
+        );
+
+        this.deleteConfirmPostId = null;
+        this.deletingPostId = null;
+      },
+
+      error: err => {
+        this.deletingPostId = null;
 
         this.actionError =
-          err.error?.message || 'Failed to delete post';
+          err.error?.message ||
+          'Failed to delete post';
       }
+
     });
+  }
+
+  confirmDelete(): void {
+    if (this.deleteConfirmPostId === null) {
+      return;
+    }
+
+    const post = this.posts.find(
+      p => p.id === this.deleteConfirmPostId
+    );
+
+    if (!post) {
+      this.deleteConfirmPostId = null;
+      return;
+    }
+
+    this.confirmDeletePost(post);
   }
 
   repost(post: PostResponse): void {

@@ -203,6 +203,24 @@
           </div>
         </header>
 
+        <div *ngIf="deleteConfirmPostId === post.id" class="delete-confirmation">
+
+          <span>Are you sure you want to delete this post?</span>
+
+          <div class="delete-confirmation-actions">
+            <button type="button" class="btn btn-secondary btn-sm" [disabled]="deletingPostId === post.id"
+              (click)="cancelDelete()">
+              Cancel
+            </button>
+
+            <button type="button" class="btn btn-danger btn-sm" [disabled]="deletingPostId === post.id"
+              (click)="confirmDeletePost(post)">
+              {{ deletingPostId === post.id ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+
+        </div>
+
         <!-- Regular Content View vs. Edit Mode -->
         <div *ngIf="!post.isEditing" class="post-body">
 
@@ -297,7 +315,8 @@
           </form>
 
           <!-- Comment List Thread -->
-          <div class="comments-list d-flex flex-column gap-2" (scroll)="onCommentsScroll($event, post)" *ngIf="post.comments && post.comments.length > 0">
+          <div class="comments-list d-flex flex-column gap-2" (scroll)="onCommentsScroll($event, post)"
+            *ngIf="post.comments && post.comments.length > 0">
             <div class="comment-item p-2 rounded" *ngFor="let comment of post.comments">
               <div class="d-flex align-items-center justify-content-between mb-1">
                 <span class="fw-bold text-white small">{{ comment.username }}</span>
@@ -333,8 +352,7 @@
           No {{ activeModalTab }} found.
         </div>
 
-        <div *ngIf="!userListLoading && userList.length > 0" class="user-list"
-          (scroll)="onUserListScroll($event)">
+        <div *ngIf="!userListLoading && userList.length > 0" class="user-list" (scroll)="onUserListScroll($event)">
           <div *ngFor="let user of userList" class="user-list-item d-flex align-items-center gap-3 py-2">
             <div class="post-avatar">
               <img *ngIf="user.avatarUrl" [src]="resolveMediaUrl(user.avatarUrl)" alt="Avatar" />
@@ -354,8 +372,53 @@
     </div>
   </div>
 
+
+
   <app-report-modal *ngIf="showReportModal && profile"
     [username]="reportTargetPostId === null ? profile.username : null" [postId]="reportTargetPostId"
     (closed)="closeReportModal()">
   </app-report-modal>
+
+
+  <div class="delete-overlay" *ngIf="deleteConfirmPostId !== null" (click)="cancelDelete()">
+
+    <div class="delete-modal" (click)="$event.stopPropagation()">
+
+      <button type="button" class="delete-close-button" aria-label="Close" (click)="cancelDelete()"
+        [disabled]="deletingPostId !== null">
+        ×
+      </button>
+
+      <div class="delete-icon">
+        !
+      </div>
+
+      <h2>Delete post</h2>
+
+      <p class="delete-description">
+        Are you sure you want to delete this post?
+        <br />
+        <strong>This action cannot be undone.</strong>
+      </p>
+
+      <div class="delete-modal-actions">
+
+        <button type="button" class="delete-btn-cancel" (click)="cancelDelete()" [disabled]="deletingPostId !== null">
+          Cancel
+        </button>
+
+        <button type="button" class="delete-btn-submit" (click)="confirmDelete()" [disabled]="deletingPostId !== null">
+
+          <span class="delete-spinner" *ngIf="deletingPostId !== null">
+          </span>
+
+          {{ deletingPostId !== null ? 'Deleting...' : 'Delete post' }}
+
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
 </div>
