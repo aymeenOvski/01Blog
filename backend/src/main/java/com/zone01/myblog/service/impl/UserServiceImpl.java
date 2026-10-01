@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPasswordHash())) {
-            throw BlogApiException.unauthorized("Invalid current password");
+            throw BlogApiException.badRequest("Invalid current password");
         }
 
         if (request.newPassword() != null && !request.newPassword().isBlank()) {
