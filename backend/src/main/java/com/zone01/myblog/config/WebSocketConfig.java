@@ -57,6 +57,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         if (jwtUtils.validateJwtToken(token)) {
                             String username = jwtUtils.getUserNameFromJwtToken(token);
                             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                            if (!userDetails.isEnabled()) {
+                                throw new MessageDeliveryException("WebSocket connection rejected");
+                            }
+
                             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities());
                             accessor.setUser(authentication);
