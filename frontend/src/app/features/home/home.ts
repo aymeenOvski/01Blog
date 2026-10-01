@@ -1,4 +1,9 @@
 import { CommonModule } from '@angular/common';
+
+import {
+  CommentResponse
+} from '../posts/models/post.model';
+
 import {
   Component,
   ElementRef,
@@ -85,6 +90,11 @@ export class Home implements OnInit, OnDestroy {
   isLoadingMoreFeed = false;
   feedError: string | null = null;
   feedLastPage = false;
+  private expandedPostIds = new Set<number>();
+  private expandedCommentIds = new Set<number>();
+
+  readonly postPreviewLength = 280;
+  readonly commentPreviewLength = 160;
 
   mobilePanel: 'suggested' | 'settings' | null = null;
 
@@ -212,6 +222,39 @@ export class Home implements OnInit, OnDestroy {
 
   trackByPostId(index: number, post: PostResponse): number {
     return post.id;
+  }
+
+  shouldShowPostExpansion(post: PostResponse): boolean {
+    return !!post.content &&
+      post.content.length > this.postPreviewLength;
+  }
+
+  isPostExpanded(post: PostResponse): boolean {
+    return this.expandedPostIds.has(post.id);
+  }
+
+  togglePostExpansion(post: PostResponse): void {
+    if (this.expandedPostIds.has(post.id)) {
+      this.expandedPostIds.delete(post.id);
+    } else {
+      this.expandedPostIds.add(post.id);
+    }
+  }
+
+  shouldShowCommentExpansion(comment: CommentResponse): boolean {
+    return comment.content.length > this.commentPreviewLength;
+  }
+
+  isCommentExpanded(comment: CommentResponse): boolean {
+    return this.expandedCommentIds.has(comment.id);
+  }
+
+  toggleCommentExpansion(comment: CommentResponse): void {
+    if (this.expandedCommentIds.has(comment.id)) {
+      this.expandedCommentIds.delete(comment.id);
+    } else {
+      this.expandedCommentIds.add(comment.id);
+    }
   }
 
   toggleMobilePanel(

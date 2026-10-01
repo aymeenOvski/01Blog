@@ -81,15 +81,30 @@
   opacity: 1;
 }
 
-.suggested-card { grid-area: suggested; }
-.composer-card { grid-area: composer; }
+.suggested-card {
+  grid-area: suggested;
+}
+
+.composer-card {
+  grid-area: composer;
+}
+
 .feed-card {
   grid-area: feed;
   overflow: visible;
 }
-.feed-card:hover { transform: none; }
-.feed-card::before { border-radius: 20px 20px 0 0; }
-.settings-card { grid-area: settings; }
+
+.feed-card:hover {
+  transform: none;
+}
+
+.feed-card::before {
+  border-radius: 20px 20px 0 0;
+}
+
+.settings-card {
+  grid-area: settings;
+}
 
 /* ============ Card headers ============ */
 .card-header {
@@ -266,8 +281,15 @@
 }
 
 @keyframes row-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .suggested-row:hover {
@@ -413,7 +435,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-icon {
@@ -502,8 +526,15 @@
 }
 
 @keyframes thumb-in {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .media-thumb img,
@@ -565,8 +596,15 @@
 }
 
 @keyframes banner-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .composer-footer {
@@ -1044,9 +1082,17 @@
   transition: color 0.25s ease;
 }
 
-.action-tile--sky:hover .tile-label { color: #7dd3fc; }
-.action-tile--amber:hover .tile-label { color: #fcd34d; }
-.action-tile--red:hover .tile-label { color: #fca5a5; }
+.action-tile--sky:hover .tile-label {
+  color: #7dd3fc;
+}
+
+.action-tile--amber:hover .tile-label {
+  color: #fcd34d;
+}
+
+.action-tile--red:hover .tile-label {
+  color: #fca5a5;
+}
 
 .tile-hint {
   font-size: 0.7rem;
@@ -1172,4 +1218,39 @@
   .dash-card:hover {
     transform: none;
   }
+}
+
+.post-content-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+.comment-text-collapsed {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.content-toggle {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #7dd3fc;
+  font-size: 0.76rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.content-toggle:hover {
+  color: #bae6fd;
+  text-decoration: underline;
+}
+
+.content-toggle-comment {
+  font-size: 0.72rem;
 }
