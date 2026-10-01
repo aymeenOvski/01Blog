@@ -1,7 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+
 import { AuthService } from '../auth/services/auth.service';
 import { PostService } from '../posts/services/post.service';
 import { UserService } from '../profile/services/user.service';
@@ -28,6 +38,7 @@ export interface DashboardMediaPreview {
   styleUrl: './home.css'
 })
 export class Home implements OnInit, OnDestroy {
+
   private authService = inject(AuthService);
   private router = inject(Router);
   private postService = inject(PostService);
@@ -39,6 +50,7 @@ export class Home implements OnInit, OnDestroy {
   readonly maxContentLength = 2000;
   readonly maxMediaFiles = 5;
   readonly maxFileSizeBytes = 5 * 1024 * 1024;
+
   showReportModal = false;
   reportTargetPostId: number | null = null;
   reportTargetUsername: string | null = null;
@@ -47,18 +59,25 @@ export class Home implements OnInit, OnDestroy {
 
   content = '';
   mediaPreviews: DashboardMediaPreview[] = [];
+
   isSubmitting = false;
   errorMessage: string | null = null;
   postSuccess = false;
+
   private successTimeout?: ReturnType<typeof setTimeout>;
 
   suggestedUsers: UserSummary[] = [];
   isLoadingSuggested = true;
   suggestedError: string | null = null;
   followPending = new Set<string>();
+
+  suggestedActionError: string | null = null;
+  feedActionError: string | null = null;
+
+  private suggestedActionErrorTimeout?: ReturnType<typeof setTimeout>;
+  private feedActionErrorTimeout?: ReturnType<typeof setTimeout>;
+
   repostingPostIds = new Set<number>();
-  actionError: string | null = null;
-  private actionErrorTimeout?: ReturnType<typeof setTimeout>;
 
   feedPosts: PostResponse[] = [];
   isLoadingFeed = true;
@@ -76,8 +95,17 @@ export class Home implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.successTimeout) clearTimeout(this.successTimeout);
-    if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+    }
+
+    if (this.suggestedActionErrorTimeout) {
+      clearTimeout(this.suggestedActionErrorTimeout);
+    }
+
+    if (this.feedActionErrorTimeout) {
+      clearTimeout(this.feedActionErrorTimeout);
+    }
   }
 
   get contentLength(): number {
@@ -93,8 +121,13 @@ export class Home implements OnInit, OnDestroy {
   }
 
   get isValidPost(): boolean {
-    const hasText = !!this.content && this.content.trim().length > 0 && !this.isOverLimit;
+    const hasText =
+      !!this.content &&
+      this.content.trim().length > 0 &&
+      !this.isOverLimit;
+
     const hasMedia = this.mediaPreviews.length > 0;
+
     return (hasText || hasMedia) && !this.isSubmitting;
   }
 
@@ -107,8 +140,10 @@ export class Home implements OnInit, OnDestroy {
         this.suggestedUsers = users;
         this.isLoadingSuggested = false;
       },
+
       error: () => {
-        this.suggestedError = 'Could not load suggestions right now.';
+        this.suggestedError =
+          'Could not load suggestions right now.';
         this.isLoadingSuggested = false;
       }
     });
@@ -128,10 +163,13 @@ export class Home implements OnInit, OnDestroy {
           ...post,
           showMenu: false
         }));
+
         this.isLoadingFeed = false;
       },
+
       error: () => {
-        this.feedError = 'Could not load your feed right now.';
+        this.feedError =
+          'Could not load your feed right now.';
         this.isLoadingFeed = false;
       }
     });
@@ -145,57 +183,128 @@ export class Home implements OnInit, OnDestroy {
     return post.id;
   }
 
-  toggleMobilePanel(panel: 'suggested' | 'settings'): void {
-    this.mobilePanel = this.mobilePanel === panel ? null : panel;
+  toggleMobilePanel(
+    panel: 'suggested' | 'settings'
+  ): void {
+    this.mobilePanel =
+      this.mobilePanel === panel ? null : panel;
   }
 
   followSuggested(user: UserSummary): void {
-    if (this.isFollowPending(user.username)) return;
+    if (this.isFollowPending(user.username)) {
+      return;
+    }
 
     this.followPending.add(user.username);
-    this.actionError = null;
+    this.clearSuggestedActionError();
 
     this.userService.toggleFollow(user.username).subscribe({
       next: () => {
-        this.suggestedUsers = this.suggestedUsers.filter(u => u.username !== user.username);
+        this.suggestedUsers =
+          this.suggestedUsers.filter(
+            u => u.username !== user.username
+          );
+
         this.followPending.delete(user.username);
       },
+
       error: () => {
         this.followPending.delete(user.username);
-        this.actionError = `Could not follow @${user.username}. Please try again.`;
-        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+        this.suggestedActionError =
+          `Could not follow @${user.username}. Please try again.`;
+
+        this.showSuggestedActionError();
       }
     });
   }
 
+  private clearSuggestedActionError(): void {
+    this.suggestedActionError = null;
+
+    if (this.suggestedActionErrorTimeout) {
+      clearTimeout(this.suggestedActionErrorTimeout);
+      this.suggestedActionErrorTimeout = undefined;
+    }
+  }
+
+  private showSuggestedActionError(): void {
+    if (this.suggestedActionErrorTimeout) {
+      clearTimeout(this.suggestedActionErrorTimeout);
+    }
+
+    this.suggestedActionErrorTimeout = setTimeout(() => {
+      this.suggestedActionError = null;
+      this.suggestedActionErrorTimeout = undefined;
+    }, 3000);
+  }
+
+  private clearFeedActionError(): void {
+    this.feedActionError = null;
+
+    if (this.feedActionErrorTimeout) {
+      clearTimeout(this.feedActionErrorTimeout);
+      this.feedActionErrorTimeout = undefined;
+    }
+  }
+
+  private showFeedActionError(): void {
+    if (this.feedActionErrorTimeout) {
+      clearTimeout(this.feedActionErrorTimeout);
+    }
+
+    this.feedActionErrorTimeout = setTimeout(() => {
+      this.feedActionError = null;
+      this.feedActionErrorTimeout = undefined;
+    }, 3000);
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
 
     const files = Array.from(input.files);
 
-    if (this.mediaPreviews.length + files.length > this.maxMediaFiles) {
-      this.errorMessage = `You can upload a maximum of ${this.maxMediaFiles} media items per post.`;
+    if (
+      this.mediaPreviews.length + files.length >
+      this.maxMediaFiles
+    ) {
+      this.errorMessage =
+        `You can upload a maximum of ${this.maxMediaFiles} media items per post.`;
+
       input.value = '';
       return;
     }
 
     for (const file of files) {
       if (file.size > this.maxFileSizeBytes) {
-        this.errorMessage = `File "${file.name}" exceeds the 5MB limit.`;
+        this.errorMessage =
+          `File "${file.name}" exceeds the 5MB limit.`;
+
         input.value = '';
         return;
       }
 
-      const mediaType: 'image' | 'video' = file.type.startsWith('video/') ? 'video' : 'image';
+      const mediaType: 'image' | 'video' =
+        file.type.startsWith('video/')
+          ? 'video'
+          : 'image';
+
       const reader = new FileReader();
 
       reader.onload = () => {
         this.ngZone.run(() => {
-          this.mediaPreviews.push({ file, url: reader.result as string, type: mediaType });
+          this.mediaPreviews.push({
+            file,
+            url: reader.result as string,
+            type: mediaType
+          });
         });
       };
+
       reader.readAsDataURL(file);
     }
 
@@ -212,28 +321,46 @@ export class Home implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (!this.isValidPost) return;
+    if (!this.isValidPost) {
+      return;
+    }
 
     this.isSubmitting = true;
     this.errorMessage = null;
 
-    const filesToUpload = this.mediaPreviews.map(p => p.file);
+    const filesToUpload =
+      this.mediaPreviews.map(p => p.file);
 
-    this.postService.createPost(this.content.trim(), filesToUpload).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.content = '';
-        this.mediaPreviews = [];
-        this.postSuccess = true;
-        if (this.successTimeout) clearTimeout(this.successTimeout);
-        this.successTimeout = setTimeout(() => (this.postSuccess = false), 3000);
-        this.loadFeed();
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        this.errorMessage = err.error?.message || 'Failed to publish post.';
-      }
-    });
+    this.postService
+      .createPost(this.content.trim(), filesToUpload)
+      .subscribe({
+
+        next: () => {
+          this.isSubmitting = false;
+          this.content = '';
+          this.mediaPreviews = [];
+          this.postSuccess = true;
+
+          if (this.successTimeout) {
+            clearTimeout(this.successTimeout);
+          }
+
+          this.successTimeout = setTimeout(
+            () => (this.postSuccess = false),
+            3000
+          );
+
+          this.loadFeed();
+        },
+
+        error: (err) => {
+          this.isSubmitting = false;
+
+          this.errorMessage =
+            err.error?.message ||
+            'Failed to publish post.';
+        }
+      });
   }
 
   resolveMediaUrl(mediaUrl: string | null): string {
@@ -241,23 +368,41 @@ export class Home implements OnInit, OnDestroy {
       return '';
     }
 
-    if (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://')) {
+    if (
+      mediaUrl.startsWith('http://') ||
+      mediaUrl.startsWith('https://')
+    ) {
       return mediaUrl;
     }
 
-    return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
+    return mediaUrl.startsWith('/')
+      ? mediaUrl
+      : `/${mediaUrl}`;
   }
 
   isVideoUrl(url: string): boolean {
     const lower = url.toLowerCase();
-    return lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.includes('/video/');
+
+    return (
+      lower.endsWith('.mp4') ||
+      lower.endsWith('.webm') ||
+      lower.endsWith('.mov') ||
+      lower.includes('/video/')
+    );
   }
 
-  togglePostMenu(post: PostResponse, event: Event): void {
+  togglePostMenu(
+    post: PostResponse,
+    event: Event
+  ): void {
     event.stopPropagation();
+
     this.feedPosts.forEach(p => {
-      if (p !== post) p.showMenu = false;
+      if (p !== post) {
+        p.showMenu = false;
+      }
     });
+
     post.showMenu = !post.showMenu;
   }
 
@@ -266,49 +411,70 @@ export class Home implements OnInit, OnDestroy {
       return;
     }
 
+    // A repost should still be visible in the menu,
+    // but attempting it gives the user clear feedback.
     if (post.repost) {
-      this.actionError = 'You already reposted this post.';
-      if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-      this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+      post.showMenu = false;
+
+      this.feedActionError =
+        'You already reposted this post.';
+
+      this.showFeedActionError();
       return;
     }
 
     post.showMenu = false;
+
     this.repostingPostIds.add(post.id);
-    this.actionError = null;
+    this.clearFeedActionError();
 
     this.postService.repost(post.id).subscribe({
+
       next: () => {
         this.repostingPostIds.delete(post.id);
-        this.actionError = `Reposted ${post.username}'s post.`;
-        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+        this.feedActionError =
+          `Reposted ${post.username}'s post.`;
+
+        this.showFeedActionError();
       },
-      error: error => {
+
+      error: (error) => {
         this.repostingPostIds.delete(post.id);
-        this.actionError = error?.error?.message || 'Unable to repost this post.';
-        if (this.actionErrorTimeout) clearTimeout(this.actionErrorTimeout);
-        this.actionErrorTimeout = setTimeout(() => (this.actionError = null), 3000);
+
+        this.feedActionError =
+          error?.error?.message ||
+          'Unable to repost this post.';
+
+        this.showFeedActionError();
       }
     });
   }
 
-  /* Optimistic Like Handler */
   toggleLike(post: PostResponse): void {
-    if (post.isSubmittingLike) return;
+    if (post.isSubmittingLike) {
+      return;
+    }
+
     post.isSubmittingLike = true;
 
     const originalState = post.isLiked ?? false;
     const currentCount = post.likesCount ?? 0;
 
     post.isLiked = !originalState;
-    post.likesCount = Math.max(0, currentCount + (originalState ? -1 : 1));
+
+    post.likesCount = Math.max(
+      0,
+      currentCount + (originalState ? -1 : 1)
+    );
 
     this.postService.toggleLike(post.id).subscribe({
+
       next: (isLiked) => {
         post.isLiked = isLiked;
         post.isSubmittingLike = false;
       },
+
       error: () => {
         post.isLiked = originalState;
         post.likesCount = currentCount;
@@ -317,55 +483,92 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  /* Collapsible Comments Toggle */
   toggleComments(post: PostResponse): void {
     post.showComments = !post.showComments;
 
     if (post.showComments && !post.comments) {
       post.comments = [];
+
       this.postService.getComments(post.id).subscribe({
+
         next: (comments) => {
           post.comments = comments;
         },
+
         error: (err) => {
-          console.error('Failed to load comments', err);
+          console.error(
+            'Failed to load comments',
+            err
+          );
         }
       });
     }
   }
 
-  /* Optimistic Comment Submission */
   addComment(post: PostResponse): void {
-    if (!post.newCommentText || !post.newCommentText.trim() || post.isSubmittingComment) return;
+    if (
+      !post.newCommentText ||
+      !post.newCommentText.trim() ||
+      post.isSubmittingComment
+    ) {
+      return;
+    }
 
-    const commentText = post.newCommentText.trim();
+    const commentText =
+      post.newCommentText.trim();
+
     post.isSubmittingComment = true;
 
-    this.postService.addComment(post.id, { content: commentText }).subscribe({
-      next: (newComment) => {
-        if (!post.comments) post.comments = [];
-        post.comments.push(newComment);
-        post.commentsCount = (post.commentsCount || 0) + 1;
-        post.newCommentText = '';
-        post.isSubmittingComment = false;
-      },
-      error: (err) => {
-        console.error('Failed to add comment', err);
-        post.isSubmittingComment = false;
-      }
-    });
+    this.postService
+      .addComment(post.id, {
+        content: commentText
+      })
+      .subscribe({
+
+        next: (newComment) => {
+          if (!post.comments) {
+            post.comments = [];
+          }
+
+          post.comments.push(newComment);
+
+          post.commentsCount =
+            (post.commentsCount || 0) + 1;
+
+          post.newCommentText = '';
+          post.isSubmittingComment = false;
+        },
+
+        error: (err) => {
+          console.error(
+            'Failed to add comment',
+            err
+          );
+
+          post.isSubmittingComment = false;
+        }
+      });
   }
 
-  onCommentKeyDown(event: Event, post: PostResponse): void {
-    const keyboardEvent = event as KeyboardEvent;
+  onCommentKeyDown(
+    event: Event,
+    post: PostResponse
+  ): void {
+    const keyboardEvent =
+      event as KeyboardEvent;
 
-    if (keyboardEvent.key === 'Enter' && !keyboardEvent.shiftKey) {
+    if (
+      keyboardEvent.key === 'Enter' &&
+      !keyboardEvent.shiftKey
+    ) {
       keyboardEvent.preventDefault();
       this.addComment(post);
     }
   }
 
-  openReportModal(post: PostResponse): void {
+  openReportModal(
+    post: PostResponse
+  ): void {
     post.showMenu = false;
 
     if (post.username === this.username) {
@@ -380,14 +583,21 @@ export class Home implements OnInit, OnDestroy {
     this.showReportModal = false;
     this.reportTargetPostId = null;
   }
-  
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    const isInsideMenu = !!target?.closest('.post-options-dropdown');
+    const target =
+      event.target as HTMLElement | null;
+
+    const isInsideMenu =
+      !!target?.closest(
+        '.post-options-dropdown'
+      );
 
     if (!isInsideMenu) {
-      this.feedPosts.forEach(p => p.showMenu = false);
+      this.feedPosts.forEach(
+        p => (p.showMenu = false)
+      );
     }
   }
 
