@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject, tap } from 'rxjs';
 import { PostResponse, PagedResponse } from '../models/post.model';
 import { PostUpdateRequest, CommentRequest, CommentResponse } from '../models/post.model';
 
@@ -10,6 +10,8 @@ import { PostUpdateRequest, CommentRequest, CommentResponse } from '../models/po
 export class PostService {
   private http = inject(HttpClient);
   private apiUrl = '/api/posts';
+
+  readonly postCreated$ = new Subject<PostResponse>();
 
   createPost(content: string, mediaFiles?: File[]): Observable<PostResponse> {
     const formData = new FormData();
@@ -21,7 +23,9 @@ export class PostService {
       });
     }
 
-    return this.http.post<PostResponse>(this.apiUrl, formData);
+    return this.http.post<PostResponse>(this.apiUrl, formData).pipe(
+      tap(post => this.postCreated$.next(post))
+    );
   }
 
   getUserPosts(username: string, page = 0, size = 10): Observable<PagedResponse<PostResponse>> {

@@ -1,6 +1,7 @@
 package com.zone01.myblog.service.impl;
 
 import com.zone01.myblog.dto.UserSummaryResponse;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Follow;
 import com.zone01.myblog.model.NotificationTicket;
@@ -13,6 +14,8 @@ import com.zone01.myblog.service.NotificationService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Comparator;
 import java.util.List;
@@ -76,24 +79,32 @@ public class FollowServiceImpl implements FollowService {
 
         @Override
         @Transactional(readOnly = true)
-        public List<UserSummaryResponse> getFollowing(String username) {
+        public PagedResponse<UserSummaryResponse> getFollowing(String username, int page, int size) {
                 Users user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-                return followRepository.findFollowedUsers(user.getId()).stream()
+                Page<Users> users = followRepository.findFollowedUsers(
+                                user.getId(), PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50)));
+
+                return new PagedResponse<>(users.getContent().stream()
                                 .map(u -> new UserSummaryResponse(u.getUsername(), u.getAvatarUrl()))
-                                .toList();
+                                .toList(), users.getNumber(), users.getTotalPages(), users.getTotalElements(),
+                                users.isFirst(), users.isLast());
         }
 
         @Override
         @Transactional(readOnly = true)
-        public List<UserSummaryResponse> getFollowers(String username) {
+        public PagedResponse<UserSummaryResponse> getFollowers(String username, int page, int size) {
                 Users user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-                return followRepository.findFollowerUsers(user.getId()).stream()
+                Page<Users> users = followRepository.findFollowerUsers(
+                                user.getId(), PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50)));
+
+                return new PagedResponse<>(users.getContent().stream()
                                 .map(u -> new UserSummaryResponse(u.getUsername(), u.getAvatarUrl()))
-                                .toList();
+                                .toList(), users.getNumber(), users.getTotalPages(), users.getTotalElements(),
+                                users.isFirst(), users.isLast());
         }
 
         @Override

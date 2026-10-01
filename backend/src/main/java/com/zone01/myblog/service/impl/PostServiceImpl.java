@@ -405,7 +405,7 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public PagedResponse<CommentResponse> getPostComments(Long postId, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
-        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
+        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
 
         return new PagedResponse<>(
                 comments.getContent().stream()

@@ -3,6 +3,8 @@ package com.zone01.myblog.repository;
 import com.zone01.myblog.model.Follow;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,8 +26,14 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     @Query("SELECT f.followed FROM Follow f WHERE f.follower.id = :followerId ORDER BY f.createdAt DESC")
     List<com.zone01.myblog.model.Users> findFollowedUsers(@Param("followerId") Long followerId);
 
+    @Query("SELECT f.followed FROM Follow f WHERE f.follower.id = :followerId ORDER BY f.createdAt DESC")
+    Page<com.zone01.myblog.model.Users> findFollowedUsers(@Param("followerId") Long followerId, Pageable pageable);
+
     @Query("SELECT f.follower FROM Follow f WHERE f.followed.id = :followedId ORDER BY f.createdAt DESC")
     List<com.zone01.myblog.model.Users> findFollowerUsers(@Param("followedId") Long followedId);
+
+    @Query("SELECT f.follower FROM Follow f WHERE f.followed.id = :followedId ORDER BY f.createdAt DESC")
+    Page<com.zone01.myblog.model.Users> findFollowerUsers(@Param("followedId") Long followedId, Pageable pageable);
 
     @Query("""
             SELECT u FROM com.zone01.myblog.model.Users u

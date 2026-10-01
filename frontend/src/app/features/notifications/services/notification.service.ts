@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Client } from '@stomp/stompjs';
 import { NotificationResponse } from '../models/notification.model';
 import { AuthService } from '../../auth/services/auth.service';
+import { PagedResponse } from '../../posts/models/post.model';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,9 @@ export class NotificationService {
 
     public notifications = signal<NotificationResponse[]>([]);
     public unreadCount = signal<number>(0);
+    public isLoadingMore = signal(false);
+    private notificationPage = 0;
+    private notificationLastPage = false;
 
     private stompClient: Client | null = null;
 
@@ -33,7 +37,7 @@ export class NotificationService {
 
         if (!username || this.stompClient?.active) return;
 
-        this.loadInitialNotifications();
+        this.loadInitialNotifications(true);
 
         this.stompClient = new Client({
             brokerURL: 'ws://localhost:8080/ws',
@@ -63,16 +67,27 @@ export class NotificationService {
         this.stompClient.activate();
     }
 
-    public loadInitialNotifications(): void {
-        this.http
-            .get<NotificationResponse[]>('/api/notifications')
-            .subscribe(data => {
-                this.notifications.set(data);
+    public loadInitialNotifications(reset = true): void {
+        const page = reset ? 0 : this.notificationPage;
+        if (!reset && (this.isLoadingMore() || this.notificationLastPage)) return;
+        if (!reset) this.isLoadingMore.set(true);
 
-                this.unreadCount.set(
-                    data.filter(n => !n.isRead).length
-                );
+        this.http
+            .get<PagedResponse<NotificationResponse>>('/api/notifications', { params: { page, size: 20 } })
+            .subscribe(response => {
+                this.notifications.update(list => reset ? response.content : [...list, ...response.content]);
+                this.notificationPage = response.number + 1;
+                this.notificationLastPage = response.last;
+
+                if (reset) {
+                    this.unreadCount.set(response.content.filter(n => !n.isRead).length);
+                }
+                this.isLoadingMore.set(false);
             });
+    }
+
+    public loadMoreNotifications(): void {
+        this.loadInitialNotifications(false);
     }
 
     public markAsRead(id: number): void {

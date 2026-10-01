@@ -28,6 +28,7 @@ export class Profile implements OnInit, OnDestroy {
   private router = inject(Router);
 
   private routeSub?: Subscription;
+  private postCreatedSub?: Subscription;
 
   profile: UserProfileResponse | null = null;
 
@@ -46,6 +47,7 @@ export class Profile implements OnInit, OnDestroy {
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
   actionError: string | null = null;
+  actionSuccess: string | null = null;
   savingPostId: number | null = null;
   savedPostId: number | null = null;
 
@@ -61,9 +63,24 @@ export class Profile implements OnInit, OnDestroy {
   activeModalTab: 'followers' | 'following' | null = null;
 
   userListLoading = false;
+  userListLoadingMore = false;
+  userListPage = 0;
+  userListLastPage = false;
   userList: UserSummary[] = [];
 
   ngOnInit(): void {
+    this.postCreatedSub = this.postService.postCreated$.subscribe(post => {
+      if (this.profile?.username === post.username) {
+        post.actionFeedback = 'Post published successfully.';
+        post.actionFeedbackType = 'success';
+        this.posts = [
+          post,
+          ...this.posts
+        ];
+        this.showPostFeedback(post, 'Post published successfully.');
+      }
+    });
+
     this.routeSub = this.route.paramMap.subscribe(params => {
       const username = params.get('username');
 
@@ -196,6 +213,19 @@ export class Profile implements OnInit, OnDestroy {
     });
   }
 
+  private showPostFeedback(post: PostResponse, message: string): void {
+    if (post.actionFeedbackTimeout) {
+      clearTimeout(post.actionFeedbackTimeout);
+    }
+
+    post.actionFeedback = message;
+    post.actionFeedbackType = 'success';
+    post.actionFeedbackTimeout = setTimeout(() => {
+      post.actionFeedback = undefined;
+      post.actionFeedbackTimeout = undefined;
+    }, 3000);
+  }
+
   @HostListener('window:scroll')
   onPostsScroll(): void {
     const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
@@ -250,17 +280,22 @@ export class Profile implements OnInit, OnDestroy {
 
     this.activeModalTab = tab;
     this.userListLoading = true;
+    this.userListLoadingMore = false;
+    this.userListPage = 0;
+    this.userListLastPage = false;
     this.userList = [];
 
     const request =
       tab === 'followers'
-        ? this.userService.getFollowers(this.profile.username)
-        : this.userService.getFollowing(this.profile.username);
+        ? this.userService.getFollowers(this.profile.username, 0)
+        : this.userService.getFollowing(this.profile.username, 0);
 
     request.subscribe({
 
-      next: (users) => {
-        this.userList = users;
+      next: (response) => {
+        this.userList = response.content;
+        this.userListPage = response.number + 1;
+        this.userListLastPage = response.last;
         this.userListLoading = false;
       },
 
@@ -274,6 +309,36 @@ export class Profile implements OnInit, OnDestroy {
   closeUserListModal(): void {
     this.activeModalTab = null;
     this.userList = [];
+  }
+
+  loadMoreUsers(): void {
+    if (!this.profile || !this.activeModalTab || this.userListLoadingMore || this.userListLastPage) {
+      return;
+    }
+
+    this.userListLoadingMore = true;
+    const request = this.activeModalTab === 'followers'
+      ? this.userService.getFollowers(this.profile.username, this.userListPage)
+      : this.userService.getFollowing(this.profile.username, this.userListPage);
+
+    request.subscribe({
+      next: response => {
+        this.userList = [...this.userList, ...response.content];
+        this.userListPage = response.number + 1;
+        this.userListLastPage = response.last;
+        this.userListLoadingMore = false;
+      },
+      error: () => {
+        this.userListLoadingMore = false;
+      }
+    });
+  }
+
+  onUserListScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    if (element.scrollTop + element.clientHeight >= element.scrollHeight - 40) {
+      this.loadMoreUsers();
+    }
   }
 
   toggleLike(post: PostResponse): void {
@@ -364,7 +429,8 @@ export class Profile implements OnInit, OnDestroy {
           post.comments = [];
         }
 
-        post.comments.push(newComment);
+        post.comments = [newComment, ...(post.comments ?? [])];
+        this.showPostFeedback(post, 'Comment posted successfully.');
         post.commentsCount = (post.commentsCount || 0) + 1;
 
         post.newCommentText = '';
@@ -530,8 +596,7 @@ export class Profile implements OnInit, OnDestroy {
       next: () => {
         this.repostingPostIds.delete(post.id);
 
-        this.actionError =
-          `Reposted ${post.username}'s post.`;
+        this.showPostFeedback(post, `Reposted ${post.username}'s post.`);
 
         if (this.actionErrorTimeout) {
           clearTimeout(this.actionErrorTimeout);
@@ -564,6 +629,7 @@ export class Profile implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
+    this.postCreatedSub?.unsubscribe();
 
     if (this.actionErrorTimeout) {
       clearTimeout(this.actionErrorTimeout);

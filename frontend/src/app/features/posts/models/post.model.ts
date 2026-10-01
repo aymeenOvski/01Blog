@@ -39,6 +39,9 @@ export interface PostResponse {
   commentsPage?: number;
   commentsLastPage?: boolean;
   commentsLoading?: boolean;
+  actionFeedback?: string;
+  actionFeedbackType?: 'success' | 'error';
+  actionFeedbackTimeout?: ReturnType<typeof setTimeout>;
   repost?: boolean;
   repostedBy?: string;
   originalUsername?: string;

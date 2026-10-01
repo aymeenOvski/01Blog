@@ -9,6 +9,7 @@ import {
   UserSummary
 } from '../models/user-profile.model';
 import { AuthService } from '../../auth/services/auth.service';
+import { PagedResponse } from '../../posts/models/post.model';
 
 @Injectable({
   providedIn: 'root'
@@ -44,12 +45,16 @@ export class UserService {
     return this.http.post<boolean>(`${this.apiUrl}/${encodeURIComponent(username)}/follow`, {});
   }
 
-  getFollowing(username: string): Observable<UserSummary[]> {
-    return this.http.get<UserSummary[]>(`${this.apiUrl}/${encodeURIComponent(username)}/following`);
+  getFollowing(username: string, page = 0, size = 20): Observable<PagedResponse<UserSummary>> {
+    return this.http.get<PagedResponse<UserSummary>>(`${this.apiUrl}/${encodeURIComponent(username)}/following`, {
+      params: { page, size }
+    });
   }
 
-  getFollowers(username: string): Observable<UserSummary[]> {
-    return this.http.get<UserSummary[]>(`${this.apiUrl}/${encodeURIComponent(username)}/followers`);
+  getFollowers(username: string, page = 0, size = 20): Observable<PagedResponse<UserSummary>> {
+    return this.http.get<PagedResponse<UserSummary>>(`${this.apiUrl}/${encodeURIComponent(username)}/followers`, {
+      params: { page, size }
+    });
   }
 
   getSuggestedUsers(): Observable<UserSummary[]> {

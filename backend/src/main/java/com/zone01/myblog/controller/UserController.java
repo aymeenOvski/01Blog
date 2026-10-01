@@ -5,6 +5,7 @@ import com.zone01.myblog.dto.UpdateProfileSecurityRequest;
 import com.zone01.myblog.dto.UserProfileResponse;
 import com.zone01.myblog.dto.UserSecurityResponse;
 import com.zone01.myblog.dto.UserSummaryResponse;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.service.FollowService;
 import com.zone01.myblog.service.UserService;
 import jakarta.validation.Valid;
@@ -58,13 +59,19 @@ public class UserController {
     }
 
     @GetMapping("/{username}/following")
-    public ResponseEntity<List<UserSummaryResponse>> getFollowing(@PathVariable String username) {
-        return ResponseEntity.ok(followService.getFollowing(username));
+    public ResponseEntity<PagedResponse<UserSummaryResponse>> getFollowing(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(followService.getFollowing(username, page, Math.min(size, 50)));
     }
 
     @GetMapping("/{username}/followers")
-    public ResponseEntity<List<UserSummaryResponse>> getFollowers(@PathVariable String username) {
-        return ResponseEntity.ok(followService.getFollowers(username));
+    public ResponseEntity<PagedResponse<UserSummaryResponse>> getFollowers(
+            @PathVariable String username,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(followService.getFollowers(username, page, Math.min(size, 50)));
     }
 
     @PutMapping("/profile/info")

@@ -1,13 +1,12 @@
 package com.zone01.myblog.controller;
 
 import com.zone01.myblog.dto.NotificationResponse;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -20,8 +19,12 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<NotificationResponse>> getNotifications(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(notificationService.getUserNotifications(userDetails.getUsername()));
+    public ResponseEntity<PagedResponse<NotificationResponse>> getNotifications(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(notificationService.getUserNotifications(
+                userDetails.getUsername(), page, Math.min(size, 50)));
     }
 
     @PatchMapping("/{id}/read")

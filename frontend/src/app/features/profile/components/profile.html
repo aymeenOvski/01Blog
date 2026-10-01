@@ -109,6 +109,7 @@
 
     <div *ngIf="postsLoading" class="posts-state">Loading posts...</div>
     <div *ngIf="actionError" class="posts-state error" role="alert">{{ actionError }}</div>
+    <div *ngIf="actionSuccess" class="posts-state success" role="status">{{ actionSuccess }}</div>
     <div *ngIf="!postsLoading && postsErrorMessage" class="posts-state error">{{ postsErrorMessage }}</div>
     <div *ngIf="!postsLoading && !postsErrorMessage && posts.length === 0" class="posts-state">
       No posts yet.
@@ -209,7 +210,11 @@
             {{ post.content }}
           </p>
 
-          <small *ngIf="savedPostId === post.id" class="text-success fw-semibold d-block mt-2">
+          <small class="post-feedback" *ngIf="post.actionFeedback">
+            ✓ {{ post.actionFeedback }}
+          </small>
+
+          <small *ngIf="savedPostId === post.id" class="post-feedback">
             ✓ Post updated successfully
           </small>
 
@@ -328,7 +333,8 @@
           No {{ activeModalTab }} found.
         </div>
 
-        <div *ngIf="!userListLoading && userList.length > 0" class="user-list">
+        <div *ngIf="!userListLoading && userList.length > 0" class="user-list"
+          (scroll)="onUserListScroll($event)">
           <div *ngFor="let user of userList" class="user-list-item d-flex align-items-center gap-3 py-2">
             <div class="post-avatar">
               <img *ngIf="user.avatarUrl" [src]="resolveMediaUrl(user.avatarUrl)" alt="Avatar" />
@@ -339,6 +345,10 @@
               {{ user.username }}
             </a>
           </div>
+        </div>
+
+        <div *ngIf="userListLoadingMore" class="text-muted-custom text-center py-2">
+          Loading more...
         </div>
       </div>
     </div>

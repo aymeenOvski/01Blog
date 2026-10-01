@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { AuthService } from '../auth/services/auth.service';
 import { PostService } from '../posts/services/post.service';
@@ -62,9 +63,7 @@ export class Home implements OnInit, OnDestroy {
 
   isSubmitting = false;
   errorMessage: string | null = null;
-  postSuccess = false;
-
-  private successTimeout?: ReturnType<typeof setTimeout>;
+  private postCreatedSub?: Subscription;
 
   suggestedUsers: UserSummary[] = [];
   isLoadingSuggested = true;
@@ -73,9 +72,11 @@ export class Home implements OnInit, OnDestroy {
 
   suggestedActionError: string | null = null;
   feedActionError: string | null = null;
+  feedActionSuccess: string | null = null;
 
   private suggestedActionErrorTimeout?: ReturnType<typeof setTimeout>;
   private feedActionErrorTimeout?: ReturnType<typeof setTimeout>;
+  private feedActionSuccessTimeout?: ReturnType<typeof setTimeout>;
 
   repostingPostIds = new Set<number>();
 
@@ -92,14 +93,17 @@ export class Home implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.postCreatedSub = this.postService.postCreated$.subscribe(post => {
+      this.feedPosts = [post, ...this.feedPosts];
+      this.showPostFeedback(post, 'Post published successfully.');
+    });
+
     this.loadSuggested();
     this.loadFeed();
   }
 
   ngOnDestroy(): void {
-    if (this.successTimeout) {
-      clearTimeout(this.successTimeout);
-    }
+    this.postCreatedSub?.unsubscribe();
 
     if (this.suggestedActionErrorTimeout) {
       clearTimeout(this.suggestedActionErrorTimeout);
@@ -107,6 +111,10 @@ export class Home implements OnInit, OnDestroy {
 
     if (this.feedActionErrorTimeout) {
       clearTimeout(this.feedActionErrorTimeout);
+    }
+
+    if (this.feedActionSuccessTimeout) {
+      clearTimeout(this.feedActionSuccessTimeout);
     }
   }
 
@@ -222,13 +230,16 @@ export class Home implements OnInit, OnDestroy {
     this.clearSuggestedActionError();
 
     this.userService.toggleFollow(user.username).subscribe({
-      next: () => {
-        this.suggestedUsers =
-          this.suggestedUsers.filter(
+      next: (isFollowing) => {
+        this.followPending.delete(user.username);
+
+        if (isFollowing) {
+          // Successfully followed:
+          // remove the user from the suggestions immediately.
+          this.suggestedUsers = this.suggestedUsers.filter(
             u => u.username !== user.username
           );
-
-        this.followPending.delete(user.username);
+        }
       },
 
       error: () => {
@@ -269,6 +280,32 @@ export class Home implements OnInit, OnDestroy {
       clearTimeout(this.feedActionErrorTimeout);
       this.feedActionErrorTimeout = undefined;
     }
+  }
+
+  private showFeedActionSuccess(message: string): void {
+    this.feedActionSuccess = message;
+
+    if (this.feedActionSuccessTimeout) {
+      clearTimeout(this.feedActionSuccessTimeout);
+    }
+
+    this.feedActionSuccessTimeout = setTimeout(() => {
+      this.feedActionSuccess = null;
+      this.feedActionSuccessTimeout = undefined;
+    }, 3000);
+  }
+
+  private showPostFeedback(post: PostResponse, message: string): void {
+    if (post.actionFeedbackTimeout) {
+      clearTimeout(post.actionFeedbackTimeout);
+    }
+
+    post.actionFeedback = message;
+    post.actionFeedbackType = 'success';
+    post.actionFeedbackTimeout = setTimeout(() => {
+      post.actionFeedback = undefined;
+      post.actionFeedbackTimeout = undefined;
+    }, 3000);
   }
 
   private showFeedActionError(): void {
@@ -362,18 +399,6 @@ export class Home implements OnInit, OnDestroy {
           this.isSubmitting = false;
           this.content = '';
           this.mediaPreviews = [];
-          this.postSuccess = true;
-
-          if (this.successTimeout) {
-            clearTimeout(this.successTimeout);
-          }
-
-          this.successTimeout = setTimeout(
-            () => (this.postSuccess = false),
-            3000
-          );
-
-          this.loadFeed();
         },
 
         error: (err) => {
@@ -455,11 +480,7 @@ export class Home implements OnInit, OnDestroy {
 
       next: () => {
         this.repostingPostIds.delete(post.id);
-
-        this.feedActionError =
-          `Reposted ${post.username}'s post.`;
-
-        this.showFeedActionError();
+        this.showPostFeedback(post, `Reposted ${post.username}'s post.`);
       },
 
       error: (error) => {
@@ -569,7 +590,8 @@ export class Home implements OnInit, OnDestroy {
             post.comments = [];
           }
 
-          post.comments.push(newComment);
+          post.comments = [newComment, ...(post.comments ?? [])];
+          this.showPostFeedback(post, 'Comment posted successfully.');
 
           post.commentsCount =
             (post.commentsCount || 0) + 1;

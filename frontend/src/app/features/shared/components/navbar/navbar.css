@@ -264,6 +264,31 @@
   display: block;
 }
 
+.notification-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.65) transparent;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(100, 116, 139, 0.55);
+  background-clip: padding-box;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(125, 211, 252, 0.7);
+  background-clip: padding-box;
+}
+
 .unread-bg {
   background-color: rgba(13, 110, 253, 0.12);
 }

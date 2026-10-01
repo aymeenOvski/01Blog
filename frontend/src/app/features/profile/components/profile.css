@@ -111,6 +111,11 @@
     border-color: rgba(255, 135, 135, 0.5);
 }
 
+.posts-state.success {
+    color: #86efac;
+    border-color: rgba(74, 222, 128, 0.4);
+}
+
 .posts-list {
     display: grid;
     gap: 1rem;
@@ -193,6 +198,14 @@
     line-height: 1.5;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+.post-feedback {
+    display: block;
+    margin-top: 0.5rem;
+    color: #86efac;
+    font-size: 0.75rem;
+    font-weight: 650;
 }
 
 .post-media-grid {
@@ -343,6 +356,33 @@
 }
 
 .comments-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(125, 211, 252, 0.7);
+    background-clip: padding-box;
+}
+
+.user-list {
+    max-height: 320px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.65) transparent;
+}
+
+.user-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.user-list::-webkit-scrollbar-thumb {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(100, 116, 139, 0.55);
+    background-clip: padding-box;
+}
+
+.user-list::-webkit-scrollbar-thumb:hover {
     background: rgba(125, 211, 252, 0.7);
     background-clip: padding-box;
 }

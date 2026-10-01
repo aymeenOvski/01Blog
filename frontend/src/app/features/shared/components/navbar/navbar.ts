@@ -174,6 +174,14 @@ export class Navbar implements OnInit {
 
   }
 
+  onNotificationScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+
+    if (element.scrollTop + element.clientHeight >= element.scrollHeight - 40) {
+      this.notificationService.loadMoreNotifications();
+    }
+  }
+
   onNotificationClick(
     notification: NotificationResponse | any
   ): void {
@@ -213,6 +221,8 @@ export class Navbar implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event): void {
+    const target = event.target as Node | null;
+    const searchElement = this.elementRef.nativeElement.querySelector('.user-search');
 
     if (
       !this.elementRef.nativeElement.contains(
@@ -224,6 +234,10 @@ export class Navbar implements OnInit {
 
       this.isNotificationsOpen = false;
 
+    }
+
+    if (target && !searchElement?.contains(target)) {
+      this.clearSearch();
     }
 
   }

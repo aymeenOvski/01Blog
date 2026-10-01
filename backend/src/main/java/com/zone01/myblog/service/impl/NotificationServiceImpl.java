@@ -1,6 +1,7 @@
 package com.zone01.myblog.service.impl;
 
 import com.zone01.myblog.dto.NotificationResponse;
+import com.zone01.myblog.dto.PagedResponse;
 import com.zone01.myblog.exception.BlogApiException;
 import com.zone01.myblog.model.Notification;
 import com.zone01.myblog.model.Users;
@@ -10,8 +11,9 @@ import com.zone01.myblog.service.NotificationService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -51,10 +53,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationResponse> getUserNotifications(String username) {
+        public PagedResponse<NotificationResponse> getUserNotifications(String username, int page, int size) {
         Users user = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
-        return notificationRepository.findByRecipientIdOrderByCreatedAtDesc(user.getId())
+        Page<Notification> notifications = notificationRepository.findByRecipientIdOrderByCreatedAtDesc(
+            user.getId(), PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50)));
+
+        return new PagedResponse<>(notifications.getContent()
                 .stream()
                 .map(n -> new NotificationResponse(
                         n.getId(),
@@ -65,7 +70,8 @@ public class NotificationServiceImpl implements NotificationService {
                         n.getTargetId(),
                         n.isRead(),
                         n.getCreatedAt()
-                )).toList();
+                )).toList(), notifications.getNumber(), notifications.getTotalPages(),
+                notifications.getTotalElements(), notifications.isFirst(), notifications.isLast());
     }
 
     @Override
