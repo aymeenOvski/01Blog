@@ -55,13 +55,10 @@
           <a [routerLink]="['/profile', user.username]" class="row-link">
 
             <span class="row-avatar row-avatar--emerald">
-
               <img *ngIf="user.avatarUrl" [src]="user.avatarUrl" [alt]="user.username" />
-
               <span *ngIf="!user.avatarUrl" class="avatar-initial">
                 {{ user.username.charAt(0).toUpperCase() }}
               </span>
-
             </span>
 
             <span class="row-info">

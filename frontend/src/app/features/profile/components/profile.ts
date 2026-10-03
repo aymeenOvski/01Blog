@@ -499,20 +499,18 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   resolveMediaUrl(mediaUrl: string | null): string {
-    if (!mediaUrl) {
-      return '';
-    }
+    if (!mediaUrl) return '';
 
     if (
       mediaUrl.startsWith('http://') ||
-      mediaUrl.startsWith('https://')
+      mediaUrl.startsWith('https://') ||
+      mediaUrl.startsWith('blob:') ||
+      mediaUrl.startsWith('data:')
     ) {
       return mediaUrl;
     }
 
-    return mediaUrl.startsWith('/')
-      ? mediaUrl
-      : `/${mediaUrl}`;
+    return mediaUrl.startsWith('/') ? mediaUrl : `/${mediaUrl}`;
   }
 
   isVideoUrl(url: string): boolean {

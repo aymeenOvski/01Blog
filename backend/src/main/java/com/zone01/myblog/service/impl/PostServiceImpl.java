@@ -84,7 +84,13 @@ public class PostServiceImpl implements PostService {
         Users author = userRepository.findByUsername(username)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
-        String trimmedContent = (content != null) ? content.trim() : null;
+        String normalizedContent = content != null
+                ? content.replace("\r\n", "\n").replace("\r", "\n")
+                : null;
+
+        String trimmedContent = normalizedContent != null
+                ? normalizedContent.trim()
+                : null;
 
         validatePostPayload(trimmedContent, mediaFiles);
 
@@ -168,29 +174,29 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-        public PagedResponse<PostResponse> getUserPosts(
+    public PagedResponse<PostResponse> getUserPosts(
             String targetUsername, String currentUsername, int page, int size) {
         List<Object[]> results = postRepository.findUserPostsWithCounts(targetUsername, currentUsername);
         List<PostResponse> authoredPosts = results.stream()
-            .map(this::mapToPostResponse)
-            .toList();
+                .map(this::mapToPostResponse)
+                .toList();
 
         List<PostResponse> repostedPosts = repostRepository
-            .findVisibleByUserUsername(targetUsername)
-            .stream()
-            .map(repost -> mapRepostToResponse(repost, currentUsername))
-            .toList();
+                .findVisibleByUserUsername(targetUsername)
+                .stream()
+                .map(repost -> mapRepostToResponse(repost, currentUsername))
+                .toList();
 
         List<PostResponse> mergedPosts = java.util.stream.Stream.concat(authoredPosts.stream(), repostedPosts.stream())
-            .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
-            .toList();
+                .sorted(java.util.Comparator.comparing(PostResponse::createdAt).reversed())
+                .toList();
 
         return paginate(mergedPosts, page, size);
     }
 
     @Override
     @Transactional(readOnly = true)
-        public PagedResponse<PostResponse> getFeedPosts(
+    public PagedResponse<PostResponse> getFeedPosts(
             String currentUsername, int page, int size) {
         List<PostResponse> authoredPosts = postRepository.findFeedPostsWithCounts(currentUsername).stream()
                 .map(this::mapToPostResponse)
@@ -280,11 +286,11 @@ public class PostServiceImpl implements PostService {
                 commentCount);
     }
 
-            private PostResponse mapRepostToResponse(Repost repost, String currentUsername) {
-            Post post = repost.getPost();
-            Long postId = post.getId();
+    private PostResponse mapRepostToResponse(Repost repost, String currentUsername) {
+        Post post = repost.getPost();
+        Long postId = post.getId();
 
-            return new PostResponse(
+        return new PostResponse(
                 postId,
                 post.getAuthor().getUsername(),
                 post.getAuthor().getAvatarUrl(),
@@ -293,15 +299,15 @@ public class PostServiceImpl implements PostService {
                 repost.getCreatedAt(),
                 postLikeRepository.countByPostId(postId),
                 postLikeRepository.existsByPostIdAndUserId(
-                    postId,
-                    userRepository.findByUsername(currentUsername)
-                        .map(Users::getId)
-                        .orElse(-1L)),
+                        postId,
+                        userRepository.findByUsername(currentUsername)
+                                .map(Users::getId)
+                                .orElse(-1L)),
                 commentRepository.countByPostId(postId),
                 true,
                 repost.getUser().getUsername(),
                 post.getAuthor().getUsername());
-            }
+    }
 
     @Override
     @Transactional
@@ -409,8 +415,9 @@ public class PostServiceImpl implements PostService {
 
         return new PagedResponse<>(
                 comments.getContent().stream()
-                .map(c -> new CommentResponse(c.getId(), c.getUser().getUsername(), c.getContent(), c.getCreatedAt()))
-                .toList(),
+                        .map(c -> new CommentResponse(c.getId(), c.getUser().getUsername(), c.getContent(),
+                                c.getCreatedAt()))
+                        .toList(),
                 comments.getNumber(),
                 comments.getTotalPages(),
                 comments.getTotalElements(),
