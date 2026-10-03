@@ -2,7 +2,7 @@
 
   <!-- Profile Header Hero Card -->
   <div class="profile-header-card p-4 mb-4">
-    <div class="d-flex flex-column flex-sm-row align-items-center gap-4">
+    <div class="d-flex flex-column flex-lg-row align-items-center gap-4">
 
       <!-- Avatar Display -->
       <div class="profile-avatar-large">
@@ -12,8 +12,8 @@
       </div>
 
       <!-- Info & Actions -->
-      <div class="flex-grow-1 text-center text-sm-start">
-        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3 mb-2">
+      <div class="flex-grow-1 text-center text-lg-start">
+        <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3 mb-2">
           <div>
             <h2 class="h4 text-white fw-bold mb-0">{{ profile.username }}</h2>
             <small class="text-muted-custom" *ngIf="profile.createdAt">
@@ -82,7 +82,7 @@
         <p class="profile-bio text-light my-3">{{ profile.bio || 'No bio provided yet.' }}</p>
 
         <!-- Interactive Clickable Stats Row -->
-        <div class="profile-stats-row d-flex justify-content-center justify-content-sm-start gap-4 pt-2">
+        <div class="profile-stats-row d-flex justify-content-center justify-content-lg-start gap-4 pt-2">
           <div class="stat-item">
             <span class="stat-number fw-bold text-white">{{ posts.length }}</span>
             <span class="stat-label text-muted-custom small ms-1">Posts</span>

@@ -182,41 +182,19 @@ export class Navbar implements OnInit {
     }
   }
 
-  onNotificationClick(
-    notification: NotificationResponse | any
-  ): void {
-
+  onNotificationClick(notification: NotificationResponse): void {
     if (!notification.isRead) {
-      this.notificationService.markAsRead(
-        notification.id
-      );
+      this.notificationService.markAsRead(notification.id);
     }
 
     this.isNotificationsOpen = false;
 
-    if (notification.type === 'FOLLOW') {
-
+    if (notification.actorUsername) {
       this.router.navigate([
         '/profile',
         notification.actorUsername
       ]);
-
-    } else if (
-      (
-        notification.type === 'POST' ||
-        notification.type === 'LIKE' ||
-        notification.type === 'COMMENT'
-      ) &&
-      notification.targetId
-    ) {
-
-      this.router.navigate([
-        '/posts',
-        notification.targetId
-      ]);
-
     }
-
   }
 
   @HostListener('document:click', ['$event'])
