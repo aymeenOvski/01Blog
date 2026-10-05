@@ -53,8 +53,16 @@ export class Profile implements OnInit, OnDestroy {
   actionSuccess: string | null = null;
   savingPostId: number | null = null;
   savedPostId: number | null = null;
+
   deleteConfirmPostId: number | null = null;
   deletingPostId: number | null = null;
+  deleteConfirmComment: {
+    postId: number;
+    commentId: number;
+  } | null = null;
+
+  deletingCommentId: number | null = null;
+
   private expandedPostIds = new Set<number>();
   private expandedCommentIds = new Set<number>();
 
@@ -126,6 +134,9 @@ export class Profile implements OnInit, OnDestroy {
     this.showProfileMenu = false;
     this.showReportModal = false;
     this.reportTargetPostId = null;
+
+    this.deleteConfirmComment = null;
+    this.deletingCommentId = null;
 
     this.activeModalTab = null;
     this.userList = [];
@@ -641,6 +652,73 @@ export class Profile implements OnInit, OnDestroy {
     }
 
     this.confirmDeletePost(post);
+  }
+
+  askDeleteComment(post: PostResponse, comment: CommentResponse): void {
+
+    if (this.deletingCommentId !== null) {
+      return;
+    }
+
+    this.deleteConfirmComment = {
+      postId: post.id,
+      commentId: comment.id
+    };
+  }
+
+  cancelDeleteComment(): void {
+    if (this.deletingCommentId !== null) {
+      return;
+    }
+
+    this.deleteConfirmComment = null;
+  }
+
+  confirmDeleteComment(): void {
+    if (!this.deleteConfirmComment || this.deletingCommentId !== null) {
+      return;
+    }
+
+    const { postId, commentId } = this.deleteConfirmComment;
+
+    console.log('CONFIRM DELETE COMMENT', postId, commentId);
+
+    this.deletingCommentId = commentId;
+
+    this.postService.deleteComment(postId, commentId).subscribe({
+      next: () => {
+        const post = this.posts.find(p => p.id === postId);
+
+        if (post) {
+          post.comments = (post.comments ?? []).filter(
+            comment => comment.id !== commentId
+          );
+
+          post.commentsCount = Math.max(
+            0,
+            (post.commentsCount ?? 0) - 1
+          );
+
+          this.showPostFeedback(
+            post,
+            'Comment deleted successfully.'
+          );
+        }
+
+        this.deletingCommentId = null;
+        this.deleteConfirmComment = null;
+      },
+
+      error: (error) => {
+        console.error('Failed to delete comment', error);
+
+        this.deletingCommentId = null;
+        this.deleteConfirmComment = null;
+
+        this.actionError =
+          error?.error?.message || 'Failed to delete comment';
+      }
+    });
   }
 
   repost(post: PostResponse): void {

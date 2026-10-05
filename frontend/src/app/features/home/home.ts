@@ -45,7 +45,7 @@ export interface DashboardMediaPreview {
 })
 export class Home implements OnInit, OnDestroy {
 
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private router = inject(Router);
   private postService = inject(PostService);
   private userService = inject(UserService);
@@ -92,6 +92,13 @@ export class Home implements OnInit, OnDestroy {
   feedLastPage = false;
   private expandedPostIds = new Set<number>();
   private expandedCommentIds = new Set<number>();
+
+  deleteConfirmComment: {
+    postId: number;
+    commentId: number;
+  } | null = null;
+
+  deletingCommentId: number | null = null;
 
   readonly postPreviewLength = 280;
   readonly commentPreviewLength = 160;
@@ -257,6 +264,92 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
+  askDeleteComment(
+    post: PostResponse,
+    comment: CommentResponse
+  ): void {
+    if (this.deletingCommentId !== null) {
+      return;
+    }
+
+    this.deleteConfirmComment = {
+      postId: post.id,
+      commentId: comment.id
+    };
+  }
+
+  cancelDeleteComment(): void {
+    if (this.deletingCommentId !== null) {
+      return;
+    }
+
+    this.deleteConfirmComment = null;
+  }
+
+  confirmDeleteComment(): void {
+    if (
+      !this.deleteConfirmComment ||
+      this.deletingCommentId !== null
+    ) {
+      return;
+    }
+
+    const { postId, commentId } = this.deleteConfirmComment;
+
+    const post = this.feedPosts.find(
+      p => p.id === postId
+    );
+
+    if (!post) {
+      this.deleteConfirmComment = null;
+      return;
+    }
+
+    this.deletingCommentId = commentId;
+
+    this.postService
+      .deleteComment(postId, commentId)
+      .subscribe({
+
+        next: () => {
+          post.comments = (post.comments ?? []).filter(
+            comment => comment.id !== commentId
+          );
+
+          post.commentsCount = Math.max(
+            0,
+            (post.commentsCount ?? 0) - 1
+          );
+
+          this.deletingCommentId = null;
+          this.deleteConfirmComment = null;
+
+          this.showPostFeedback(
+            post,
+            'Comment deleted successfully.'
+          );
+        },
+
+        error: error => {
+          console.error(
+            'Failed to delete comment',
+            error
+          );
+
+          this.deletingCommentId = null;
+          this.deleteConfirmComment = null;
+
+          this.showPostFeedback(
+            post,
+            error?.error?.message ||
+            'Failed to delete comment.',
+            'error'
+          );
+        }
+
+      });
+  }
+
   toggleMobilePanel(
     panel: 'suggested' | 'settings'
   ): void {
@@ -338,13 +431,13 @@ export class Home implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  private showPostFeedback(post: PostResponse, message: string): void {
+  private showPostFeedback(post: PostResponse, message: string, type: 'success' | 'error' = 'success'): void {
     if (post.actionFeedbackTimeout) {
       clearTimeout(post.actionFeedbackTimeout);
     }
 
     post.actionFeedback = message;
-    post.actionFeedbackType = 'success';
+    post.actionFeedbackType = type;
     post.actionFeedbackTimeout = setTimeout(() => {
       post.actionFeedback = undefined;
       post.actionFeedbackTimeout = undefined;

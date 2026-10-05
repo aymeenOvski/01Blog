@@ -440,4 +440,23 @@ public class PostServiceImpl implements PostService {
                 safePage == 0,
                 toIndex >= items.size());
     }
+
+    @Override
+    @Transactional
+    public void deleteComment(Long postId, Long commentId, String currentUsername) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> BlogApiException.notFound("Comment not found"));
+        
+        // Verify the comment belongs to the post
+        if (!comment.getPost().getId().equals(postId)) {
+            throw BlogApiException.badRequest("Comment does not belong to this post");
+        }
+        
+        // Verify the current user is the author of the comment
+        if (!comment.getUser().getUsername().equals(currentUsername)) {
+            throw BlogApiException.forbidden("You are not authorized to delete this comment");
+        }
+        
+        commentRepository.delete(comment);
+    }
 }

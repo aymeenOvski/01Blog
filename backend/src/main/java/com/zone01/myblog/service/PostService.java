@@ -23,4 +23,5 @@ public interface PostService {
     boolean toggleLike(Long postId, String currentUsername);
     CommentResponse addComment(Long postId, CommentRequest request, String currentUsername);
     PagedResponse<CommentResponse> getPostComments(Long postId, int page, int size);
+    void deleteComment(Long postId, Long commentId, String currentUsername);
 }
