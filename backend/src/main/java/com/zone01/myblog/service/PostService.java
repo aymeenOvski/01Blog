@@ -10,9 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PostService {
-    PostResponse createPost(String username, String content, List<MultipartFile> mediaFiles);
-    // List<PostResponse> getAllPosts(String currentUsername);
-    
+    PostResponse createPost(String username, String content, List<MultipartFile> mediaFiles);    
     PagedResponse<PostResponse> getUserPosts(String targetUsername, String currentUsername, int page, int size);
 
     PagedResponse<PostResponse> getFeedPosts(String currentUsername, int page, int size);

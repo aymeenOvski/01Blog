@@ -51,6 +51,10 @@ public class FollowServiceImpl implements FollowService {
                 Users targetUser = userRepository.findByUsername(targetUsername)
                                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+                if (targetUser.isBanned()) {
+                        throw BlogApiException.notFound("User not found");
+                }
+
                 return followRepository.findByFollowerIdAndFollowedId(currentUser.getId(), targetUser.getId())
                                 .map(existing -> {
                                         followRepository.delete(existing);
@@ -83,6 +87,10 @@ public class FollowServiceImpl implements FollowService {
                 Users user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
+                if (user.isBanned()) {
+                        throw BlogApiException.notFound("User not found");
+                }
+
                 Page<Users> users = followRepository.findFollowedUsers(
                                 user.getId(), PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50)));
 
@@ -97,6 +105,10 @@ public class FollowServiceImpl implements FollowService {
         public PagedResponse<UserSummaryResponse> getFollowers(String username, int page, int size) {
                 Users user = userRepository.findByUsername(username)
                                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
+
+                if (user.isBanned()) {
+                        throw BlogApiException.notFound("User not found");
+                }
 
                 Page<Users> users = followRepository.findFollowerUsers(
                                 user.getId(), PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50)));

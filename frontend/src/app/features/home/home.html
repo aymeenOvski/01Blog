@@ -300,14 +300,19 @@
               </div>
 
               <div>
+                <div class="post-author-line">
+                  <p class="post-username mb-0">
+                    {{
+                    post.repost
+                    ? 'Original post by ' + post.originalUsername
+                    : post.username
+                    }}
+                  </p>
 
-                <p class="post-username mb-0">
-                  {{
-                  post.repost
-                  ? 'Original post by ' + post.originalUsername
-                  : post.username
-                  }}
-                </p>
+                  <span class="you-badge" *ngIf="post.username === username">
+                    You
+                  </span>
+                </div>
 
                 <small class="post-time">
                   {{ post.createdAt | date:'medium' }}
@@ -316,7 +321,6 @@
                 <small class="post-repost-label" *ngIf="post.repost">
                   Reposted by {{ post.repostedBy }}
                 </small>
-
               </div>
 
             </a>

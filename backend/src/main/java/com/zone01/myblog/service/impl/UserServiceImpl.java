@@ -35,10 +35,10 @@ public class UserServiceImpl implements UserService {
 
     private final Tika tika = new Tika();
     private static final List<String> ALLOWED_AVATAR_TYPES = Arrays.asList(
-        "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
+            "image/jpeg", "image/png", "image/gif", "image/webp");
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, FileStorageService fileStorageService, FollowRepository followRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils,
+            FileStorageService fileStorageService, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
@@ -53,15 +53,21 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
         if (user.isBanned()) {
-            throw BlogApiException.notFound("User does not exist anymore");
+            throw BlogApiException.notFound("User not found");
         }
 
-        boolean isOwner = currentUsername != null && currentUsername.equals(user.getUsername());
+        boolean isOwner = currentUsername != null
+                && currentUsername.equals(user.getUsername());
+
         boolean isFollowing = false;
+
         if (!isOwner && currentUsername != null) {
             Users viewer = userRepository.findByUsername(currentUsername).orElse(null);
+
             isFollowing = viewer != null
-                    && followRepository.existsByFollowerIdAndFollowedId(viewer.getId(), user.getId());
+                    && followRepository.existsByFollowerIdAndFollowedId(
+                            viewer.getId(),
+                            user.getId());
         }
 
         return new UserProfileResponse(

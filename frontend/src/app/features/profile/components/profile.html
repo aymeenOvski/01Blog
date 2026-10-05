@@ -15,9 +15,19 @@
       <div class="flex-grow-1 text-center text-lg-start">
         <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-3 mb-2">
           <div>
-            <h2 class="h4 text-white fw-bold mb-0">{{ profile.username }}</h2>
+            <div class="profile-name-line">
+
+              <h2 class="h4 text-white fw-bold mb-0">
+                {{ profile.username }}
+              </h2>
+
+              <span class="you-badge" *ngIf="isOwner">
+                You
+              </span>
+
+            </div>
             <small class="text-muted-custom" *ngIf="profile.createdAt">
-              Joined {{ profile.createdAt | date:'MMMM yyyy' }}
+              Joined {{ profile.createdAt | date:'medium' }}
             </small>
           </div>
 
@@ -120,21 +130,44 @@
 
         <!-- Post Header -->
         <header class="post-card-header d-flex align-items-center justify-content-between">
-          <div class="post-user-block">
+
+          <a [routerLink]="['/profile', post.username]" class="post-user-block">
+
             <div class="post-avatar">
+
               <img *ngIf="post.avatarUrl" [src]="resolveMediaUrl(post.avatarUrl)" [alt]="post.username" />
-              <span *ngIf="!post.avatarUrl">{{ post.username.charAt(0).toUpperCase() }}</span>
+
+              <span *ngIf="!post.avatarUrl">
+                {{ post.username.charAt(0).toUpperCase() }}
+              </span>
+
             </div>
+
             <div>
-              <p class="post-username mb-0">
-                {{ post.repost ? 'Original post by ' + post.originalUsername : post.username }}
-              </p>
-              <small class="post-time">{{ post.createdAt | date:'medium' }}</small>
+
+              <div class="post-author-line">
+
+                <p class="post-username mb-0">
+                  {{ post.repost ? 'Original post by ' + post.originalUsername : post.username }}
+                </p>
+
+                <span class="you-badge" *ngIf="post.username === currentUser">
+                  You
+                </span>
+
+              </div>
+
+              <small class="post-time">
+                {{ post.createdAt | date:'medium' }}
+              </small>
+
               <small class="post-repost-label" *ngIf="post.repost">
                 Reposted by {{ post.repostedBy }}
               </small>
+
             </div>
-          </div>
+
+          </a>
 
           <!-- 3-Dot Options Menu Container -->
           <div class="dropdown post-options-dropdown">
@@ -333,7 +366,7 @@
 
                 <div class="comment-meta">
                   <span class="comment-time">
-                    {{ comment.createdAt | date:'shortTime' }}
+                    {{ comment.createdAt | date:'short' }}
                   </span>
 
                   <button *ngIf="comment.username === currentUser" type="button" class="comment-delete-btn"

@@ -331,6 +331,10 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findByIdWithAuthor(postId)
                 .orElseThrow(() -> BlogApiException.notFound("Post not found"));
 
+        if (!"VISIBLE".equalsIgnoreCase(post.getVisibility()) || post.getAuthor().isBanned()) {
+            throw BlogApiException.notFound("Post not found");
+        }
+
         var existingLike = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
         if (existingLike.isPresent()) {
@@ -377,6 +381,10 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findByIdWithAuthor(postId)
                 .orElseThrow(() -> BlogApiException.notFound("Post not found"));
 
+        if (!"VISIBLE".equalsIgnoreCase(post.getVisibility()) || post.getAuthor().isBanned()) {
+            throw BlogApiException.notFound("Post not found");
+        }
+
         Users user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> BlogApiException.notFound("User not found"));
 
@@ -410,6 +418,14 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<CommentResponse> getPostComments(Long postId, int page, int size) {
+
+        Post post = postRepository.findByIdWithAuthor(postId)
+                .orElseThrow(() -> BlogApiException.notFound("Post not found"));
+
+        if (!"VISIBLE".equalsIgnoreCase(post.getVisibility()) || post.getAuthor().isBanned()) {
+            throw BlogApiException.notFound("Post not found");
+        }
+        
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 50));
         Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
 
@@ -446,17 +462,17 @@ public class PostServiceImpl implements PostService {
     public void deleteComment(Long postId, Long commentId, String currentUsername) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> BlogApiException.notFound("Comment not found"));
-        
+
         // Verify the comment belongs to the post
         if (!comment.getPost().getId().equals(postId)) {
             throw BlogApiException.badRequest("Comment does not belong to this post");
         }
-        
+
         // Verify the current user is the author of the comment
         if (!comment.getUser().getUsername().equals(currentUsername)) {
             throw BlogApiException.forbidden("You are not authorized to delete this comment");
         }
-        
+
         commentRepository.delete(comment);
     }
 }

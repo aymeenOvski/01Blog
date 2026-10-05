@@ -38,6 +38,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     @Query("""
             SELECT u FROM com.zone01.myblog.model.Users u
             WHERE u.id <> :currentUserId
+            AND u.status = 'ACTIVE'
               AND NOT EXISTS (
                   SELECT f FROM Follow f
                   WHERE f.follower.id = :currentUserId AND f.followed.id = u.id
