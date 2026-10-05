@@ -224,11 +224,6 @@
 
       </header>
 
-      <!-- FEED ACTION FEEDBACK -->
-      <div class="action-error" *ngIf="feedActionError" role="alert">
-        {{ feedActionError }}
-      </div>
-
       <div class="success-banner feed-feedback" *ngIf="feedActionSuccess" role="status">
         {{ feedActionSuccess }}
       </div>
@@ -404,8 +399,11 @@
               {{ isPostExpanded(post) ? 'See less' : 'See more' }}
             </button>
 
-            <small class="post-feedback post-feedback-success" *ngIf="post.actionFeedback">
-              ✓ {{ post.actionFeedback }}
+            <small class="post-feedback" *ngIf="post.actionFeedback"
+              [class.post-feedback-success]="post.actionFeedbackType === 'success'"
+              [class.post-feedback-error]="post.actionFeedbackType === 'error'">
+              {{ post.actionFeedbackType === 'success' ? '✓' : '!' }}
+              {{ post.actionFeedback }}
             </small>
 
           </div>

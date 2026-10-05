@@ -76,11 +76,9 @@ export class Home implements OnInit, OnDestroy {
   followPending = new Set<string>();
 
   suggestedActionError: string | null = null;
-  feedActionError: string | null = null;
   feedActionSuccess: string | null = null;
 
   private suggestedActionErrorTimeout?: ReturnType<typeof setTimeout>;
-  private feedActionErrorTimeout?: ReturnType<typeof setTimeout>;
   private feedActionSuccessTimeout?: ReturnType<typeof setTimeout>;
 
   repostingPostIds = new Set<number>();
@@ -124,10 +122,6 @@ export class Home implements OnInit, OnDestroy {
 
     if (this.suggestedActionErrorTimeout) {
       clearTimeout(this.suggestedActionErrorTimeout);
-    }
-
-    if (this.feedActionErrorTimeout) {
-      clearTimeout(this.feedActionErrorTimeout);
     }
 
     if (this.feedActionSuccessTimeout) {
@@ -330,21 +324,17 @@ export class Home implements OnInit, OnDestroy {
           );
         },
 
-        error: error => {
-          console.error(
-            'Failed to delete comment',
-            error
+        error: (error) => {
+
+          this.showPostActionError(
+            post,
+            error,
+            'Failed to delete comment.'
           );
 
           this.deletingCommentId = null;
           this.deleteConfirmComment = null;
 
-          this.showPostFeedback(
-            post,
-            error?.error?.message ||
-            'Failed to delete comment.',
-            'error'
-          );
         }
 
       });
@@ -378,11 +368,14 @@ export class Home implements OnInit, OnDestroy {
         }
       },
 
-      error: () => {
+      error: (err) => {
         this.followPending.delete(user.username);
 
         this.suggestedActionError =
-          `Could not follow @${user.username}. Please try again.`;
+          err.error?.message ||
+          (err.status === 429
+            ? 'Rate limit exceeded. Please try again later.'
+            : `Could not follow @${user.username}. Please try again.`);
 
         this.showSuggestedActionError();
       }
@@ -409,15 +402,6 @@ export class Home implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  private clearFeedActionError(): void {
-    this.feedActionError = null;
-
-    if (this.feedActionErrorTimeout) {
-      clearTimeout(this.feedActionErrorTimeout);
-      this.feedActionErrorTimeout = undefined;
-    }
-  }
-
   private showFeedActionSuccess(message: string): void {
     this.feedActionSuccess = message;
 
@@ -431,28 +415,59 @@ export class Home implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  private showPostFeedback(post: PostResponse, message: string, type: 'success' | 'error' = 'success'): void {
+  private showPostFeedback(post: PostResponse, message: string): void {
+
     if (post.actionFeedbackTimeout) {
+
       clearTimeout(post.actionFeedbackTimeout);
+
     }
 
     post.actionFeedback = message;
-    post.actionFeedbackType = type;
+    post.actionFeedbackType = 'success';
+
     post.actionFeedbackTimeout = setTimeout(() => {
+
       post.actionFeedback = undefined;
       post.actionFeedbackTimeout = undefined;
+
     }, 3000);
+
   }
 
-  private showFeedActionError(): void {
-    if (this.feedActionErrorTimeout) {
-      clearTimeout(this.feedActionErrorTimeout);
+  private showPostActionError(
+    post: PostResponse,
+    error: any,
+    fallback: string
+  ): void {
+
+    const backendMessage =
+      typeof error?.error?.message === 'string'
+        ? error.error.message.trim()
+        : '';
+
+    const message =
+      backendMessage ||
+      (error?.status === 429
+        ? 'Rate limit exceeded. Please try again later.'
+        : fallback);
+
+    if (post.actionFeedbackTimeout) {
+
+      clearTimeout(post.actionFeedbackTimeout);
+
     }
 
-    this.feedActionErrorTimeout = setTimeout(() => {
-      this.feedActionError = null;
-      this.feedActionErrorTimeout = undefined;
-    }, 3000);
+    post.actionFeedback = message;
+    post.actionFeedbackType = 'error';
+
+    post.actionFeedbackTimeout = setTimeout(() => {
+
+      post.actionFeedback = undefined;
+      post.actionFeedbackTimeout = undefined;
+
+    }, 5000);
+
   }
 
   onFileSelected(event: Event): void {
@@ -542,7 +557,9 @@ export class Home implements OnInit, OnDestroy {
 
           this.errorMessage =
             err.error?.message ||
-            'Failed to publish post.';
+            (err.status === 429
+              ? 'Rate limit exceeded. Please try again later.'
+              : 'Failed to publish post.');
         }
       });
   }
@@ -596,35 +613,41 @@ export class Home implements OnInit, OnDestroy {
     // A repost should still be visible in the menu,
     // but attempting it gives the user clear feedback.
     if (post.repost) {
+
       post.showMenu = false;
 
-      this.feedActionError =
-        'You already reposted this post.';
+      this.showPostActionError(
+        post,
+        null,
+        'You already reposted this post.'
+      );
 
-      this.showFeedActionError();
       return;
     }
 
     post.showMenu = false;
-
     this.repostingPostIds.add(post.id);
-    this.clearFeedActionError();
 
     this.postService.repost(post.id).subscribe({
-
       next: () => {
         this.repostingPostIds.delete(post.id);
-        this.showPostFeedback(post, `Reposted ${post.username}'s post.`);
+
+        this.showPostFeedback(
+          post,
+          `Reposted ${post.username}'s post.`
+        );
       },
 
       error: (error) => {
+
         this.repostingPostIds.delete(post.id);
 
-        this.feedActionError =
-          error?.error?.message ||
-          'Unable to repost this post.';
+        this.showPostActionError(
+          post,
+          error,
+          'Unable to repost this post.'
+        );
 
-        this.showFeedActionError();
       }
     });
   }
@@ -653,10 +676,18 @@ export class Home implements OnInit, OnDestroy {
         post.isSubmittingLike = false;
       },
 
-      error: () => {
+      error: (err) => {
+
         post.isLiked = originalState;
         post.likesCount = currentCount;
         post.isSubmittingLike = false;
+
+        this.showPostActionError(
+          post,
+          err,
+          'Unable to update like status.'
+        );
+
       }
     });
   }
@@ -735,12 +766,15 @@ export class Home implements OnInit, OnDestroy {
         },
 
         error: (err) => {
-          console.error(
-            'Failed to add comment',
-            err
-          );
 
           post.isSubmittingComment = false;
+
+          this.showPostActionError(
+            post,
+            err,
+            'Unable to post comment.'
+          );
+
         }
       });
   }

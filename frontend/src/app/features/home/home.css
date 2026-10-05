@@ -1546,3 +1546,18 @@
   font-weight: 700;
   line-height: 1.2;
 }
+
+.post-feedback {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.post-feedback-success {
+  color: #86efac;
+}
+
+.post-feedback-error {
+  color: #fca5a5;
+}

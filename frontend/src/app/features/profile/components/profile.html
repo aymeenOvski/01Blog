@@ -41,8 +41,12 @@
             <ng-container *ngIf="!isOwner">
 
               <button type="button" (click)="toggleFollow()" class="btn btn-sm px-4 rounded-2 fw-semibold"
-                [ngClass]="profile.isFollowing ? 'btn-outline-danger' : 'btn-primary'">
-                {{ profile.isFollowing ? 'Unfollow' : 'Follow' }}
+                [ngClass]="profile.isFollowing ? 'btn-outline-danger' : 'btn-primary'" [disabled]="isFollowingLoading">
+                {{
+                isFollowingLoading
+                ? 'Updating...'
+                : (profile.isFollowing ? 'Unfollow' : 'Follow')
+                }}
               </button>
 
               <div class="profile-options-dropdown dropdown">
@@ -109,6 +113,12 @@
           </button>
         </div>
 
+        <!-- Profile Action Error -->
+        <div *ngIf="profileActionError" class="profile-action-error" role="alert">
+          <span class="profile-action-error-icon">!</span>
+          <span>{{ profileActionError }}</span>
+        </div>
+
       </div>
     </div>
   </div>
@@ -118,7 +128,6 @@
     <h3 class="posts-title mb-3">Recent Posts</h3>
 
     <div *ngIf="postsLoading" class="posts-state">Loading posts...</div>
-    <div *ngIf="actionError" class="posts-state error" role="alert">{{ actionError }}</div>
     <div *ngIf="actionSuccess" class="posts-state success" role="status">{{ actionSuccess }}</div>
     <div *ngIf="!postsLoading && postsErrorMessage" class="posts-state error">{{ postsErrorMessage }}</div>
     <div *ngIf="!postsLoading && !postsErrorMessage && posts.length === 0" class="posts-state">
@@ -269,10 +278,12 @@
             {{ isPostExpanded(post) ? 'See less' : 'See more' }}
           </button>
 
-          <small class="post-feedback" *ngIf="post.actionFeedback">
-            ✓ {{ post.actionFeedback }}
+          <small class="post-feedback" *ngIf="post.actionFeedback"
+            [class.post-feedback-success]="post.actionFeedbackType === 'success'"
+            [class.post-feedback-error]="post.actionFeedbackType === 'error'" role="status">
+            {{ post.actionFeedbackType === 'error' ? '!' : '✓' }}
+            {{ post.actionFeedback }}
           </small>
-
           <small *ngIf="savedPostId === post.id" class="post-feedback">
             ✓ Post updated successfully
           </small>
@@ -421,28 +432,54 @@
       </div>
 
       <div class="modal-body p-3">
-        <div *ngIf="userListLoading" class="text-muted-custom text-center py-4">Loading list...</div>
 
-        <div *ngIf="!userListLoading && userList.length === 0" class="text-muted-custom text-center py-4">
+        <div *ngIf="userListLoading" class="text-muted-custom text-center py-4">
+          Loading list...
+        </div>
+
+        <div *ngIf="!userListLoading && userListError" class="posts-state error" role="alert">
+          {{ userListError }}
+        </div>
+
+        <div *ngIf="
+      !userListLoading &&
+      !userListError &&
+      userList.length === 0
+    " class="text-muted-custom text-center py-4">
           No {{ activeModalTab }} found.
         </div>
 
-        <div *ngIf="!userListLoading && userList.length > 0" class="user-list" (scroll)="onUserListScroll($event)">
+        <div *ngIf="
+      !userListLoading &&
+      !userListError &&
+      userList.length > 0
+    " class="user-list" (scroll)="onUserListScroll($event)">
+
           <div *ngFor="let user of userList" class="user-list-item d-flex align-items-center gap-3 py-2">
+
             <div class="post-avatar">
+
               <img *ngIf="user.avatarUrl" [src]="resolveMediaUrl(user.avatarUrl)" alt="Avatar" />
-              <span *ngIf="!user.avatarUrl">{{ user.username.charAt(0).toUpperCase() }}</span>
+
+              <span *ngIf="!user.avatarUrl">
+                {{ user.username.charAt(0).toUpperCase() }}
+              </span>
+
             </div>
+
             <a [routerLink]="['/profile', user.username]" (click)="closeUserListModal()"
               class="text-white text-decoration-none fw-semibold">
               {{ user.username }}
             </a>
+
           </div>
+
         </div>
 
         <div *ngIf="userListLoadingMore" class="text-muted-custom text-center py-2">
           Loading more...
         </div>
+
       </div>
     </div>
   </div>

@@ -43,14 +43,18 @@ export class Profile implements OnInit, OnDestroy {
   postsLoadingMore = false;
 
   isOwner = false;
+  isFollowingLoading = false;
 
   loading = true;
   postsLoading = false;
 
   errorMessage: string | null = null;
   postsErrorMessage: string | null = null;
-  actionError: string | null = null;
+  profileActionError: string | null = null;
+
   actionSuccess: string | null = null;
+
+
   savingPostId: number | null = null;
   savedPostId: number | null = null;
 
@@ -69,7 +73,7 @@ export class Profile implements OnInit, OnDestroy {
   readonly postPreviewLength = 280;
   readonly commentPreviewLength = 160;
 
-  private actionErrorTimeout?: ReturnType<typeof setTimeout>;
+  private profileActionErrorTimeout?: ReturnType<typeof setTimeout>;
 
   showReportModal = false;
   showProfileMenu = false;
@@ -84,6 +88,7 @@ export class Profile implements OnInit, OnDestroy {
   userListLoadingMore = false;
   userListPage = 0;
   userListLastPage = false;
+  userListError: string | null = null;
   userList: UserSummary[] = [];
 
   ngOnInit(): void {
@@ -123,13 +128,14 @@ export class Profile implements OnInit, OnDestroy {
     this.postsPage = 0;
     this.postsLastPage = false;
     this.isOwner = false;
+    this.isFollowingLoading = false;
 
     this.loading = true;
     this.postsLoading = true;
 
     this.errorMessage = null;
     this.postsErrorMessage = null;
-    this.actionError = null;
+    this.profileActionError = null;
 
     this.showProfileMenu = false;
     this.showReportModal = false;
@@ -297,18 +303,20 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   toggleFollow(): void {
-    if (!this.profile || this.isOwner) return;
+    if (!this.profile || this.isOwner || this.isFollowingLoading) {
+      return;
+    }
+
+    this.isFollowingLoading = true;
 
     const originalState = this.profile.isFollowing;
 
     this.profile.isFollowing = !originalState;
-
     this.profile.followersCount =
       (this.profile.followersCount || 0) +
       (originalState ? -1 : 1);
 
     this.userService.toggleFollow(this.profile.username).subscribe({
-
       next: (isFollowing) => {
         if (this.profile && isFollowing !== this.profile.isFollowing) {
           this.profile.followersCount =
@@ -317,28 +325,99 @@ export class Profile implements OnInit, OnDestroy {
 
           this.profile.isFollowing = isFollowing;
         }
+
+        this.isFollowingLoading = false;
       },
 
-      error: () => {
-        if (!this.profile) return;
+      error: (err) => {
+        if (this.profile) {
+          this.profile.isFollowing = originalState;
 
-        this.profile.isFollowing = originalState;
+          this.profile.followersCount =
+            (this.profile.followersCount || 0) +
+            (originalState ? 1 : -1);
 
-        this.profile.followersCount =
-          (this.profile.followersCount || 0) +
-          (originalState ? 1 : -1);
+          this.showProfileActionError(
+            err,
+            'Unable to update follow status.'
+          );
+        }
+
+        this.isFollowingLoading = false;
       }
     });
   }
 
+  private showProfileActionError(error: any, fallback: string): void {
+    const backendMessage =
+      typeof error?.error?.message === 'string'
+        ? error.error.message.trim()
+        : '';
+
+    if (backendMessage) {
+      this.profileActionError = backendMessage;
+    } else if (error?.status === 429) {
+      this.profileActionError =
+        'Rate limit exceeded. Please try again later.';
+    } else {
+      this.profileActionError = fallback;
+    }
+
+    if (this.profileActionErrorTimeout) {
+      clearTimeout(this.profileActionErrorTimeout);
+    }
+
+    this.profileActionErrorTimeout = setTimeout(() => {
+      this.profileActionError = null;
+    }, 5000);
+  }
+
+  private showPostActionError(
+    post: PostResponse,
+    error: any,
+    fallback: string
+  ): void {
+
+    const backendMessage =
+      typeof error?.error?.message === 'string'
+        ? error.error.message.trim()
+        : '';
+
+    const message =
+      backendMessage ||
+      (error?.status === 429
+        ? 'Rate limit exceeded. Please try again later.'
+        : fallback);
+
+    if (post.actionFeedbackTimeout) {
+
+      clearTimeout(post.actionFeedbackTimeout);
+
+    }
+
+    post.actionFeedback = message;
+    post.actionFeedbackType = 'error';
+
+    post.actionFeedbackTimeout = setTimeout(() => {
+
+      post.actionFeedback = undefined;
+      post.actionFeedbackTimeout = undefined;
+
+    }, 5000);
+
+  }
+
   openUserListModal(tab: 'followers' | 'following'): void {
-    if (!this.profile) return;
+    if (!this.profile) {
+      return;
+    }
 
     this.activeModalTab = tab;
     this.userListLoading = true;
     this.userListLoadingMore = false;
     this.userListPage = 0;
     this.userListLastPage = false;
+    this.userListError = null;
     this.userList = [];
 
     const request =
@@ -347,7 +426,6 @@ export class Profile implements OnInit, OnDestroy {
         : this.userService.getFollowing(this.profile.username, 0);
 
     request.subscribe({
-
       next: (response) => {
         this.userList = response.content;
         this.userListPage = response.number + 1;
@@ -355,9 +433,15 @@ export class Profile implements OnInit, OnDestroy {
         this.userListLoading = false;
       },
 
-      error: () => {
+      error: (err) => {
         this.userList = [];
         this.userListLoading = false;
+
+        this.userListError =
+          err.error?.message ||
+          (err.status === 429
+            ? 'Rate limit exceeded. Please try again later.'
+            : 'Failed to load users.');
       }
     });
   }
@@ -365,27 +449,51 @@ export class Profile implements OnInit, OnDestroy {
   closeUserListModal(): void {
     this.activeModalTab = null;
     this.userList = [];
+    this.userListError = null;
   }
-
   loadMoreUsers(): void {
-    if (!this.profile || !this.activeModalTab || this.userListLoadingMore || this.userListLastPage) {
+    if (
+      !this.profile ||
+      !this.activeModalTab ||
+      this.userListLoadingMore ||
+      this.userListLastPage
+    ) {
       return;
     }
 
     this.userListLoadingMore = true;
-    const request = this.activeModalTab === 'followers'
-      ? this.userService.getFollowers(this.profile.username, this.userListPage)
-      : this.userService.getFollowing(this.profile.username, this.userListPage);
+
+    const request =
+      this.activeModalTab === 'followers'
+        ? this.userService.getFollowers(
+          this.profile.username,
+          this.userListPage
+        )
+        : this.userService.getFollowing(
+          this.profile.username,
+          this.userListPage
+        );
 
     request.subscribe({
-      next: response => {
-        this.userList = [...this.userList, ...response.content];
+      next: (response) => {
+        this.userList = [
+          ...this.userList,
+          ...response.content
+        ];
+
         this.userListPage = response.number + 1;
         this.userListLastPage = response.last;
         this.userListLoadingMore = false;
       },
-      error: () => {
+
+      error: (err) => {
         this.userListLoadingMore = false;
+
+        this.userListError =
+          err.error?.message ||
+          (err.status === 429
+            ? 'Rate limit exceeded. Please try again later.'
+            : 'Failed to load more users.');
       }
     });
   }
@@ -419,10 +527,18 @@ export class Profile implements OnInit, OnDestroy {
         post.isSubmittingLike = false;
       },
 
-      error: () => {
+      error: (err) => {
+
         post.isLiked = originalState;
         post.likesCount = currentCount;
         post.isSubmittingLike = false;
+
+        this.showPostActionError(
+          post,
+          err,
+          'Unable to update like status.'
+        );
+
       }
     });
   }
@@ -494,8 +610,15 @@ export class Profile implements OnInit, OnDestroy {
       },
 
       error: (err) => {
-        console.error('Failed to add comment', err);
+
         post.isSubmittingComment = false;
+
+        this.showPostActionError(
+          post,
+          err,
+          'Unable to post comment.'
+        );
+
       }
     });
   }
@@ -569,7 +692,6 @@ export class Profile implements OnInit, OnDestroy {
 
     this.savingPostId = post.id;
     this.savedPostId = null;
-    this.actionError = null;
 
     this.postService.updatePost(post.id, {
       content: updatedText
@@ -590,10 +712,15 @@ export class Profile implements OnInit, OnDestroy {
       },
 
       error: (err) => {
+
         this.savingPostId = null;
 
-        this.actionError =
-          err.error?.message || 'Failed to update post';
+        this.showPostActionError(
+          post,
+          err,
+          'Failed to update post.'
+        );
+
       }
     });
   }
@@ -613,7 +740,6 @@ export class Profile implements OnInit, OnDestroy {
     }
 
     this.deletingPostId = post.id;
-    this.actionError = null;
 
     this.postService.deletePost(post.id).subscribe({
 
@@ -627,11 +753,15 @@ export class Profile implements OnInit, OnDestroy {
       },
 
       error: err => {
+
         this.deletingPostId = null;
 
-        this.actionError =
-          err.error?.message ||
-          'Failed to delete post';
+        this.showPostActionError(
+          post,
+          err,
+          'Failed to delete post.'
+        );
+
       }
 
     });
@@ -675,50 +805,66 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   confirmDeleteComment(): void {
+
     if (!this.deleteConfirmComment || this.deletingCommentId !== null) {
+
       return;
+
     }
 
     const { postId, commentId } = this.deleteConfirmComment;
 
-    console.log('CONFIRM DELETE COMMENT', postId, commentId);
+    const post = this.posts.find(
+      p => p.id === postId
+    );
+
+    if (!post) {
+
+      this.deleteConfirmComment = null;
+      return;
+
+    }
 
     this.deletingCommentId = commentId;
 
     this.postService.deleteComment(postId, commentId).subscribe({
+
       next: () => {
-        const post = this.posts.find(p => p.id === postId);
 
-        if (post) {
-          post.comments = (post.comments ?? []).filter(
-            comment => comment.id !== commentId
-          );
+        post.comments = (post.comments ?? []).filter(
+          comment => comment.id !== commentId
+        );
 
-          post.commentsCount = Math.max(
-            0,
-            (post.commentsCount ?? 0) - 1
-          );
+        post.commentsCount = Math.max(
+          0,
+          (post.commentsCount ?? 0) - 1
+        );
 
-          this.showPostFeedback(
-            post,
-            'Comment deleted successfully.'
-          );
-        }
+        this.showPostFeedback(
+          post,
+          'Comment deleted successfully.'
+        );
 
         this.deletingCommentId = null;
         this.deleteConfirmComment = null;
+
       },
 
       error: (error) => {
-        console.error('Failed to delete comment', error);
+
+        this.showPostActionError(
+          post,
+          error,
+          'Failed to delete comment.'
+        );
 
         this.deletingCommentId = null;
         this.deleteConfirmComment = null;
 
-        this.actionError =
-          error?.error?.message || 'Failed to delete comment';
       }
+
     });
+
   }
 
   repost(post: PostResponse): void {
@@ -729,55 +875,40 @@ export class Profile implements OnInit, OnDestroy {
     }
 
     if (post.repost) {
-      this.actionError = 'You already reposted this post.';
 
-      if (this.actionErrorTimeout) {
-        clearTimeout(this.actionErrorTimeout);
-      }
-
-      this.actionErrorTimeout = setTimeout(
-        () => (this.actionError = null),
-        3000
+      this.showPostActionError(
+        post,
+        null,
+        'You already reposted this post.'
       );
 
       return;
+
     }
 
     this.repostingPostIds.add(post.id);
-    this.actionError = null;
 
     this.postService.repost(post.id).subscribe({
 
       next: () => {
         this.repostingPostIds.delete(post.id);
 
-        this.showPostFeedback(post, `Reposted ${post.username}'s post.`);
-
-        if (this.actionErrorTimeout) {
-          clearTimeout(this.actionErrorTimeout);
-        }
-
-        this.actionErrorTimeout = setTimeout(
-          () => (this.actionError = null),
-          3000
+        this.showPostFeedback(
+          post,
+          `Reposted ${post.username}'s post.`
         );
       },
 
       error: (error) => {
+
         this.repostingPostIds.delete(post.id);
 
-        this.actionError =
-          error?.error?.message ||
-          'Unable to repost this post.';
-
-        if (this.actionErrorTimeout) {
-          clearTimeout(this.actionErrorTimeout);
-        }
-
-        this.actionErrorTimeout = setTimeout(
-          () => (this.actionError = null),
-          3000
+        this.showPostActionError(
+          post,
+          error,
+          'Unable to repost this post.'
         );
+
       }
     });
   }
@@ -786,8 +917,8 @@ export class Profile implements OnInit, OnDestroy {
     this.routeSub?.unsubscribe();
     this.postCreatedSub?.unsubscribe();
 
-    if (this.actionErrorTimeout) {
-      clearTimeout(this.actionErrorTimeout);
+    if (this.profileActionErrorTimeout) {
+      clearTimeout(this.profileActionErrorTimeout);
     }
   }
 
