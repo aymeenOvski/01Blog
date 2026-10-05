@@ -43,11 +43,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                         .orElseThrow(() -> new UsernameNotFoundException(
                                 "User not found: " + username));
 
-                // A banned user must not become authenticated.
                 if ("BANNED".equalsIgnoreCase(user.getStatus())) {
-                    response.sendError(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            "Account is banned");
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setHeader("X-Account-Banned", "true");
                     return;
                 }
 
