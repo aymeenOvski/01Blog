@@ -77,17 +77,17 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final RateLimitRule FOLLOW_RULE = new RateLimitRule(
             "follow",
-            5,
+            20,
             Duration.ofMinutes(1));
 
     private static final RateLimitRule REPOST_RULE = new RateLimitRule(
             "repost",
-            5,
+            10,
             Duration.ofMinutes(1));
 
     private static final RateLimitRule COMMENT_MODIFICATION_RULE = new RateLimitRule(
             "comment-modification",
-            10,
+            15,
             Duration.ofMinutes(1));
 
     private Bucket createBucket(RateLimitRule rule) {
