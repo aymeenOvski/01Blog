@@ -32,15 +32,15 @@ public interface AdminService {
 
     void dismissHiddenPostReports();
 
-    void banUser(Long userId);
+    void banUser(Long targetUserId, Long currentUserId);
 
-    void unbanUser(Long userId);
+    void unbanUser(Long targetUserId);
 
     void hidePost(Long postId);
 
     void unhidePost(Long postId);
 
-    void deleteUser(Long userId);
+    void deleteUser(Long targetUserId, Long currentUserId);
 
     void deletePost(Long postId);
 }

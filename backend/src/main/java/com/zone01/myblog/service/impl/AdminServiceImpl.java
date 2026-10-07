@@ -255,22 +255,15 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void banUser(Long userId) {
+    public void banUser(Long targetUserId, Long currentUserId) {
 
-        Users user = userRepository
-                .findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        if ("ROLE_ADMIN".equalsIgnoreCase(user.getRole())
-                || "ADMIN".equalsIgnoreCase(user.getRole())) {
-
-            throw new IllegalArgumentException(
-                    "Admin users cannot be banned");
+        // 1. Guard against self-banning
+        if (targetUserId.equals(currentUserId)) {
+            throw new IllegalArgumentException("You cannot ban your own account.");
         }
 
-        if ("BANNED".equalsIgnoreCase(user.getStatus())) {
-            return;
-        }
+        Users user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + targetUserId));
 
         user.setStatus("BANNED");
         userRepository.save(user);
@@ -278,10 +271,10 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void unbanUser(Long userId) {
+    public void unbanUser(Long targetUserId) {
 
         Users user = userRepository
-                .findById(userId)
+                .findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         user.setStatus("ACTIVE");
@@ -322,10 +315,14 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public void deleteUser(Long userId) {
+    public void deleteUser(Long targetUserId, Long currentUserId) {
+
+        if (targetUserId.equals(currentUserId)) {
+            throw new IllegalArgumentException("You cannot delete your own account.");
+        }
 
         Users user = userRepository
-                .findById(userId)
+                .findById(targetUserId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if ("ROLE_ADMIN".equalsIgnoreCase(user.getRole())

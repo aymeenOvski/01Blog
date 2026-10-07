@@ -5,9 +5,11 @@ import com.zone01.myblog.dto.AdminStatsResponse;
 import com.zone01.myblog.dto.AdminUserResponse;
 import com.zone01.myblog.dto.ReportResponse;
 import com.zone01.myblog.service.AdminService;
+import com.zone01.myblog.security.services.UserDetailsImpl;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,7 +44,6 @@ public class AdminController {
             @RequestParam String action) {
 
         adminService.resolveReport(id, action);
-
         return ResponseEntity.noContent().build();
     }
 
@@ -65,8 +66,11 @@ public class AdminController {
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        adminService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
+
+        adminService.deleteUser(id, currentUser.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -94,9 +98,10 @@ public class AdminController {
 
     @PatchMapping("/users/{id}/ban")
     public ResponseEntity<Void> banUser(
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl currentUser) {
 
-        adminService.banUser(id);
+        adminService.banUser(id, currentUser.getId());
         return ResponseEntity.noContent().build();
     }
 
