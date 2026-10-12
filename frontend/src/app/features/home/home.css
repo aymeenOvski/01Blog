@@ -1032,6 +1032,9 @@
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
   backdrop-filter: blur(10px);
+  right: 0 !important;
+  left: auto !important;
+  max-width: calc(100vw - 28px) !important;
 }
 
 .post-options-dropdown .dropdown-item,
